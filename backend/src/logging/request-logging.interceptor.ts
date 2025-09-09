@@ -44,7 +44,7 @@ export class RequestLoggingInterceptor implements NestInterceptor {
       contentType: request.headers['content-type'],
       contentLength: request.headers['content-length'],
       tenantId: (request as any).tenantId,
-      userId: request.user?.['id'] || request.user?.['sub'],
+      userId: (request.user as any)?.id || (request.user as any)?.sub,
     };
 
     // Log incoming request

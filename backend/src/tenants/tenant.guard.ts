@@ -46,11 +46,11 @@ export class TenantGuard implements CanActivate {
 
     // Validate user has access to the tenant
     if (request.user && request.tenantId) {
-      const userTenantId = request.user.tenant_id || request.user.tenantId;
+      const userTenantId = (request.user as any).tenant_id || (request.user as any).tenantId;
       
       // Admin users can access any tenant
-      const isAdmin = request.user.roles?.includes('admin') || 
-                      request.user.realm_access?.roles?.includes('admin');
+      const isAdmin = (request.user as any).roles?.includes('admin') || 
+                      (request.user as any).realm_access?.roles?.includes('admin');
       
       if (!isAdmin && userTenantId && userTenantId !== request.tenantId) {
         throw new ForbiddenException(

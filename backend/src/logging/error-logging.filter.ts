@@ -37,7 +37,7 @@ export class ErrorLoggingFilter implements ExceptionFilter {
       userAgent: request.headers['user-agent'],
       requestId: request.headers['x-request-id'] as string,
       tenantId: (request as any).tenantId,
-      userId: request.user?.['id'] || request.user?.['sub'],
+      userId: (request.user as any)?.id || (request.user as any)?.sub,
     };
 
     // Log based on error type

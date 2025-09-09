@@ -51,8 +51,8 @@ export class TenantMiddleware implements NestMiddleware {
    */
   private extractTenantId(req: RequestWithTenant): string | null {
     // 1. Check JWT token claims (highest priority)
-    if (req.user && req.user.tenant_id) {
-      return req.user.tenant_id;
+    if (req.user && (req.user as any).tenant_id) {
+      return (req.user as any).tenant_id;
     }
 
     // 2. Check X-Tenant-ID header
