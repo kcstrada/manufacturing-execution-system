@@ -3,12 +3,14 @@ import {
   Column,
   Index,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   Unique,
 } from 'typeorm';
 import { TenantBaseEntity } from './base.entity';
 import { Product } from './product.entity';
 import { User } from './user.entity';
+import { ProductionStep } from './production-step.entity';
 
 export enum RoutingStatus {
   DRAFT = 'draft',
@@ -81,4 +83,7 @@ export class Routing extends TenantBaseEntity {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   approvedAt?: Date;
+
+  @OneToMany(() => ProductionStep, (step) => step.routing)
+  steps!: ProductionStep[];
 }

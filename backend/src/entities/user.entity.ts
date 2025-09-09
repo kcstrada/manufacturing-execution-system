@@ -10,6 +10,7 @@ import {
 import { TenantBaseEntity } from './base.entity';
 import { Department } from './department.entity';
 import { UserRole } from './user-role.entity';
+import { Tenant } from '../tenants/entities/tenant.entity';
 
 export enum UserStatus {
   ACTIVE = 'active',
@@ -70,4 +71,8 @@ export class User extends TenantBaseEntity {
 
   @OneToMany(() => UserRole, (userRole) => userRole.user)
   userRoles!: UserRole[];
+
+  @ManyToOne(() => Tenant, (tenant) => tenant.users)
+  @JoinColumn({ name: 'tenant_id' })
+  tenant!: Tenant;
 }

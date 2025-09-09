@@ -5,7 +5,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
+import { User } from '../../entities/user.entity';
 
 /**
  * Tenant entity for managing multi-tenant organizations
@@ -124,4 +126,8 @@ export class Tenant {
     if (this.isSuspended()) return 'suspended';
     return 'active';
   }
+
+  // Relations
+  @OneToMany(() => User, (user) => user.tenant)
+  users!: User[];
 }

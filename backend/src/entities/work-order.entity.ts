@@ -3,6 +3,7 @@ import {
   Column,
   Index,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   Unique,
 } from 'typeorm';
@@ -11,6 +12,7 @@ import { ProductionOrder } from './production-order.entity';
 import { WorkCenter } from './work-center.entity';
 import { Product } from './product.entity';
 import { User } from './user.entity';
+import { Task } from './task.entity';
 
 export enum WorkOrderStatus {
   PENDING = 'pending',
@@ -111,4 +113,7 @@ export class WorkOrder extends TenantBaseEntity {
 
   @Column({ type: 'uuid', nullable: true })
   completedById?: string;
+
+  @OneToMany(() => Task, (task) => task.workOrder)
+  tasks!: Task[];
 }
