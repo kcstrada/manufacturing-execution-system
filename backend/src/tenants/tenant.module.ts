@@ -1,4 +1,4 @@
-import { Module, Global, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module, Global, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TenantService } from './tenant.service';
 import { TenantMiddleware } from './tenant.middleware';
@@ -33,6 +33,6 @@ export class TenantModule implements NestModule {
     // Apply tenant middleware to all routes
     consumer
       .apply(TenantMiddleware)
-      .forRoutes('*');
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }

@@ -176,8 +176,18 @@ export class DatabaseService {
     
     for (const ext of extensions) {
       try {
-        await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS "${ext}"`);
-        this.logger.debug(`Extension ${ext} created or already exists`);
+        // Check if extension exists
+        const result = await this.dataSource.query(
+          `SELECT * FROM pg_extension WHERE extname = $1`,
+          [ext]
+        );
+        
+        if (result.length === 0) {
+          // Extension doesn't exist, create it
+          await this.dataSource.query(`CREATE EXTENSION "${ext}"`);
+          this.logger.log(`Extension ${ext} created successfully`);
+        }
+        // Extension already exists - silent
       } catch (error) {
         this.logger.warn(`Failed to create extension ${ext}:`, (error as any).message);
       }
@@ -188,18 +198,27 @@ export class DatabaseService {
    * Create custom database functions
    */
   private async createCustomFunctions(): Promise<void> {
-    // Example: Create a function to update updated_at timestamp
     try {
-      await this.dataSource.query(`
-        CREATE OR REPLACE FUNCTION update_updated_at_column()
-        RETURNS TRIGGER AS $$
-        BEGIN
-          NEW.updated_at = CURRENT_TIMESTAMP;
-          RETURN NEW;
-        END;
-        $$ language 'plpgsql';
-      `);
-      this.logger.debug('Custom functions created');
+      // Check if the function exists
+      const result = await this.dataSource.query(
+        `SELECT * FROM pg_proc WHERE proname = $1`,
+        ['update_updated_at_column']
+      );
+      
+      if (result.length === 0) {
+        // Function doesn't exist, create it
+        await this.dataSource.query(`
+          CREATE FUNCTION update_updated_at_column()
+          RETURNS TRIGGER AS $$
+          BEGIN
+            NEW.updated_at = CURRENT_TIMESTAMP;
+            RETURN NEW;
+          END;
+          $$ language 'plpgsql';
+        `);
+        this.logger.log('Custom function update_updated_at_column created successfully');
+      }
+      // Function already exists - silent
     } catch (error) {
       this.logger.warn('Failed to create custom functions:', (error as any).message);
     }

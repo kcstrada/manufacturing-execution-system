@@ -50,14 +50,15 @@ async function bootstrap() {
     next();
   });
 
+  // Global prefix (set before versioning)
+  app.setGlobalPrefix(apiPrefix);
+
   // API Versioning
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
+    prefix: 'v',
   });
-
-  // Global prefix
-  app.setGlobalPrefix(apiPrefix);
 
   // Global validation pipe
   app.useGlobalPipes(
