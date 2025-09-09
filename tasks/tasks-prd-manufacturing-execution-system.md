@@ -95,22 +95,22 @@
 
 - [ ] 2.0 **Core Domain Models & Database Architecture**
   - **Common**
-    - [ ] 2.1 Design complete ERD for manufacturing system entities
+    - [x] 2.1 Design complete ERD for manufacturing system entities
     - [x] 2.2 Create base entity classes with audit fields (createdAt, updatedBy, etc.)
   - **Kent**
-    - [ ] 2.3 Create User entity with tenant relationship
-    - [ ] 2.4 Create Tenant entity with isolation fields
-    - [ ] 2.5 Create Product entity with specifications and BOM
-    - [ ] 2.6 Create Order entity with status workflow
-    - [ ] 2.7 Create Task entity with dependencies and assignments
-    - [ ] 2.8 Create Worker entity with skills and shifts
-    - [ ] 2.9 Create Material/Inventory entities with stock levels
-    - [ ] 2.10 Create Equipment entity with maintenance schedule
-    - [ ] 2.11 Create QualityMetric entity for tracking
-    - [ ] 2.12 Create ProductionStep entity for workflow
-    - [ ] 2.13 Create Shift and Schedule entities
-    - [ ] 2.14 Create ActivityLog entity for audit trail
-    - [ ] 2.15 Set up database migrations for all entities
+    - [x] 2.3 Create User entity with tenant relationship (exists)
+    - [x] 2.4 Create Tenant entity with isolation fields (exists)
+    - [x] 2.5 Create Product entity with specifications and BOM (exists)
+    - [x] 2.6 Create Order entity with status workflow (exists as CustomerOrder)
+    - [x] 2.7 Create Task entity with dependencies and assignments
+    - [x] 2.8 Create Worker entity with skills and shifts
+    - [x] 2.9 Create Material/Inventory entities with stock levels (exists as Inventory)
+    - [x] 2.10 Create Equipment entity with maintenance schedule
+    - [x] 2.11 Create QualityMetric entity for tracking
+    - [x] 2.12 Create ProductionStep entity for workflow
+    - [x] 2.13 Create Shift and Schedule entities
+    - [x] 2.14 Create ActivityLog entity for audit trail
+    - [x] 2.15 Set up database migrations for all entities
     - [ ] 2.16 Create seed data for development testing
     - [ ] 2.17 Implement repository pattern for data access
     - [ ] 2.18 Add database indexes for performance
