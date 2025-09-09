@@ -15,7 +15,8 @@ process.env.KEYCLOAK_REALM = 'test-realm';
 process.env.KEYCLOAK_CLIENT_ID = 'test-client';
 process.env.KEYCLOAK_CLIENT_SECRET = 'test-secret';
 process.env.KEYCLOAK_AUTH_SERVER_URL = 'http://localhost:8080/auth';
-process.env.OPENFGA_STORE_ID = 'test-store';
+// OpenFGA store ID must be in ULID format (26 characters)
+process.env.OPENFGA_STORE_ID = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
 process.env.OPENFGA_API_URL = 'http://localhost:8080';
 
 // Global test utilities
@@ -166,45 +167,7 @@ export const waitFor = async (
   throw new Error('Timeout waiting for condition');
 };
 
-// Test data factories
-export const createTestOrder = (overrides = {}) => ({
-  id: '1',
-  orderNumber: 'ORD-001',
-  customerId: 'CUST-001',
-  status: 'pending',
-  items: [],
-  totalAmount: 1000,
-  tenantId: 'tenant-1',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
-
-export const createTestTask = (overrides = {}) => ({
-  id: '1',
-  title: 'Test Task',
-  description: 'Test task description',
-  status: 'pending',
-  assignedTo: null,
-  orderId: '1',
-  tenantId: 'tenant-1',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
-
-export const createTestProduct = (overrides = {}) => ({
-  id: '1',
-  sku: 'PROD-001',
-  name: 'Test Product',
-  description: 'Test product description',
-  price: 100,
-  stockLevel: 50,
-  tenantId: 'tenant-1',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
+// Test data factories - to be implemented when needed
 
 // Global test setup
 beforeAll(async () => {

@@ -98,6 +98,27 @@ backend-test-e2e: ## Run backend e2e tests
 	@echo "$(BLUE)🧪 Running backend e2e tests...$(NC)"
 	@cd backend && npm run test:e2e
 
+.PHONY: backend-test-integration
+backend-test-integration: ## Run backend integration tests
+	@echo "$(BLUE)🧪 Running backend integration tests...$(NC)"
+	@cd backend && npm run test:integration
+
+.PHONY: backend-test-auth
+backend-test-auth: ## Run authentication integration tests
+	@echo "$(BLUE)🔐 Running authentication integration tests...$(NC)"
+	@cd backend && npm run test:auth
+
+.PHONY: backend-test-integration-watch
+backend-test-integration-watch: ## Run integration tests in watch mode
+	@echo "$(BLUE)👀 Running integration tests in watch mode...$(NC)"
+	@cd backend && npm run test:integration:watch
+
+.PHONY: backend-test-integration-cov
+backend-test-integration-cov: ## Run integration tests with coverage
+	@echo "$(BLUE)📊 Running integration tests with coverage...$(NC)"
+	@cd backend && npm run test:integration:cov
+	@echo "$(GREEN)✅ Coverage report generated in backend/coverage-e2e/$(NC)"
+
 .PHONY: backend-test-watch
 backend-test-watch: ## Run backend tests in watch mode
 	@cd backend && npm run test:watch
