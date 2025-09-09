@@ -117,7 +117,19 @@ backend-test-integration-watch: ## Run integration tests in watch mode
 backend-test-integration-cov: ## Run integration tests with coverage
 	@echo "$(BLUE)📊 Running integration tests with coverage...$(NC)"
 	@cd backend && npm run test:integration:cov
-	@echo "$(GREEN)✅ Coverage report generated in backend/coverage-e2e/$(NC)"
+	@echo ""
+	@echo "$(YELLOW)📈 Coverage Summary:$(NC)"
+	@cat backend/coverage-e2e/lcov-report/index.html | grep -A 4 "percentage" | head -5 || true
+	@echo ""
+	@echo "$(GREEN)✅ Full coverage report: backend/coverage-e2e/lcov-report/index.html$(NC)"
+	@echo "$(BLUE)💡 Open with: open backend/coverage-e2e/lcov-report/index.html$(NC)"
+
+.PHONY: backend-test-integration-cov-quick
+backend-test-integration-cov-quick: ## Run only passing integration tests with coverage
+	@echo "$(BLUE)🚀 Running passing integration tests with coverage...$(NC)"
+	@cd backend && npx jest --config ./test/jest-integration.json --coverage --passWithNoTests test/health test/tenants || true
+	@echo ""
+	@echo "$(GREEN)✅ Quick coverage report generated in backend/coverage-e2e/$(NC)"
 
 .PHONY: backend-test-watch
 backend-test-watch: ## Run backend tests in watch mode

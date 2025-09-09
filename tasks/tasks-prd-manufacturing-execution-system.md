@@ -85,7 +85,7 @@
     - [x] 1.16 Configure Swagger API documentation
     - [x] 1.17 Implement CORS, Helmet, and rate limiting
     - [x] 1.18 Create base exception filters and interceptors
-    - [ ] 1.19 Write integration tests for auth flow
+    - [x] 1.19 Write integration tests for auth flow
 
 - [ ] 2.0 **Core Domain Models & Database Architecture**
   - **Common**

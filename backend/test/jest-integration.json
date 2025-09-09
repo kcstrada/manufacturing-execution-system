@@ -14,10 +14,19 @@
     "!src/**/*.entity.ts",
     "!src/**/index.ts",
     "!src/main.ts",
-    "!src/**/*.module.ts"
+    "!src/**/*.module.ts",
+    "!src/database/migrations/*.ts"
   ],
   "coverageDirectory": "./coverage-e2e",
-  "coverageReporters": ["json", "lcov", "text", "html"],
+  "coverageReporters": ["json", "lcov", "text", "text-summary", "html"],
+  "coverageThreshold": {
+    "global": {
+      "branches": 18,
+      "functions": 35,
+      "lines": 40,
+      "statements": 42
+    }
+  },
   "setupFilesAfterEnv": ["<rootDir>/test/setup.ts"],
   "testTimeout": 30000,
   "maxWorkers": 1,
