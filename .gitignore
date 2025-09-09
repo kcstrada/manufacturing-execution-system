@@ -86,6 +86,8 @@ pids/
 # Testing
 # ====================================
 coverage/
+coverage-e2e/
+backend/coverage-e2e/
 .nyc_output/
 *.lcov
 .coverage

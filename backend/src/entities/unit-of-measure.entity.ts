@@ -54,8 +54,6 @@ export class UnitOfMeasure extends TenantBaseEntity {
   @Column({ type: 'int', default: 2 })
   decimalPlaces!: number;
 
-  @Column({ type: 'boolean', default: true })
-  isActive!: boolean;
 
   // Relations
   @OneToMany(() => Product, (product) => product.unitOfMeasure)

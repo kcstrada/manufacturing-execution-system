@@ -122,12 +122,12 @@ export class CustomerOrder extends TenantBaseEntity {
   @Column({ type: 'uuid', nullable: true })
   salesRepId?: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  createdBy?: string;
+
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'created_by' })
-  createdBy?: User;
-
-  @Column({ type: 'uuid', nullable: true })
-  createdById?: string;
+  createdByUser?: User;
 
   @OneToMany(() => CustomerOrderLine, (line) => line.customerOrder)
   orderLines!: CustomerOrderLine[];

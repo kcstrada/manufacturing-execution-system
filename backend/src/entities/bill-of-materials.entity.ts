@@ -26,8 +26,6 @@ export enum BOMStatus {
 @Index(['tenantId', 'status'])
 @Index(['tenantId', 'effectiveDate'])
 export class BillOfMaterials extends TenantBaseEntity {
-  @Column({ type: 'int', default: 1 })
-  version!: number;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   name?: string;
@@ -42,8 +40,6 @@ export class BillOfMaterials extends TenantBaseEntity {
   })
   status!: BOMStatus;
 
-  @Column({ type: 'boolean', default: false })
-  isActive!: boolean;
 
   @Column({ type: 'date' })
   effectiveDate!: Date;
@@ -68,12 +64,12 @@ export class BillOfMaterials extends TenantBaseEntity {
   @Column({ type: 'uuid' })
   productId!: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  createdBy?: string;
+
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'created_by' })
-  createdBy?: User;
-
-  @Column({ type: 'uuid', nullable: true })
-  createdById?: string;
+  createdByUser?: User;
 
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'approved_by' })

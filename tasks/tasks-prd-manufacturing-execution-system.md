@@ -27,6 +27,12 @@
 - `backend/src/logging/` - Winston logging with daily rotation and Morgan middleware
 - `backend/src/health/` - Health checks with multiple indicators and metrics endpoints
 - `backend/src/common/` - Shared utilities, decorators, interceptors
+- `backend/src/common/constants.ts` - Application-wide constants and enums
+- `backend/src/common/decorators/audit-context.decorator.ts` - Audit context decorator for tracking user actions
+- `backend/src/common/interceptors/audit-context.interceptor.ts` - Request-scoped audit context interceptor
+- `backend/src/entities/base.entity.ts` - Base entity classes with comprehensive audit fields
+- `backend/src/entities/interfaces/auditable.interface.ts` - Interfaces for audit tracking
+- `backend/src/entities/subscribers/audit.subscriber.ts` - TypeORM subscriber for automatic audit field population
 - `backend/src/tenants/` - Multi-tenant architecture
 - `backend/.env` - Environment variables configuration
 
@@ -90,7 +96,7 @@
 - [ ] 2.0 **Core Domain Models & Database Architecture**
   - **Common**
     - [ ] 2.1 Design complete ERD for manufacturing system entities
-    - [ ] 2.2 Create base entity classes with audit fields (createdAt, updatedBy, etc.)
+    - [x] 2.2 Create base entity classes with audit fields (createdAt, updatedBy, etc.)
   - **Kent**
     - [ ] 2.3 Create User entity with tenant relationship
     - [ ] 2.4 Create Tenant entity with isolation fields

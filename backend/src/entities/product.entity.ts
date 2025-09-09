@@ -80,8 +80,6 @@ export class Product extends TenantBaseEntity {
   @Column({ type: 'decimal', precision: 15, scale: 3, nullable: true })
   reorderQuantity?: number;
 
-  @Column({ type: 'boolean', default: true })
-  isActive!: boolean;
 
   // Relations
   @ManyToOne(() => ProductCategory, { nullable: true })

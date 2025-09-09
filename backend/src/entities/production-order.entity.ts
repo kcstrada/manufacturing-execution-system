@@ -89,12 +89,12 @@ export class ProductionOrder extends TenantBaseEntity {
   @Column({ type: 'uuid', nullable: true })
   customerOrderId?: string;
 
+  @Column({ type: 'uuid' })
+  createdBy!: string;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by' })
-  createdBy!: User;
-
-  @Column({ type: 'uuid' })
-  createdById!: string;
+  createdByUser!: User;
 
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'approved_by' })

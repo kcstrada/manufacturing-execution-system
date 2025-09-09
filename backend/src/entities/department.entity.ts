@@ -33,8 +33,6 @@ export class Department extends TenantBaseEntity {
   @Column({ type: 'varchar', length: 100, nullable: true })
   costCenter?: string;
 
-  @Column({ type: 'boolean', default: true })
-  isActive!: boolean;
 
   // Relations
   @ManyToOne(() => Department, { nullable: true })
