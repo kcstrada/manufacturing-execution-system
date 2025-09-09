@@ -1,0 +1,111 @@
+[
+  {
+    "username": "admin",
+    "email": "admin@mes.local",
+    "emailVerified": true,
+    "enabled": true,
+    "firstName": "System",
+    "lastName": "Administrator",
+    "credentials": [
+      {
+        "type": "password",
+        "value": "admin123",
+        "temporary": false
+      }
+    ],
+    "realmRoles": ["admin", "default-roles-mes"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "department": ["Management"],
+      "employee_id": ["EMP001"]
+    }
+  },
+  {
+    "username": "executive",
+    "email": "executive@mes.local",
+    "emailVerified": true,
+    "enabled": true,
+    "firstName": "John",
+    "lastName": "Executive",
+    "credentials": [
+      {
+        "type": "password",
+        "value": "executive123",
+        "temporary": false
+      }
+    ],
+    "realmRoles": ["executive", "default-roles-mes"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "department": ["Management"],
+      "employee_id": ["EMP002"]
+    }
+  },
+  {
+    "username": "sales",
+    "email": "sales@mes.local",
+    "emailVerified": true,
+    "enabled": true,
+    "firstName": "Sarah",
+    "lastName": "Sales",
+    "credentials": [
+      {
+        "type": "password",
+        "value": "sales123",
+        "temporary": false
+      }
+    ],
+    "realmRoles": ["sales", "default-roles-mes"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "department": ["Sales"],
+      "employee_id": ["EMP003"]
+    }
+  },
+  {
+    "username": "worker",
+    "email": "worker@mes.local",
+    "emailVerified": true,
+    "enabled": true,
+    "firstName": "Mike",
+    "lastName": "Worker",
+    "credentials": [
+      {
+        "type": "password",
+        "value": "worker123",
+        "temporary": false
+      }
+    ],
+    "realmRoles": ["worker", "default-roles-mes"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "department": ["Production"],
+      "employee_id": ["EMP004"],
+      "worker_id": ["WRK001"],
+      "skills": ["assembly", "quality_control", "packaging"]
+    }
+  },
+  {
+    "username": "worker2",
+    "email": "worker2@mes.local",
+    "emailVerified": true,
+    "enabled": true,
+    "firstName": "Jane",
+    "lastName": "Worker",
+    "credentials": [
+      {
+        "type": "password",
+        "value": "worker123",
+        "temporary": false
+      }
+    ],
+    "realmRoles": ["worker", "default-roles-mes"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "department": ["Production"],
+      "employee_id": ["EMP005"],
+      "worker_id": ["WRK002"],
+      "skills": ["machining", "welding", "maintenance"]
+    }
+  }
+]

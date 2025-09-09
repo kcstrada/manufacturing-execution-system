@@ -1,0 +1,235 @@
+[
+  {
+    "clientId": "backend",
+    "name": "MES Backend Service",
+    "description": "Manufacturing Execution System Backend API",
+    "rootUrl": "${BACKEND_URL}",
+    "adminUrl": "${BACKEND_URL}",
+    "baseUrl": "${BACKEND_URL}",
+    "surrogateAuthRequired": false,
+    "enabled": true,
+    "alwaysDisplayInConsole": false,
+    "clientAuthenticatorType": "client-secret",
+    "secret": "${BACKEND_CLIENT_SECRET}",
+    "redirectUris": [
+      "${BACKEND_URL}/*"
+    ],
+    "webOrigins": [
+      "${BACKEND_URL}"
+    ],
+    "notBefore": 0,
+    "bearerOnly": true,
+    "consentRequired": false,
+    "standardFlowEnabled": false,
+    "implicitFlowEnabled": false,
+    "directAccessGrantsEnabled": true,
+    "serviceAccountsEnabled": true,
+    "publicClient": false,
+    "frontchannelLogout": false,
+    "protocol": "openid-connect",
+    "attributes": {
+      "saml.assertion.signature": "false",
+      "saml.force.post.binding": "false",
+      "saml.multivalued.roles": "false",
+      "saml.encrypt": "false",
+      "saml.server.signature": "false",
+      "saml.server.signature.keyinfo.ext": "false",
+      "exclude.session.state.from.auth.response": "false",
+      "saml_force_name_id_format": "false",
+      "saml.client.signature": "false",
+      "tls.client.certificate.bound.access.tokens": "false",
+      "saml.authnstatement": "false",
+      "display.on.consent.screen": "false",
+      "saml.onetimeuse.condition": "false"
+    },
+    "authenticationFlowBindingOverrides": {},
+    "fullScopeAllowed": true,
+    "nodeReRegistrationTimeout": -1,
+    "defaultClientScopes": [
+      "web-origins",
+      "profile",
+      "roles",
+      "email"
+    ],
+    "optionalClientScopes": [
+      "address",
+      "phone",
+      "offline_access",
+      "microprofile-jwt"
+    ]
+  },
+  {
+    "clientId": "admin-portal",
+    "name": "MES Admin Portal",
+    "description": "Manufacturing Execution System Admin/Supervisor Interface",
+    "rootUrl": "${ADMIN_PORTAL_URL}",
+    "adminUrl": "${ADMIN_PORTAL_URL}",
+    "baseUrl": "${ADMIN_PORTAL_URL}",
+    "surrogateAuthRequired": false,
+    "enabled": true,
+    "alwaysDisplayInConsole": false,
+    "clientAuthenticatorType": "client-secret",
+    "redirectUris": [
+      "${ADMIN_PORTAL_URL}/*"
+    ],
+    "webOrigins": [
+      "${ADMIN_PORTAL_URL}"
+    ],
+    "notBefore": 0,
+    "bearerOnly": false,
+    "consentRequired": false,
+    "standardFlowEnabled": true,
+    "implicitFlowEnabled": false,
+    "directAccessGrantsEnabled": true,
+    "serviceAccountsEnabled": false,
+    "publicClient": true,
+    "frontchannelLogout": true,
+    "protocol": "openid-connect",
+    "attributes": {
+      "pkce.code.challenge.method": "S256",
+      "post.logout.redirect.uris": "${ADMIN_PORTAL_URL}",
+      "oauth2.device.authorization.grant.enabled": "false",
+      "backchannel.logout.session.required": "true",
+      "backchannel.logout.revoke.offline.tokens": "false"
+    },
+    "authenticationFlowBindingOverrides": {},
+    "fullScopeAllowed": false,
+    "nodeReRegistrationTimeout": -1,
+    "protocolMappers": [
+      {
+        "name": "tenant-id",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-usermodel-attribute-mapper",
+        "consentRequired": false,
+        "config": {
+          "userinfo.token.claim": "true",
+          "user.attribute": "tenant_id",
+          "id.token.claim": "true",
+          "access.token.claim": "true",
+          "claim.name": "tenant_id",
+          "jsonType.label": "String"
+        }
+      },
+      {
+        "name": "roles",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-usermodel-realm-role-mapper",
+        "consentRequired": false,
+        "config": {
+          "id.token.claim": "true",
+          "access.token.claim": "true",
+          "claim.name": "roles",
+          "jsonType.label": "String",
+          "multivalued": "true",
+          "userinfo.token.claim": "true"
+        }
+      }
+    ],
+    "defaultClientScopes": [
+      "web-origins",
+      "profile",
+      "roles",
+      "email"
+    ],
+    "optionalClientScopes": [
+      "address",
+      "phone",
+      "offline_access",
+      "microprofile-jwt"
+    ]
+  },
+  {
+    "clientId": "user-portal",
+    "name": "MES User Portal",
+    "description": "Manufacturing Execution System Worker/Sales Interface",
+    "rootUrl": "${USER_PORTAL_URL}",
+    "adminUrl": "${USER_PORTAL_URL}",
+    "baseUrl": "${USER_PORTAL_URL}",
+    "surrogateAuthRequired": false,
+    "enabled": true,
+    "alwaysDisplayInConsole": false,
+    "clientAuthenticatorType": "client-secret",
+    "redirectUris": [
+      "${USER_PORTAL_URL}/*"
+    ],
+    "webOrigins": [
+      "${USER_PORTAL_URL}"
+    ],
+    "notBefore": 0,
+    "bearerOnly": false,
+    "consentRequired": false,
+    "standardFlowEnabled": true,
+    "implicitFlowEnabled": false,
+    "directAccessGrantsEnabled": true,
+    "serviceAccountsEnabled": false,
+    "publicClient": true,
+    "frontchannelLogout": true,
+    "protocol": "openid-connect",
+    "attributes": {
+      "pkce.code.challenge.method": "S256",
+      "post.logout.redirect.uris": "${USER_PORTAL_URL}",
+      "oauth2.device.authorization.grant.enabled": "false",
+      "backchannel.logout.session.required": "true",
+      "backchannel.logout.revoke.offline.tokens": "false"
+    },
+    "authenticationFlowBindingOverrides": {},
+    "fullScopeAllowed": false,
+    "nodeReRegistrationTimeout": -1,
+    "protocolMappers": [
+      {
+        "name": "tenant-id",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-usermodel-attribute-mapper",
+        "consentRequired": false,
+        "config": {
+          "userinfo.token.claim": "true",
+          "user.attribute": "tenant_id",
+          "id.token.claim": "true",
+          "access.token.claim": "true",
+          "claim.name": "tenant_id",
+          "jsonType.label": "String"
+        }
+      },
+      {
+        "name": "roles",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-usermodel-realm-role-mapper",
+        "consentRequired": false,
+        "config": {
+          "id.token.claim": "true",
+          "access.token.claim": "true",
+          "claim.name": "roles",
+          "jsonType.label": "String",
+          "multivalued": "true",
+          "userinfo.token.claim": "true"
+        }
+      },
+      {
+        "name": "worker-id",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-usermodel-attribute-mapper",
+        "consentRequired": false,
+        "config": {
+          "userinfo.token.claim": "true",
+          "user.attribute": "worker_id",
+          "id.token.claim": "true",
+          "access.token.claim": "true",
+          "claim.name": "worker_id",
+          "jsonType.label": "String"
+        }
+      }
+    ],
+    "defaultClientScopes": [
+      "web-origins",
+      "profile",
+      "roles",
+      "email"
+    ],
+    "optionalClientScopes": [
+      "address",
+      "phone",
+      "offline_access",
+      "microprofile-jwt"
+    ]
+  }
+]

@@ -1,0 +1,45 @@
+{
+  "name": "manufacturing-execution-system",
+  "version": "1.0.0",
+  "description": "Comprehensive production management platform for manufacturing workflows",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend/admin-portal",
+    "frontend/user-portal",
+    "frontend/packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run backend:dev\" \"npm run admin:dev\" \"npm run user:dev\"",
+    "backend:dev": "npm run start:dev --workspace=backend",
+    "admin:dev": "npm run dev --workspace=frontend/admin-portal",
+    "user:dev": "npm run dev --workspace=frontend/user-portal",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^9.1.7",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/manufacturing-execution-system.git"
+  },
+  "keywords": [
+    "manufacturing",
+    "mes",
+    "production",
+    "inventory",
+    "workflow"
+  ],
+  "author": "Your Company",
+  "license": "PROPRIETARY"
+}

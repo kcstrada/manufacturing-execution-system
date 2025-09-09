@@ -1,0 +1,54 @@
+ Clarifying Questions
+
+  1. Target Users & Roles:
+    - Who are the primary users? VIP/executives, factory workers, sales team, admin staff
+    - What specific permissions should each role have? 
+    admin - CRUD 
+    sales - READ, UPDATE
+    worker - READ, UPDATE
+    executives - CRUD
+  2. Core Manufacturing Flow:
+    - Can you describe the typical workflow from when a sales order is placed to product delivery?
+    Sales order is placed -> Factory worker is assigned to the task -> Task is completed -> Product is delivered
+    - How are tasks assigned to workers - automatically or manually by supervisors?
+    manually by supervisors
+    - What happens if a task fails or materials are insufficient?
+    if task fails, file a report then mark the order 
+    if materials are insufficient, file a report then mark the order as insufficient materials
+  3. Task Management Details:
+    - What information should each task contain? 
+    time estimates, skill requirements, equipment needed, material needed, output
+    - Can tasks be reassigned or split between workers?
+    yes
+    - How should task dependencies work (sequential, parallel)?
+    sequential
+  4. Inventory Management:
+    - What triggers for reordering raw materials do you need? (minimum stock levels, lead time considerations?)
+    for now minimum stock levels
+    - Should the system track material expiration dates or quality metrics?
+    quality metrics
+    - How should waste/scrap be tracked?
+    waste/scrap is tracked in the inventory
+    each task can have waste/scrap
+  5. Admin Portal Features:
+    - Besides end-product and worker management, what other administrative functions are needed? (shift scheduling, equipment maintenance, quality control?)
+    shift scheduling, equipment maintenance, quality control
+    - Should there be reporting/analytics capabilities?
+    yes
+  6. Worker Portal Features:
+    - What specific features do workers need? (clock in/out, task completion, material requests?)
+    clock in/out, task completion, material requests
+    - Should workers be able to report issues or delays?
+    yes
+    - Do sales team members need different features than factory workers?
+    sales team will have facility to file orders and track the order status
+  7. Integration Requirements:
+    - Does this need to integrate with existing systems (ERP, accounting, CRM)?
+    no
+    - Are there any specific data formats or standards to follow?
+    no
+  8. Success Metrics:
+    - How will you measure if this system is successful? (reduced production time, inventory accuracy, worker productivity?)
+    reduced production time, inventory accuracy, worker productivity
+    - What are the most critical problems this system must solve?
+    reduced production time, inventory accuracy, worker productivity

@@ -1,0 +1,628 @@
+{
+  "schema_version": "1.1",
+  "type_definitions": [
+    {
+      "type": "tenant",
+      "relations": {
+        "member": {
+          "this": {}
+        },
+        "admin": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "member": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          },
+          "admin": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "organization",
+      "relations": {
+        "parent_tenant": {
+          "this": {}
+        },
+        "owner": {
+          "this": {}
+        },
+        "executive": {
+          "this": {}
+        },
+        "sales": {
+          "this": {}
+        },
+        "worker": {
+          "this": {}
+        },
+        "can_view": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "owner"
+                }
+              },
+              {
+                "computedUserset": {
+                  "relation": "executive"
+                }
+              },
+              {
+                "computedUserset": {
+                  "relation": "sales"
+                }
+              },
+              {
+                "computedUserset": {
+                  "relation": "worker"
+                }
+              }
+            ]
+          }
+        },
+        "can_edit": {
+          "union": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "owner"
+                }
+              },
+              {
+                "computedUserset": {
+                  "relation": "executive"
+                }
+              }
+            ]
+          }
+        },
+        "can_delete": {
+          "computedUserset": {
+            "relation": "owner"
+          }
+        }
+      },
+      "metadata": {
+        "relations": {
+          "parent_tenant": {
+            "directly_related_user_types": [
+              {
+                "type": "tenant"
+              }
+            ]
+          },
+          "owner": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          },
+          "executive": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "team",
+                "relation": "member"
+              }
+            ]
+          },
+          "sales": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "team",
+                "relation": "member"
+              }
+            ]
+          },
+          "worker": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "team",
+                "relation": "member"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "team",
+      "relations": {
+        "parent_organization": {
+          "this": {}
+        },
+        "member": {
+          "this": {}
+        },
+        "lead": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "parent_organization": {
+            "directly_related_user_types": [
+              {
+                "type": "organization"
+              }
+            ]
+          },
+          "member": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          },
+          "lead": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "order",
+      "relations": {
+        "parent_organization": {
+          "this": {}
+        },
+        "creator": {
+          "this": {}
+        },
+        "assigned_worker": {
+          "this": {}
+        },
+        "can_view": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "creator"
+                }
+              },
+              {
+                "computedUserset": {
+                  "relation": "assigned_worker"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_organization"
+                  },
+                  "computedUserset": {
+                    "relation": "can_view"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "can_edit": {
+          "union": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "creator"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_organization"
+                  },
+                  "computedUserset": {
+                    "relation": "executive"
+                  }
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_organization"
+                  },
+                  "computedUserset": {
+                    "relation": "sales"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "can_delete": {
+          "union": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "creator"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_organization"
+                  },
+                  "computedUserset": {
+                    "relation": "executive"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "can_update_status": {
+          "union": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "assigned_worker"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_organization"
+                  },
+                  "computedUserset": {
+                    "relation": "executive"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "metadata": {
+        "relations": {
+          "parent_organization": {
+            "directly_related_user_types": [
+              {
+                "type": "organization"
+              }
+            ]
+          },
+          "creator": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          },
+          "assigned_worker": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "team",
+                "relation": "member"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "task",
+      "relations": {
+        "parent_order": {
+          "this": {}
+        },
+        "assigned_to": {
+          "this": {}
+        },
+        "can_view": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "assigned_to"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_order"
+                  },
+                  "computedUserset": {
+                    "relation": "can_view"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "can_edit": {
+          "union": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "assigned_to"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_order"
+                  },
+                  "computedUserset": {
+                    "relation": "can_edit"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "can_complete": {
+          "computedUserset": {
+            "relation": "assigned_to"
+          }
+        }
+      },
+      "metadata": {
+        "relations": {
+          "parent_order": {
+            "directly_related_user_types": [
+              {
+                "type": "order"
+              }
+            ]
+          },
+          "assigned_to": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "team",
+                "relation": "member"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "inventory",
+      "relations": {
+        "parent_organization": {
+          "this": {}
+        },
+        "can_view": {
+          "tupleToUserset": {
+            "tupleset": {
+              "relation": "parent_organization"
+            },
+            "computedUserset": {
+              "relation": "can_view"
+            }
+          }
+        },
+        "can_edit": {
+          "tupleToUserset": {
+            "tupleset": {
+              "relation": "parent_organization"
+            },
+            "computedUserset": {
+              "relation": "executive"
+            }
+          }
+        },
+        "can_request": {
+          "tupleToUserset": {
+            "tupleset": {
+              "relation": "parent_organization"
+            },
+            "computedUserset": {
+              "relation": "worker"
+            }
+          }
+        }
+      },
+      "metadata": {
+        "relations": {
+          "parent_organization": {
+            "directly_related_user_types": [
+              {
+                "type": "organization"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "equipment",
+      "relations": {
+        "parent_organization": {
+          "this": {}
+        },
+        "operator": {
+          "this": {}
+        },
+        "can_view": {
+          "tupleToUserset": {
+            "tupleset": {
+              "relation": "parent_organization"
+            },
+            "computedUserset": {
+              "relation": "can_view"
+            }
+          }
+        },
+        "can_operate": {
+          "union": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "operator"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_organization"
+                  },
+                  "computedUserset": {
+                    "relation": "executive"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "can_maintain": {
+          "tupleToUserset": {
+            "tupleset": {
+              "relation": "parent_organization"
+            },
+            "computedUserset": {
+              "relation": "executive"
+            }
+          }
+        }
+      },
+      "metadata": {
+        "relations": {
+          "parent_organization": {
+            "directly_related_user_types": [
+              {
+                "type": "organization"
+              }
+            ]
+          },
+          "operator": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "team",
+                "relation": "member"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "report",
+      "relations": {
+        "parent_organization": {
+          "this": {}
+        },
+        "creator": {
+          "this": {}
+        },
+        "can_view": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "creator"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_organization"
+                  },
+                  "computedUserset": {
+                    "relation": "executive"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "can_edit": {
+          "computedUserset": {
+            "relation": "creator"
+          }
+        },
+        "can_delete": {
+          "union": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "creator"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "parent_organization"
+                  },
+                  "computedUserset": {
+                    "relation": "owner"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "metadata": {
+        "relations": {
+          "parent_organization": {
+            "directly_related_user_types": [
+              {
+                "type": "organization"
+              }
+            ]
+          },
+          "creator": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "user",
+      "relations": {}
+    }
+  ]
+}

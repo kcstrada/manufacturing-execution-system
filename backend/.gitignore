@@ -1,0 +1,49 @@
+# Backend specific ignores
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Testing
+coverage/
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo
+
+# Uploads
+uploads/
+!uploads/.gitkeep
+
+# Database
+*.sqlite
+*.sqlite3
+ormconfig.json
+ormconfig.js
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary
+tmp/
+temp/
+
+# Documentation
+documentation/
+
+# OS
+.DS_Store
+Thumbs.db

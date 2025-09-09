@@ -1,0 +1,44 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Task List Management
+
+Guidelines for managing task lists in markdown files to track progress on completing a PRD
+
+## Task Implementation
+- **Tell me who you are:** If not defined in this session, ask the user which developer they are (provide the names from the task list) and remember this for the entire conversation.
+- **Do tasks specific to the current developer:**
+- **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the user for permission and they say "yes" or "y"
+- **Completion protocol:**  
+  1. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.  
+  2. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.  
+- Stop after each sub‑task and wait for the user's go‑ahead.
+- **Check dependencies:** Before starting any sub-task, verify that prerequisite "Common" tasks or other developers' blocking tasks are completed. If not, alert the user and suggest coordination.
+- **Common tasks:** Can be completed by any developer. Coordinate with the team to avoid duplication - check with other developers before starting a common task and announce when you begin one. Common tasks should be prioritized since they unblock parallel work for everyone.
+- **When blocked:** If you encounter issues that prevent task completion, clearly document the blocker and suggest next steps rather than marking the task complete.
+
+## Task List Maintenance
+
+1. **Update the task list as you work:**
+   - Mark tasks and subtasks as completed (`[x]`) per the protocol above.
+   - Add new tasks as they emerge, not only for the current developer but to the others as well when required. Just pause for user approval.
+
+2. **Maintain the "Relevant Files" section:**
+   - List every file created or modified.
+   - Give each file a one‑line description of its purpose.
+
+## AI Instructions
+
+When working with task lists, the AI must:
+
+1. Regularly update the task list file after finishing any significant work.
+2. Follow the completion protocol:
+   - Mark each finished **sub‑task** `[x]`.
+   - Mark the **parent task** `[x]` once **all** its subtasks are `[x]`.
+3. Add newly discovered tasks but pause for user approval.
+4. Keep "Relevant Files" accurate and up to date.
+5. Before starting work, check which sub‑task is next for your assigned developer role. If common tasks are incomplete and blocking your work, offer to complete them first.
+6. After implementing a sub‑task, update the file and then pause for user approval.
+7. For common tasks: Check with the user before starting to ensure no other developer is already working on it. If assigned common tasks, prioritize them since they unblock other developers' parallel work.
