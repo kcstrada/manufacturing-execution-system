@@ -13,6 +13,7 @@ import { TaskAssignment, AssignmentStatus, AssignmentMethod } from '../../../ent
 import { User } from '../../../entities/user.entity';
 import { CreateTaskDto, UpdateTaskDto, AssignTaskDto } from '../dto/task.dto';
 import { TaskAssignmentService } from './task-assignment.service';
+import { TaskDependencyService } from './task-dependency.service';
 
 @Injectable()
 export class TaskService {
@@ -26,6 +27,7 @@ export class TaskService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly assignmentService: TaskAssignmentService,
+    private readonly dependencyService: TaskDependencyService,
     private readonly eventEmitter: EventEmitter2,
     private readonly clsService: ClsService,
   ) {}
@@ -511,6 +513,9 @@ export class TaskService {
 
     // Check if work order can be progressed
     await this.checkWorkOrderProgress(task.workOrderId);
+
+    // Cascade completion update to dependent tasks
+    await this.dependencyService.cascadeCompletionUpdate(taskId);
 
     return updatedTask;
   }

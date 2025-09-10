@@ -130,8 +130,8 @@
     - [x] 3.7 Create material consumption calculations
     - [x] 3.8 Build inventory forecasting based on orders
     - [x] 3.9 Implement minimum stock level alerts
-    - [ ] 3.10 Create Task service with assignment logic
-    - [ ] 3.11 Implement task dependency management
+    - [x] 3.10 Create Task service with assignment logic
+    - [x] 3.11 Implement task dependency management
     - [ ] 3.12 Build task splitting and reassignment
     - [ ] 3.13 Create Worker service with skill matching
     - [ ] 3.14 Implement shift scheduling system

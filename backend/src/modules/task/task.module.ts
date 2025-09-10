@@ -4,8 +4,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ClsModule } from 'nestjs-cls';
 import { AuthModule } from '../../auth/auth.module';
 import { TaskController } from './task.controller';
+import { TaskDependencyController, WorkOrderDependencyController } from './controllers/task-dependency.controller';
 import { TaskService } from './services/task.service';
 import { TaskAssignmentService } from './services/task-assignment.service';
+import { TaskDependencyService } from './services/task-dependency.service';
 import { Task, TaskTimeLog } from '../../entities/task.entity';
 import { TaskAssignment } from '../../entities/task-assignment.entity';
 import { User } from '../../entities/user.entity';
@@ -26,8 +28,20 @@ import { WorkOrder } from '../../entities/work-order.entity';
     ClsModule,
     AuthModule,
   ],
-  controllers: [TaskController],
-  providers: [TaskService, TaskAssignmentService],
-  exports: [TaskService, TaskAssignmentService],
+  controllers: [
+    TaskController,
+    TaskDependencyController,
+    WorkOrderDependencyController,
+  ],
+  providers: [
+    TaskService,
+    TaskAssignmentService,
+    TaskDependencyService,
+  ],
+  exports: [
+    TaskService,
+    TaskAssignmentService,
+    TaskDependencyService,
+  ],
 })
 export class TaskModule {}

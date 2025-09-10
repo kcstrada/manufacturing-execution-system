@@ -56,6 +56,7 @@ import { PermissionsModule } from '../permissions/permissions.module';
     RolesGuard,
     PermissionsGuard,
     CombinedAuthGuard,
+    KeycloakConnectModule,
   ],
 })
 export class AuthModule {}
