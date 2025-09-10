@@ -17,6 +17,7 @@ import { TenantModule } from './tenants/tenant.module';
 import { SeedModule } from './database/seeds/seed.module';
 import { OrderModule } from './modules/order/order.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { TaskModule } from './modules/task/task.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -78,6 +79,7 @@ import {
     PermissionsModule,
     OrderModule,
     InventoryModule,
+    TaskModule,
     SeedModule,
   ],
   controllers: [AppController],
