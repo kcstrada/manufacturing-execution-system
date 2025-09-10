@@ -136,7 +136,7 @@
     - [x] 3.13 Create Worker service with skill matching
     - [x] 3.14 Implement shift scheduling system
     - [x] 3.15 Build clock in/out functionality
-    - [ ] 3.16 Create Equipment service with maintenance tracking
+    - [x] 3.16 Create Equipment service with maintenance tracking
     - [ ] 3.17 Implement Quality service with metrics
     - [ ] 3.18 Build waste/scrap recording system
     - [ ] 3.19 Create Reports service with aggregations
