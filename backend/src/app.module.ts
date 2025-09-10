@@ -19,6 +19,7 @@ import { OrderModule } from './modules/order/order.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { TaskModule } from './modules/task/task.module';
 import { WorkerModule } from './modules/worker/worker.module';
+import { ShiftModule } from './modules/shift/shift.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -82,6 +83,7 @@ import {
     InventoryModule,
     TaskModule,
     WorkerModule,
+    ShiftModule,
     SeedModule,
   ],
   controllers: [AppController],
