@@ -47,6 +47,9 @@
 - `backend/src/products/` - Product catalog management
 - `backend/src/equipment/` - Equipment maintenance tracking
 - `backend/src/quality/` - Quality control metrics
+- `backend/src/modules/quality/` - Quality service implementation with metrics, inspections, control plans, and NCRs
+- `backend/src/modules/quality/dto/` - Quality DTOs for validation
+- `backend/src/entities/quality-metric.entity.ts` - Quality, inspection, control plan, and NCR entities
 - `backend/src/reports/` - Reporting and analytics
 - `backend/src/websockets/` - Real-time update gateway
 
@@ -137,7 +140,7 @@
     - [x] 3.14 Implement shift scheduling system
     - [x] 3.15 Build clock in/out functionality
     - [x] 3.16 Create Equipment service with maintenance tracking
-    - [ ] 3.17 Implement Quality service with metrics
+    - [x] 3.17 Implement Quality service with metrics
     - [ ] 3.18 Build waste/scrap recording system
     - [ ] 3.19 Create Reports service with aggregations
     - [ ] 3.20 Implement WebSocket gateway for real-time updates

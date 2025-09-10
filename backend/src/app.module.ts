@@ -22,6 +22,7 @@ import { WorkerModule } from './modules/worker/worker.module';
 import { ShiftModule } from './modules/shift/shift.module';
 import { TimeClockModule } from './modules/time-clock/time-clock.module';
 import { EquipmentModule } from './modules/equipment/equipment.module';
+import { QualityModule } from './modules/quality/quality.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -88,6 +89,7 @@ import {
     ShiftModule,
     TimeClockModule,
     EquipmentModule,
+    QualityModule,
     SeedModule,
   ],
   controllers: [AppController],
