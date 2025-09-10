@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { TenantModule } from './tenants/tenant.module';
 import { SeedModule } from './database/seeds/seed.module';
+import { InventoryModule } from './inventory/inventory.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -74,6 +75,7 @@ import {
     TenantModule, // Must be first to apply middleware
     AuthModule,
     PermissionsModule,
+    InventoryModule,
     SeedModule,
   ],
   controllers: [AppController],
