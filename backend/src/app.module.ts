@@ -20,6 +20,7 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { TaskModule } from './modules/task/task.module';
 import { WorkerModule } from './modules/worker/worker.module';
 import { ShiftModule } from './modules/shift/shift.module';
+import { TimeClockModule } from './modules/time-clock/time-clock.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -84,6 +85,7 @@ import {
     TaskModule,
     WorkerModule,
     ShiftModule,
+    TimeClockModule,
     SeedModule,
   ],
   controllers: [AppController],

@@ -134,8 +134,8 @@
     - [x] 3.11 Implement task dependency management
     - [x] 3.12 Build task splitting and reassignment
     - [x] 3.13 Create Worker service with skill matching
-    - [ ] 3.14 Implement shift scheduling system
-    - [ ] 3.15 Build clock in/out functionality
+    - [x] 3.14 Implement shift scheduling system
+    - [x] 3.15 Build clock in/out functionality
     - [ ] 3.16 Create Equipment service with maintenance tracking
     - [ ] 3.17 Implement Quality service with metrics
     - [ ] 3.18 Build waste/scrap recording system

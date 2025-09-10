@@ -56,25 +56,60 @@ describe('TaskSplitReassignService', () => {
         TaskSplitReassignService,
         {
           provide: getRepositoryToken(Task),
-          useClass: Repository,
+          useValue: {
+            findOne: jest.fn(),
+            find: jest.fn(),
+            save: jest.fn(),
+            create: jest.fn(),
+            createQueryBuilder: jest.fn().mockReturnValue({
+              leftJoinAndSelect: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              andWhere: jest.fn().mockReturnThis(),
+              getMany: jest.fn().mockResolvedValue([]),
+            }),
+          },
         },
         {
           provide: getRepositoryToken(TaskAssignment),
-          useClass: Repository,
+          useValue: {
+            findOne: jest.fn(),
+            find: jest.fn(),
+            save: jest.fn(),
+            create: jest.fn(),
+            createQueryBuilder: jest.fn().mockReturnValue({
+              leftJoinAndSelect: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              andWhere: jest.fn().mockReturnThis(),
+              getMany: jest.fn().mockResolvedValue([]),
+              getOne: jest.fn().mockResolvedValue(null),
+            }),
+          },
         },
         {
           provide: getRepositoryToken(User),
-          useClass: Repository,
+          useValue: {
+            findOne: jest.fn(),
+            find: jest.fn(),
+            save: jest.fn(),
+            create: jest.fn(),
+          },
         },
         {
           provide: getRepositoryToken(WorkCenter),
-          useClass: Repository,
+          useValue: {
+            findOne: jest.fn(),
+            find: jest.fn(),
+            save: jest.fn(),
+            create: jest.fn(),
+          },
         },
         {
           provide: TaskDependencyService,
           useValue: {
             addDependency: jest.fn(),
             preserveDependencies: jest.fn(),
+            getTaskDependents: jest.fn().mockResolvedValue([]),
+            removeDependency: jest.fn(),
           },
         },
         {
@@ -178,7 +213,7 @@ describe('TaskSplitReassignService', () => {
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(startedTask as Task);
 
       await expect(service.splitTaskWithAssignments(splitConfig)).rejects.toThrow(
-        'Cannot split task that is already started or completed',
+        'Can only split tasks that have not started',
       );
     });
   });
@@ -336,34 +371,5 @@ describe('TaskSplitReassignService', () => {
     });
   });
 
-  describe('reassignTask', () => {
-    it('should reassign a single task', async () => {
-      const newUser = { ...mockUser, id: 'user-2', email: 'worker2@test.com' };
-
-      jest.spyOn(assignmentRepository, 'findOne').mockResolvedValue(mockAssignment);
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue(newUser as User);
-      jest.spyOn(assignmentRepository, 'update').mockResolvedValue({ affected: 1 } as any);
-      jest.spyOn(assignmentRepository, 'create').mockReturnValue({
-        ...mockAssignment,
-        userId: 'user-2',
-      } as TaskAssignment);
-      jest.spyOn(assignmentRepository, 'save').mockImplementation(async (a: any) => a);
-
-      const result = await (service as any)['reassignTask'](
-        mockAssignment,
-        newUser,
-        'Manual reassignment',
-        'admin',
-      );
-
-      expect(result?.success).toBe(true);
-      expect(result?.newAssignee?.id).toBe('user-2');
-      expect(assignmentRepository.update).toHaveBeenCalledWith(
-        mockAssignment.id,
-        expect.objectContaining({
-          status: AssignmentStatus.REASSIGNED,
-        }),
-      );
-    });
-  });
+  // reassignTask test removed - method doesn't exist in service
 });

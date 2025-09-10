@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Repository, EntityManager } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
 import { OrderToTaskConverterService, TaskGenerationOptions } from './order-to-task-converter.service';
@@ -126,13 +126,13 @@ describe('OrderToTaskConverterService', () => {
             },
           ],
         },
-      ] as ProductionStep[];
+      ] as unknown as ProductionStep[];
 
       const mockProductionOrder = {
         id: 'po-123',
         orderNumber: 'PO-ORD-001-1',
         status: ProductionOrderStatus.PLANNED,
-      } as ProductionOrder;
+      } as unknown as ProductionOrder;
 
       const mockWorkOrder = {
         id: 'wo-123',
@@ -159,10 +159,10 @@ describe('OrderToTaskConverterService', () => {
       mockEntityManager.find.mockResolvedValueOnce(mockRoutingSteps); // Find routing steps
 
       mockEntityManager.create
-        .mockReturnValueOnce(mockProductionOrder)
-        .mockReturnValueOnce(mockWorkOrder)
-        .mockReturnValueOnce(mockWorkOrder)
-        .mockReturnValue(mockTask);
+        .mockReturnValueOnce([mockProductionOrder])
+        .mockReturnValueOnce([mockWorkOrder])
+        .mockReturnValueOnce([mockWorkOrder])
+        .mockReturnValue([mockTask]);
 
       mockEntityManager.save
         .mockResolvedValueOnce(mockProductionOrder)
@@ -199,7 +199,7 @@ describe('OrderToTaskConverterService', () => {
         orderNumber: 'ORD-001',
         status: CustomerOrderStatus.DRAFT,
         orderLines: [],
-      } as CustomerOrder;
+      } as unknown as CustomerOrder;
 
       mockEntityManager.findOne.mockResolvedValueOnce(mockOrder);
 
@@ -273,9 +273,9 @@ describe('OrderToTaskConverterService', () => {
       const mockProductionOrder = {
         id: 'po-123',
         orderNumber: 'PO-ORD-001-1',
-      } as ProductionOrder;
+      } as unknown as ProductionOrder;
 
-      mockEntityManager.create.mockReturnValueOnce(mockProductionOrder);
+      mockEntityManager.create.mockReturnValueOnce([mockProductionOrder]);
       mockEntityManager.save.mockResolvedValueOnce(mockProductionOrder);
 
       const result = await service.convertOrderToTasks(mockOrderId, {});
@@ -328,7 +328,7 @@ describe('OrderToTaskConverterService', () => {
         runTime: 10,
         workCenterId: 'wc-1',
         qualityChecks: [],
-      } as ProductionStep;
+      } as unknown as ProductionStep;
 
       mockEntityManager.findOne
         .mockResolvedValueOnce(mockOrder)
@@ -339,7 +339,7 @@ describe('OrderToTaskConverterService', () => {
       const mockProductionOrder = {
         id: 'po-123',
         orderNumber: 'PO-ORD-001-1',
-      } as ProductionOrder;
+      } as unknown as ProductionOrder;
 
       const mockWorkOrder = {
         id: 'wo-123',
@@ -354,20 +354,20 @@ describe('OrderToTaskConverterService', () => {
         type: TaskType.SETUP,
         name: 'Setup: Operation',
         workOrderId: 'wo-123',
-      } as Task;
+      } as unknown as Task;
 
       const productionTask = {
         id: 'task-prod',
         taskNumber: 'TSK-WO-PO-ORD-001-1-1-2',
         type: TaskType.PRODUCTION,
         workOrderId: 'wo-123',
-      } as Task;
+      } as unknown as Task;
 
       mockEntityManager.create
-        .mockReturnValueOnce(mockProductionOrder)
-        .mockReturnValueOnce(mockWorkOrder)
-        .mockReturnValueOnce(setupTask)
-        .mockReturnValueOnce(productionTask);
+        .mockReturnValueOnce(mockProductionOrder as any)
+        .mockReturnValueOnce(mockWorkOrder as any)
+        .mockReturnValueOnce(setupTask as any)
+        .mockReturnValueOnce(productionTask as any);
 
       mockEntityManager.save
         .mockResolvedValueOnce(mockProductionOrder)
@@ -380,8 +380,8 @@ describe('OrderToTaskConverterService', () => {
       });
 
       expect(result.tasks).toHaveLength(2);
-      expect(result.tasks[0].type).toBe(TaskType.SETUP);
-      expect(result.tasks[0].name).toContain('Setup');
+      expect(result.tasks[0]?.type).toBe(TaskType.SETUP);
+      expect(result.tasks[0]?.name).toContain('Setup');
     });
 
     it('should create quality check tasks when includeQualityChecks is true', async () => {
@@ -424,7 +424,7 @@ describe('OrderToTaskConverterService', () => {
             acceptance: '±0.01mm',
           },
         ],
-      } as ProductionStep;
+      } as unknown as ProductionStep;
 
       mockEntityManager.findOne
         .mockResolvedValueOnce(mockOrder)
@@ -435,7 +435,7 @@ describe('OrderToTaskConverterService', () => {
       const mockProductionOrder = {
         id: 'po-123',
         orderNumber: 'PO-ORD-001-1',
-      } as ProductionOrder;
+      } as unknown as ProductionOrder;
 
       const mockWorkOrder = {
         id: 'wo-123',
@@ -449,7 +449,7 @@ describe('OrderToTaskConverterService', () => {
         taskNumber: 'TSK-WO-PO-ORD-001-1-1-1',
         type: TaskType.PRODUCTION,
         workOrderId: 'wo-123',
-      } as Task;
+      } as unknown as Task;
 
       const qcTask = {
         id: 'task-qc',
@@ -457,13 +457,13 @@ describe('OrderToTaskConverterService', () => {
         type: TaskType.QUALITY_CHECK,
         name: 'QC: Operation',
         workOrderId: 'wo-123',
-      } as Task;
+      } as unknown as Task;
 
       mockEntityManager.create
-        .mockReturnValueOnce(mockProductionOrder)
-        .mockReturnValueOnce(mockWorkOrder)
-        .mockReturnValueOnce(productionTask)
-        .mockReturnValueOnce(qcTask);
+        .mockReturnValueOnce(mockProductionOrder as any)
+        .mockReturnValueOnce(mockWorkOrder as any)
+        .mockReturnValueOnce(productionTask as any)
+        .mockReturnValueOnce(qcTask as any);
 
       mockEntityManager.save
         .mockResolvedValueOnce(mockProductionOrder)
@@ -476,8 +476,8 @@ describe('OrderToTaskConverterService', () => {
       });
 
       expect(result.tasks).toHaveLength(2);
-      expect(result.tasks[1].type).toBe(TaskType.QUALITY_CHECK);
-      expect(result.tasks[1].name).toContain('QC');
+      expect(result.tasks[1]?.type).toBe(TaskType.QUALITY_CHECK);
+      expect(result.tasks[1]?.name).toContain('QC');
     });
 
     it('should link task dependencies correctly', async () => {
@@ -526,7 +526,7 @@ describe('OrderToTaskConverterService', () => {
           workCenterId: 'wc-2',
           qualityChecks: [],
         },
-      ] as ProductionStep[];
+      ] as unknown as ProductionStep[];
 
       mockEntityManager.findOne
         .mockResolvedValueOnce(mockOrder)
@@ -537,7 +537,7 @@ describe('OrderToTaskConverterService', () => {
       const mockProductionOrder = {
         id: 'po-123',
         orderNumber: 'PO-ORD-001-1',
-      } as ProductionOrder;
+      } as unknown as ProductionOrder;
 
       const mockWorkOrder1 = {
         id: 'wo-1',
@@ -560,7 +560,7 @@ describe('OrderToTaskConverterService', () => {
         workOrderId: 'wo-1',
         sequenceNumber: 1,
         dependencies: [],
-      } as Task;
+      } as unknown as Task;
 
       const task2 = {
         id: 'task-2',
@@ -569,14 +569,14 @@ describe('OrderToTaskConverterService', () => {
         workOrderId: 'wo-2',
         sequenceNumber: 1,
         dependencies: [],
-      } as Task;
+      } as unknown as Task;
 
       mockEntityManager.create
-        .mockReturnValueOnce(mockProductionOrder)
-        .mockReturnValueOnce(mockWorkOrder1)
-        .mockReturnValueOnce(task1)
-        .mockReturnValueOnce(mockWorkOrder2)
-        .mockReturnValueOnce(task2);
+        .mockReturnValueOnce(mockProductionOrder as any)
+        .mockReturnValueOnce(mockWorkOrder1 as any)
+        .mockReturnValueOnce(task1 as any)
+        .mockReturnValueOnce(mockWorkOrder2 as any)
+        .mockReturnValueOnce(task2 as any);
 
       mockEntityManager.save
         .mockResolvedValueOnce(mockProductionOrder)
@@ -606,7 +606,7 @@ describe('OrderToTaskConverterService', () => {
           name: 'Product A',
         },
         workOrders: [],
-      } as ProductionOrder;
+      } as unknown as ProductionOrder;
 
       const mockRouting = {
         id: mockRoutingId,
@@ -623,7 +623,7 @@ describe('OrderToTaskConverterService', () => {
         runTime: 10,
         workCenterId: 'wc-1',
         qualityChecks: [],
-      } as ProductionStep;
+      } as unknown as ProductionStep;
 
       mockEntityManager.findOne
         .mockResolvedValueOnce(mockProductionOrder)
@@ -643,11 +643,11 @@ describe('OrderToTaskConverterService', () => {
         taskNumber: 'TSK-WO-PO-001-1-1',
         type: TaskType.PRODUCTION,
         workOrderId: 'wo-123',
-      } as Task;
+      } as unknown as Task;
 
       mockEntityManager.create
-        .mockReturnValueOnce(mockWorkOrder)
-        .mockReturnValueOnce(mockTask);
+        .mockReturnValueOnce(mockWorkOrder as any)
+        .mockReturnValueOnce(mockTask as any);
 
       mockEntityManager.save
         .mockResolvedValueOnce(mockWorkOrder)
@@ -666,7 +666,7 @@ describe('OrderToTaskConverterService', () => {
         orderNumber: 'PO-001',
         productId: mockProductId,
         workOrders: [{ id: 'wo-existing' }], // Already has work orders
-      } as ProductionOrder;
+      } as unknown as ProductionOrder;
 
       mockEntityManager.findOne.mockResolvedValueOnce(mockProductionOrder);
 

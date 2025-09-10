@@ -5,6 +5,7 @@ import { BadRequestException } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { OrderService } from './order.service';
 import { OrderStateMachineService } from './services/order-state-machine.service';
+import { OrderToTaskConverterService } from './services/order-to-task-converter.service';
 import { OrderRepository, OrderLineRepository } from '../../repositories/order.repository';
 import { CustomerOrder, CustomerOrderLine, CustomerOrderStatus } from '../../entities/customer-order.entity';
 import { UpdateOrderStatusDto } from './dto/update-order.dto';
@@ -97,6 +98,15 @@ describe('OrderService - State Machine Integration', () => {
             getAvailableEvents: jest.fn(),
             getTransitionHistory: jest.fn(),
             validateState: jest.fn(),
+          },
+        },
+        {
+          provide: OrderToTaskConverterService,
+          useValue: {
+            convertOrderToTasks: jest.fn(),
+            createProductionOrder: jest.fn(),
+            createWorkOrder: jest.fn(),
+            createTasks: jest.fn(),
           },
         },
       ],
