@@ -18,7 +18,9 @@ logs/
 
 # Testing
 coverage/
+coverage-*/
 .nyc_output/
+*.lcov
 
 # TypeScript
 *.tsbuildinfo

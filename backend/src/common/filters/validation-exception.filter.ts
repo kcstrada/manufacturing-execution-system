@@ -6,6 +6,19 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { ValidationError } from 'class-validator';
+
+interface ValidationErrorResponse {
+  statusCode: number;
+  message: string;
+  error: string;
+  timestamp: string;
+  path: string;
+  method: string;
+  requestId?: string;
+  validationErrors?: Record<string, string[]>;
+  details?: any;
+}
 
 /**
  * Filter for handling validation exceptions
@@ -22,31 +35,40 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     const exceptionResponse = exception.getResponse() as any;
 
     // Build validation error response
-    const errorResponse: any = {
+    const errorResponse: ValidationErrorResponse = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
       requestId: request.headers['x-request-id'] as string,
       error: 'Validation Error',
+      message: 'Validation failed',
     };
 
     // Process validation errors
     if (exceptionResponse.message) {
       if (Array.isArray(exceptionResponse.message)) {
         // Parse validation messages
-        errorResponse.message = 'Validation failed';
-        errorResponse.errors = this.formatValidationErrors(exceptionResponse.message);
+        errorResponse.validationErrors = this.formatValidationErrors(exceptionResponse.message);
+        errorResponse.message = this.generateSummaryMessage(errorResponse.validationErrors);
       } else {
         errorResponse.message = exceptionResponse.message;
       }
-    } else {
-      errorResponse.message = 'Validation failed';
+    }
+
+    // Add details in development mode
+    if (process.env.NODE_ENV === 'development') {
+      errorResponse.details = {
+        body: request.body,
+        query: request.query,
+        params: request.params,
+        headers: this.sanitizeHeaders(request.headers),
+      };
     }
 
     // Log validation error
     this.logger.warn(`Validation failed for ${request.method} ${request.url}`, {
-      errors: errorResponse.errors,
+      errors: errorResponse.validationErrors,
       body: request.body,
       query: request.query,
       params: request.params,
@@ -61,31 +83,115 @@ export class ValidationExceptionFilter implements ExceptionFilter {
   /**
    * Format validation errors into a structured format
    */
-  private formatValidationErrors(messages: string[]): Record<string, string[]> {
-    const errors: Record<string, string[]> = {};
+  private formatValidationErrors(errors: any[]): Record<string, string[]> {
+    const formatted: Record<string, string[]> = {};
 
-    messages.forEach((message) => {
-      // Try to parse field name from validation message
-      // Format: "field.nested should not be empty"
-      const match = message.match(/^([a-zA-Z0-9_.]+)\s+(.+)$/);
-      
-      if (match) {
-        const [, field, error] = match;
-        if (field && !errors[field]) {
-          errors[field] = [];
+    for (const error of errors) {
+      if (typeof error === 'string') {
+        // Simple string error
+        const match = error.match(/^([a-zA-Z0-9_.]+)\s+(.+)$/);
+        
+        if (match) {
+          const [, field, message] = match;
+          if (field) {
+            if (!formatted[field]) {
+              formatted[field] = [];
+            }
+            if (message) {
+              formatted[field].push(message);
+            }
+          }
+        } else {
+          if (!formatted.general) {
+            formatted.general = [];
+          }
+          formatted.general.push(error);
         }
-        if (field && error) {
-          errors[field]?.push(error);
+      } else if (error.constraints) {
+        // Validation error object
+        const property = error.property;
+        const messages = Object.values(error.constraints) as string[];
+        
+        if (!formatted[property]) {
+          formatted[property] = [];
         }
-      } else {
-        // If no field can be parsed, use 'general' as key
-        if (!errors.general) {
-          errors.general = [];
+        formatted[property].push(...messages);
+        
+        // Handle nested validation errors
+        if (error.children && error.children.length > 0) {
+          const nestedErrors = this.formatNestedValidationErrors(error.children, property);
+          Object.assign(formatted, nestedErrors);
         }
-        errors.general.push(message);
       }
-    });
+    }
 
-    return errors;
+    return formatted;
+  }
+
+  /**
+   * Format nested validation errors
+   */
+  private formatNestedValidationErrors(
+    errors: ValidationError[],
+    parentProperty: string,
+  ): Record<string, string[]> {
+    const formatted: Record<string, string[]> = {};
+    
+    for (const error of errors) {
+      const property = `${parentProperty}.${error.property}`;
+      
+      if (error.constraints) {
+        const messages = Object.values(error.constraints) as string[];
+        
+        if (!formatted[property]) {
+          formatted[property] = [];
+        }
+        formatted[property].push(...messages);
+      }
+      
+      // Recursively handle deeper nested errors
+      if (error.children && error.children.length > 0) {
+        const nestedErrors = this.formatNestedValidationErrors(error.children, property);
+        Object.assign(formatted, nestedErrors);
+      }
+    }
+    
+    return formatted;
+  }
+
+  /**
+   * Generate a summary message from validation errors
+   */
+  private generateSummaryMessage(errors: Record<string, string[]>): string {
+    const errorCount = Object.keys(errors).length;
+    const totalErrors = Object.values(errors).reduce((sum, arr) => sum + arr.length, 0);
+    
+    if (errorCount === 1) {
+      const field = Object.keys(errors)[0];
+      if (field) {
+        const messages = errors[field];
+        if (messages && messages.length > 0) {
+          return `Validation failed for ${field}: ${messages[0]}`;
+        }
+      }
+    }
+    
+    return `Validation failed with ${totalErrors} error(s) in ${errorCount} field(s)`;
+  }
+
+  /**
+   * Sanitize headers to remove sensitive information
+   */
+  private sanitizeHeaders(headers: any): any {
+    const sanitized = { ...headers };
+    const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
+    
+    for (const header of sensitiveHeaders) {
+      if (sanitized[header]) {
+        sanitized[header] = '[REDACTED]';
+      }
+    }
+    
+    return sanitized;
   }
 }

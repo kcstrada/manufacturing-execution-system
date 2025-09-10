@@ -118,7 +118,7 @@
 - [ ] 3.0 **Manufacturing Operations Backend Services**
   - **Common**
     - [x] 3.1 Define service interfaces and DTOs
-    - [ ] 3.2 Set up validation pipes with class-validator
+    - [x] 3.2 Set up validation pipes with class-validator
   - **Kent**
     - [ ] 3.3 Implement Order service with CRUD operations
     - [ ] 3.4 Create order workflow state machine (Pending → In Production → QC → Delivered)

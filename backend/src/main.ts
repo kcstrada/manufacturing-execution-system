@@ -6,6 +6,8 @@ import helmet from 'helmet';
 import { WinstonModule } from 'nest-winston';
 import { createWinstonConfig } from './logging/winston.config';
 import { getCorsConfig, getHelmetConfig } from './config/security.config';
+import { getValidationPipeConfig } from './common/validation/validation.config';
+import { ValidationExceptionFilter } from './common/filters/validation-exception.filter';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -60,17 +62,13 @@ async function bootstrap() {
     prefix: 'v',
   });
 
-  // Global validation pipe
+  // Global validation pipe with enhanced configuration
   app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-    }),
+    new ValidationPipe(getValidationPipeConfig(isProduction)),
   );
+  
+  // Global validation exception filter
+  app.useGlobalFilters(new ValidationExceptionFilter());
 
   // Swagger documentation
   const enableSwagger = configService.get<boolean>('SWAGGER_ENABLED', true);
