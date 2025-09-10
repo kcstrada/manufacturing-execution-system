@@ -120,7 +120,7 @@
     - [x] 3.1 Define service interfaces and DTOs
     - [x] 3.2 Set up validation pipes with class-validator
   - **Kent**
-    - [ ] 3.3 Implement Order service with CRUD operations
+    - [x] 3.3 Implement Order service with CRUD operations
     - [ ] 3.4 Create order workflow state machine (Pending → In Production → QC → Delivered)
     - [ ] 3.5 Build order-to-task conversion logic
     - [ ] 3.6 Implement Inventory service with stock tracking
