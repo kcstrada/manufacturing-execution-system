@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ClsModule } from 'nestjs-cls';
+import { AuthModule } from '../../auth/auth.module';
 import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
 import { OrderStateMachineService } from './services/order-state-machine.service';
@@ -38,6 +40,8 @@ import { WorkCenter } from '../../entities/work-center.entity';
       WorkCenter,
     ]),
     EventEmitterModule.forRoot(),
+    ClsModule,
+    AuthModule,
   ],
   controllers: [OrderController],
   providers: [

@@ -39,6 +39,9 @@
 ### Manufacturing Domain Modules
 - `backend/src/orders/` - Order management and workflow
 - `backend/src/inventory/` - Inventory and material tracking
+- `backend/src/modules/inventory/services/inventory-forecasting.service.ts` - Inventory forecasting with demand analysis
+- `backend/src/modules/inventory/services/inventory-forecasting.service.spec.ts` - Forecasting service tests
+- `backend/src/modules/inventory/dto/forecast.dto.ts` - Forecasting DTOs and validation
 - `backend/src/tasks/` - Task management and assignment
 - `backend/src/workers/` - Worker management and shifts
 - `backend/src/products/` - Product catalog management
@@ -125,7 +128,7 @@
     - [x] 3.5 Build order-to-task conversion logic
     - [x] 3.6 Implement Inventory service with stock tracking
     - [x] 3.7 Create material consumption calculations
-    - [ ] 3.8 Build inventory forecasting based on orders
+    - [x] 3.8 Build inventory forecasting based on orders
     - [ ] 3.9 Implement minimum stock level alerts
     - [ ] 3.10 Create Task service with assignment logic
     - [ ] 3.11 Implement task dependency management

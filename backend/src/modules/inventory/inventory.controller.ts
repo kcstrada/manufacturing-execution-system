@@ -44,13 +44,26 @@ import {
   InventoryTransactionQueryDto,
   InventoryValuationQueryDto,
 } from './dto/inventory-query.dto';
+import {
+  ForecastDto,
+  ForecastResultDto,
+  DemandAnalysisDto,
+  ReorderPointDto,
+  StockoutPredictionDto,
+  CalculateReorderPointsDto,
+  PredictStockoutsDto,
+} from './dto/forecast.dto';
+import { InventoryForecastingService } from './services/inventory-forecasting.service';
 
 @ApiTags('inventory')
 @ApiBearerAuth()
 @Controller('inventory')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(
+    private readonly inventoryService: InventoryService,
+    private readonly forecastingService: InventoryForecastingService,
+  ) {}
 
   // CRUD Operations
   @Post()
@@ -457,5 +470,64 @@ export class InventoryController {
     }>
   ): Promise<InventoryTransaction[]> {
     return this.inventoryService.bulkAdjust(adjustments);
+  }
+
+  // Forecasting Endpoints
+  @Post('forecast/generate')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
+  @ApiOperation({ summary: 'Generate inventory forecast based on orders' })
+  @ApiResponse({ status: 200, description: 'Forecast generated successfully', type: ForecastResultDto })
+  async generateForecast(@Body() forecastDto: ForecastDto): Promise<ForecastResultDto> {
+    return this.forecastingService.generateForecast(forecastDto);
+  }
+
+  @Get('forecast/demand-analysis/:productId')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
+  @ApiOperation({ summary: 'Analyze demand patterns for a product' })
+  @ApiParam({ name: 'productId', description: 'Product ID' })
+  @ApiQuery({ name: 'days', required: false, description: 'Number of days to analyze', default: 90 })
+  @ApiResponse({ status: 200, description: 'Demand analysis completed', type: DemandAnalysisDto })
+  async analyzeDemandPatterns(
+    @Param('productId') productId: string,
+    @Query('days') days?: number,
+  ): Promise<DemandAnalysisDto> {
+    return this.forecastingService.analyzeDemandPatterns(productId, days || 90);
+  }
+
+  @Post('forecast/reorder-points')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk')
+  @ApiOperation({ summary: 'Calculate optimal reorder points for products' })
+  @ApiResponse({ status: 200, description: 'Reorder points calculated', type: [ReorderPointDto] })
+  async calculateReorderPoints(
+    @Body() dto: CalculateReorderPointsDto,
+  ): Promise<ReorderPointDto[]> {
+    return this.forecastingService.calculateOptimalReorderPoints(
+      dto.productIds,
+      dto.leadTimeDays,
+      dto.serviceLevel,
+    );
+  }
+
+  @Post('forecast/stockout-predictions')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
+  @ApiOperation({ summary: 'Predict potential stockouts' })
+  @ApiResponse({ status: 200, description: 'Stockout predictions generated', type: [StockoutPredictionDto] })
+  async predictStockouts(
+    @Body() dto: PredictStockoutsDto,
+  ): Promise<StockoutPredictionDto[]> {
+    return this.forecastingService.predictStockouts(dto.warehouseCode, dto.daysAhead);
+  }
+
+  @Get('forecast/stockouts')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
+  @ApiOperation({ summary: 'Get current stockout predictions' })
+  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code' })
+  @ApiQuery({ name: 'daysAhead', required: false, description: 'Days ahead to predict', default: 14 })
+  @ApiResponse({ status: 200, description: 'Stockout predictions', type: [StockoutPredictionDto] })
+  async getStockoutPredictions(
+    @Query('warehouseCode') warehouseCode?: string,
+    @Query('daysAhead') daysAhead?: number,
+  ): Promise<StockoutPredictionDto[]> {
+    return this.forecastingService.predictStockouts(warehouseCode, daysAhead || 14);
   }
 }
