@@ -1,128 +1,164 @@
-import { ITenantAwareService } from '../../../common/interfaces/base-service.interface';
 import { Inventory } from '../../../entities/inventory.entity';
 import { InventoryTransaction } from '../../../entities/inventory-transaction.entity';
 import {
+  CreateInventoryDto,
+  CreateInventoryTransactionDto,
   AdjustInventoryDto,
   TransferInventoryDto,
 } from '../dto/create-inventory.dto';
+import {
+  UpdateInventoryDto,
+  UpdateInventoryQuantitiesDto,
+  UpdateInventoryStatusDto,
+  ReserveInventoryDto,
+  ReleaseInventoryDto,
+} from '../dto/update-inventory.dto';
+import {
+  InventoryQueryDto,
+  InventoryTransactionQueryDto,
+  InventoryValuationQueryDto,
+} from '../dto/inventory-query.dto';
 
 /**
  * Inventory service interface
  */
-export interface IInventoryService extends ITenantAwareService<Inventory> {
-  /**
-   * Get current stock level for a product
-   */
-  getStockLevel(productId: string, warehouseId?: string): Promise<number>;
+export interface IInventoryService {
+  // CRUD Operations
+  create(createInventoryDto: CreateInventoryDto): Promise<Inventory>;
+  findAll(query: InventoryQueryDto): Promise<{ data: Inventory[]; total: number }>;
+  findOne(id: string): Promise<Inventory>;
+  update(id: string, updateInventoryDto: UpdateInventoryDto): Promise<Inventory>;
+  remove(id: string): Promise<void>;
 
-  /**
-   * Get available stock (not reserved)
-   */
-  getAvailableStock(productId: string, warehouseId?: string): Promise<number>;
+  // Stock Tracking Methods
+  findByProduct(productId: string): Promise<Inventory[]>;
+  findByWarehouse(warehouseCode: string): Promise<Inventory[]>;
+  findByLocation(warehouseCode: string, locationCode: string): Promise<Inventory[]>;
+  findByLotNumber(lotNumber: string): Promise<Inventory[]>;
+  findByStatus(status: string): Promise<Inventory[]>;
 
-  /**
-   * Reserve inventory for an order
-   */
-  reserveStock(
+  // Quantity Management
+  getAvailableQuantity(productId: string, warehouseCode?: string): Promise<number>;
+  getTotalQuantity(productId: string, warehouseCode?: string): Promise<number>;
+  updateQuantities(id: string, quantities: UpdateInventoryQuantitiesDto): Promise<Inventory>;
+  
+  // Reservation Management
+  reserveInventory(
     productId: string,
-    quantity: number,
-    orderId: string,
-    warehouseId?: string,
-  ): Promise<InventoryTransaction>;
-
-  /**
-   * Release reserved inventory
-   */
-  releaseReservation(reservationId: string): Promise<void>;
-
-  /**
-   * Consume inventory for production
-   */
-  consumeStock(
+    warehouseCode: string,
+    locationCode: string,
+    reserveDto: ReserveInventoryDto
+  ): Promise<Inventory>;
+  
+  releaseInventory(
     productId: string,
-    quantity: number,
-    workOrderId: string,
-    warehouseId?: string,
-  ): Promise<InventoryTransaction>;
+    warehouseCode: string,
+    locationCode: string,
+    releaseDto: ReleaseInventoryDto
+  ): Promise<Inventory>;
 
-  /**
-   * Receive inventory from purchase order
-   */
-  receiveStock(
-    productId: string,
-    quantity: number,
-    purchaseOrderId: string,
-    warehouseId: string,
-    lotNumber?: string,
-  ): Promise<InventoryTransaction>;
-
-  /**
-   * Adjust inventory (for corrections, damage, etc.)
-   */
+  // Stock Adjustments
   adjustInventory(
     productId: string,
-    adjustment: AdjustInventoryDto,
-    warehouseId?: string,
+    warehouseCode: string,
+    locationCode: string,
+    adjustDto: AdjustInventoryDto
   ): Promise<InventoryTransaction>;
 
-  /**
-   * Transfer inventory between warehouses
-   */
-  transferInventory(
-    transfer: TransferInventoryDto,
-  ): Promise<InventoryTransaction>;
+  // Stock Transfers
+  transferInventory(transferDto: TransferInventoryDto): Promise<{
+    sourceTransaction: InventoryTransaction;
+    destinationTransaction: InventoryTransaction;
+  }>;
 
-  /**
-   * Get inventory by lot number
-   */
-  findByLotNumber(lotNumber: string): Promise<Inventory[]>;
+  // Status Management
+  updateStatus(id: string, statusDto: UpdateInventoryStatusDto): Promise<Inventory>;
 
-  /**
-   * Get expiring inventory
-   */
-  getExpiringInventory(daysAhead: number): Promise<Inventory[]>;
+  // Expiration Management
+  findExpiredItems(): Promise<Inventory[]>;
+  findExpiringItems(daysAhead: number): Promise<Inventory[]>;
 
-  /**
-   * Get inventory valuation
-   */
-  getValuation(warehouseId?: string): Promise<{
+  // Stock Analysis
+  findLowStockItems(threshold: number): Promise<Inventory[]>;
+  getInventoryValuation(query?: InventoryValuationQueryDto): Promise<{
+    productId?: string;
+    warehouseCode?: string;
+    locationCode?: string;
     totalValue: number;
-    itemCount: number;
-    items: Array<{
-      productId: string;
-      quantity: number;
-      value: number;
-    }>;
-  }>;
+    totalQuantity: number;
+  }[]>;
 
-  /**
-   * Perform cycle count
-   */
-  cycleCount(
-    productId: string,
-    countedQuantity: number,
-    warehouseId: string,
-  ): Promise<{
-    variance: number;
-    adjusted: boolean;
-    transaction?: InventoryTransaction;
+  // Transaction Management
+  createTransaction(transactionDto: CreateInventoryTransactionDto): Promise<InventoryTransaction>;
+  findTransactions(query: InventoryTransactionQueryDto): Promise<{
+    data: InventoryTransaction[];
+    total: number;
   }>;
-
-  /**
-   * Get inventory transactions history
-   */
   getTransactionHistory(
-    productId?: string,
-    startDate?: Date,
-    endDate?: Date,
+    productId: string,
+    warehouseCode?: string,
+    days?: number
   ): Promise<InventoryTransaction[]>;
 
-  /**
-   * Check if sufficient stock is available
-   */
+  // Cycle Counting
+  performCycleCount(
+    productId: string,
+    warehouseCode: string,
+    locationCode: string,
+    actualQuantity: number,
+    notes?: string
+  ): Promise<{
+    inventory: Inventory;
+    transaction: InventoryTransaction;
+  }>;
+
+  // Stock Receipt
+  receiveStock(
+    productId: string,
+    warehouseCode: string,
+    locationCode: string,
+    quantity: number,
+    referenceType?: string,
+    referenceId?: string,
+    lotNumber?: string,
+    unitCost?: number
+  ): Promise<{
+    inventory: Inventory;
+    transaction: InventoryTransaction;
+  }>;
+
+  // Stock Issue
+  issueStock(
+    productId: string,
+    warehouseCode: string,
+    locationCode: string,
+    quantity: number,
+    referenceType?: string,
+    referenceId?: string
+  ): Promise<{
+    inventory: Inventory;
+    transaction: InventoryTransaction;
+  }>;
+
+  // Bulk Operations
+  bulkUpdateStatus(
+    inventoryIds: string[],
+    statusDto: UpdateInventoryStatusDto
+  ): Promise<Inventory[]>;
+  
+  bulkAdjust(
+    adjustments: Array<{
+      productId: string;
+      warehouseCode: string;
+      locationCode: string;
+      adjustment: AdjustInventoryDto;
+    }>
+  ): Promise<InventoryTransaction[]>;
+
+  // Stock Availability Check
   checkStockAvailability(
     items: Array<{ productId: string; quantity: number }>,
-    warehouseId?: string,
+    warehouseCode?: string
   ): Promise<{
     available: boolean;
     shortages: Array<{
@@ -131,26 +167,5 @@ export interface IInventoryService extends ITenantAwareService<Inventory> {
       available: number;
       shortage: number;
     }>;
-  }>;
-
-  /**
-   * Get reorder suggestions
-   */
-  getReorderSuggestions(): Promise<
-    Array<{
-      productId: string;
-      currentStock: number;
-      reorderPoint: number;
-      suggestedQuantity: number;
-    }>
-  >;
-
-  /**
-   * Calculate ABC classification
-   */
-  calculateABCClassification(): Promise<{
-    A: string[]; // Product IDs
-    B: string[];
-    C: string[];
   }>;
 }

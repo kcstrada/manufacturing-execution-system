@@ -17,14 +17,13 @@ export class CreateInventoryDto {
   @IsUUID()
   productId!: string;
 
-  @ApiProperty({ description: 'Warehouse ID', format: 'uuid' })
-  @IsUUID()
-  warehouseId!: string;
-
-  @ApiPropertyOptional({ description: 'Location within warehouse' })
+  @ApiProperty({ description: 'Warehouse code' })
   @IsString()
-  @IsOptional()
-  location?: string;
+  warehouseCode!: string;
+
+  @ApiProperty({ description: 'Location code within warehouse' })
+  @IsString()
+  locationCode!: string;
 
   @ApiPropertyOptional({ description: 'Lot number' })
   @IsString()
@@ -41,6 +40,24 @@ export class CreateInventoryDto {
   @Min(0)
   quantityOnHand!: number;
 
+  @ApiPropertyOptional({ description: 'Quantity available', minimum: 0 })
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0)
+  @IsOptional()
+  quantityAvailable?: number;
+
+  @ApiPropertyOptional({ description: 'Quantity reserved', minimum: 0, default: 0 })
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0)
+  @IsOptional()
+  quantityReserved?: number;
+
+  @ApiPropertyOptional({ description: 'Quantity in transit', minimum: 0, default: 0 })
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0)
+  @IsOptional()
+  quantityInTransit?: number;
+
   @ApiPropertyOptional({
     description: 'Inventory status',
     enum: InventoryStatus,
@@ -51,50 +68,30 @@ export class CreateInventoryDto {
   status?: InventoryStatus = InventoryStatus.AVAILABLE;
 
   @ApiPropertyOptional({ description: 'Unit cost', minimum: 0 })
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsNumber({ maxDecimalPlaces: 4 })
   @Min(0)
   @IsOptional()
-  unitCost?: number = 0;
+  unitCost?: number;
 
-  @ApiPropertyOptional({ description: 'Batch number' })
-  @IsString()
+  @ApiPropertyOptional({ description: 'Received date' })
+  @IsDateString()
   @IsOptional()
-  batchNumber?: string;
+  receivedDate?: string;
 
   @ApiPropertyOptional({ description: 'Expiration date' })
   @IsDateString()
   @IsOptional()
-  expirationDate?: Date;
+  expirationDate?: string;
 
   @ApiPropertyOptional({ description: 'Manufacture date' })
   @IsDateString()
   @IsOptional()
-  manufactureDate?: Date;
-
-  @ApiPropertyOptional({ description: 'Supplier ID', format: 'uuid' })
-  @IsUUID()
-  @IsOptional()
-  supplierId?: string;
-
-  @ApiPropertyOptional({ description: 'Purchase order number' })
-  @IsString()
-  @IsOptional()
-  purchaseOrderNumber?: string;
+  manufactureDate?: string;
 
   @ApiPropertyOptional({ description: 'Notes' })
   @IsString()
   @IsOptional()
   notes?: string;
-
-  @ApiPropertyOptional({ description: 'Quality check status' })
-  @IsString()
-  @IsOptional()
-  qualityCheckStatus?: string;
-
-  @ApiPropertyOptional({ description: 'Quality check date' })
-  @IsDateString()
-  @IsOptional()
-  qualityCheckDate?: Date;
 
   @ApiPropertyOptional({ description: 'Additional attributes' })
   @IsObject()
@@ -107,9 +104,9 @@ export class CreateInventoryTransactionDto {
   @IsUUID()
   productId!: string;
 
-  @ApiProperty({ description: 'Warehouse ID', format: 'uuid' })
-  @IsUUID()
-  warehouseId!: string;
+  @ApiProperty({ description: 'Warehouse code' })
+  @IsString()
+  warehouseCode!: string;
 
   @ApiProperty({
     description: 'Transaction type',
@@ -132,6 +129,11 @@ export class CreateInventoryTransactionDto {
   @IsUUID()
   @IsOptional()
   referenceId?: string;
+
+  @ApiPropertyOptional({ description: 'Reference number' })
+  @IsString()
+  @IsOptional()
+  referenceNumber?: string;
 
   @ApiPropertyOptional({ description: 'From location' })
   @IsString()
@@ -169,6 +171,11 @@ export class AdjustInventoryDto {
   @IsString()
   reason!: string;
 
+  @ApiPropertyOptional({ description: 'Lot number' })
+  @IsString()
+  @IsOptional()
+  lotNumber?: string;
+
   @ApiPropertyOptional({ description: 'Notes' })
   @IsString()
   @IsOptional()
@@ -176,13 +183,13 @@ export class AdjustInventoryDto {
 }
 
 export class TransferInventoryDto {
-  @ApiProperty({ description: 'From warehouse ID', format: 'uuid' })
-  @IsUUID()
-  fromWarehouseId!: string;
+  @ApiProperty({ description: 'From warehouse code' })
+  @IsString()
+  fromWarehouseCode!: string;
 
-  @ApiProperty({ description: 'To warehouse ID', format: 'uuid' })
-  @IsUUID()
-  toWarehouseId!: string;
+  @ApiProperty({ description: 'To warehouse code' })
+  @IsString()
+  toWarehouseCode!: string;
 
   @ApiProperty({ description: 'Product ID', format: 'uuid' })
   @IsUUID()

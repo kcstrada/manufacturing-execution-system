@@ -123,7 +123,7 @@
     - [x] 3.3 Implement Order service with CRUD operations
     - [x] 3.4 Create order workflow state machine (Pending → In Production → QC → Delivered)
     - [x] 3.5 Build order-to-task conversion logic
-    - [ ] 3.6 Implement Inventory service with stock tracking
+    - [x] 3.6 Implement Inventory service with stock tracking
     - [ ] 3.7 Create material consumption calculations
     - [ ] 3.8 Build inventory forecasting based on orders
     - [ ] 3.9 Implement minimum stock level alerts
