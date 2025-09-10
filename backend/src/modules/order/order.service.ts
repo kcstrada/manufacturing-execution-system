@@ -14,6 +14,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto, UpdateOrderStatusDto } from './dto/update-order.dto';
 import { OrderQueryDto } from './dto/order-query.dto';
 import { ClsService } from 'nestjs-cls';
+import { OrderStateMachineService } from './services/order-state-machine.service';
+import { WorkflowEvent } from './interfaces/state-machine.interface';
 
 @Injectable()
 export class OrderService implements IOrderService {
@@ -28,6 +30,7 @@ export class OrderService implements IOrderService {
     private readonly orderLineRepo: Repository<CustomerOrderLine>,
     private readonly dataSource: DataSource,
     private readonly clsService: ClsService,
+    private readonly stateMachine: OrderStateMachineService,
   ) {}
 
   /**
@@ -249,28 +252,84 @@ export class OrderService implements IOrderService {
   }
 
   /**
-   * Update order status
+   * Update order status using state machine
    */
   async updateStatus(id: string, statusDto: UpdateOrderStatusDto): Promise<CustomerOrder> {
     const order = await this.findOne(id);
     
-    // Validate status transition
-    this.validateStatusTransition(order.status, statusDto.status);
+    // Map status to workflow event
+    const event = this.mapStatusToEvent(order.status, statusDto.status);
     
-    order.status = statusDto.status;
+    if (!event) {
+      // Fall back to old validation for backward compatibility
+      this.validateStatusTransition(order.status, statusDto.status);
+      order.status = statusDto.status;
+      
+      // Set shipped date if shipping
+      if (statusDto.status === CustomerOrderStatus.SHIPPED) {
+        order.shippedDate = statusDto.shippedDate || new Date();
+      }
+      
+      const updatedOrder = await this.orderRepo.save(order);
+      
+      this.logger.log(
+        `Order ${order.orderNumber} status changed from ${order.status} to ${statusDto.status}`,
+      );
+      
+      return this.findOne(updatedOrder.id);
+    }
     
-    // Set shipped date if shipping
-    if (statusDto.status === CustomerOrderStatus.SHIPPED) {
-      order.shippedDate = new Date();
+    // Use state machine for transition
+    const result = await this.stateMachine.transition(order, event, {
+      userId: this.clsService.get('userId'),
+      reason: statusDto.reason,
+      metadata: { shippedDate: statusDto.shippedDate },
+    });
+    
+    if (!result.success) {
+      throw new BadRequestException(result.message || 'Status transition failed');
     }
     
     const updatedOrder = await this.orderRepo.save(order);
-    
-    this.logger.log(
-      `Order ${order.orderNumber} status changed from ${order.status} to ${statusDto.status}`,
-    );
-    
     return this.findOne(updatedOrder.id);
+  }
+  
+  /**
+   * Map status transition to workflow event
+   */
+  private mapStatusToEvent(
+    currentStatus: CustomerOrderStatus, 
+    newStatus: CustomerOrderStatus
+  ): WorkflowEvent | null {
+    const transitionMap: Record<string, WorkflowEvent> = {
+      [`${CustomerOrderStatus.DRAFT}_${CustomerOrderStatus.PENDING}`]: WorkflowEvent.CONFIRM,
+      [`${CustomerOrderStatus.PENDING}_${CustomerOrderStatus.CONFIRMED}`]: WorkflowEvent.CONFIRM,
+      [`${CustomerOrderStatus.CONFIRMED}_${CustomerOrderStatus.IN_PRODUCTION}`]: WorkflowEvent.START_PRODUCTION,
+      [`${CustomerOrderStatus.IN_PRODUCTION}_${CustomerOrderStatus.QUALITY_CONTROL}`]: WorkflowEvent.COMPLETE_PRODUCTION,
+      [`${CustomerOrderStatus.QUALITY_CONTROL}_${CustomerOrderStatus.QC_PASSED}`]: WorkflowEvent.PASS_QC,
+      [`${CustomerOrderStatus.QUALITY_CONTROL}_${CustomerOrderStatus.QC_FAILED}`]: WorkflowEvent.FAIL_QC,
+      [`${CustomerOrderStatus.QC_FAILED}_${CustomerOrderStatus.IN_PRODUCTION}`]: WorkflowEvent.START_PRODUCTION,
+      [`${CustomerOrderStatus.QC_PASSED}_${CustomerOrderStatus.SHIPPED}`]: WorkflowEvent.SHIP,
+      [`${CustomerOrderStatus.SHIPPED}_${CustomerOrderStatus.DELIVERED}`]: WorkflowEvent.DELIVER,
+    };
+    
+    // Check for cancel event
+    if (newStatus === CustomerOrderStatus.CANCELLED) {
+      return WorkflowEvent.CANCEL;
+    }
+    
+    // Check for hold event
+    if (newStatus === CustomerOrderStatus.ON_HOLD) {
+      return WorkflowEvent.HOLD;
+    }
+    
+    // Check for release event
+    if (currentStatus === CustomerOrderStatus.ON_HOLD && 
+        (newStatus === CustomerOrderStatus.CONFIRMED || newStatus === CustomerOrderStatus.IN_PRODUCTION)) {
+      return WorkflowEvent.RELEASE;
+    }
+    
+    return transitionMap[`${currentStatus}_${newStatus}`] || null;
   }
 
   /**
@@ -282,16 +341,37 @@ export class OrderService implements IOrderService {
   ): void {
     const validTransitions: Record<CustomerOrderStatus, CustomerOrderStatus[]> = {
       [CustomerOrderStatus.DRAFT]: [
+        CustomerOrderStatus.PENDING,
         CustomerOrderStatus.CONFIRMED,
         CustomerOrderStatus.CANCELLED,
+      ],
+      [CustomerOrderStatus.PENDING]: [
+        CustomerOrderStatus.CONFIRMED,
+        CustomerOrderStatus.CANCELLED,
+        CustomerOrderStatus.ON_HOLD,
       ],
       [CustomerOrderStatus.CONFIRMED]: [
         CustomerOrderStatus.IN_PRODUCTION,
         CustomerOrderStatus.CANCELLED,
+        CustomerOrderStatus.ON_HOLD,
       ],
       [CustomerOrderStatus.IN_PRODUCTION]: [
+        CustomerOrderStatus.QUALITY_CONTROL,
         CustomerOrderStatus.PARTIALLY_SHIPPED,
         CustomerOrderStatus.SHIPPED,
+        CustomerOrderStatus.CANCELLED,
+        CustomerOrderStatus.ON_HOLD,
+      ],
+      [CustomerOrderStatus.QUALITY_CONTROL]: [
+        CustomerOrderStatus.QC_PASSED,
+        CustomerOrderStatus.QC_FAILED,
+      ],
+      [CustomerOrderStatus.QC_PASSED]: [
+        CustomerOrderStatus.SHIPPED,
+        CustomerOrderStatus.PARTIALLY_SHIPPED,
+      ],
+      [CustomerOrderStatus.QC_FAILED]: [
+        CustomerOrderStatus.IN_PRODUCTION,
         CustomerOrderStatus.CANCELLED,
       ],
       [CustomerOrderStatus.PARTIALLY_SHIPPED]: [
@@ -302,6 +382,11 @@ export class OrderService implements IOrderService {
         CustomerOrderStatus.DELIVERED,
       ],
       [CustomerOrderStatus.DELIVERED]: [],
+      [CustomerOrderStatus.ON_HOLD]: [
+        CustomerOrderStatus.CONFIRMED,
+        CustomerOrderStatus.IN_PRODUCTION,
+        CustomerOrderStatus.CANCELLED,
+      ],
       [CustomerOrderStatus.CANCELLED]: [],
     };
 

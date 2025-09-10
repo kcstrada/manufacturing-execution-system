@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { OrderService } from './order.service';
+import { OrderStateMachineService } from './services/order-state-machine.service';
 import { OrderRepository, OrderLineRepository } from '../../repositories/order.repository';
 import { CustomerOrder, CustomerOrderLine, CustomerOrderStatus, OrderPriority } from '../../entities/customer-order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -17,6 +18,7 @@ describe('OrderService', () => {
   let orderRepo: jest.Mocked<Repository<CustomerOrder>>;
   let orderLineRepo: jest.Mocked<Repository<CustomerOrderLine>>;
   let clsService: jest.Mocked<ClsService>;
+  let stateMachine: jest.Mocked<OrderStateMachineService>;
   let queryRunner: jest.Mocked<QueryRunner>;
 
   const mockTenantId = 'tenant-123';
@@ -92,6 +94,17 @@ describe('OrderService', () => {
             get: jest.fn(),
           },
         },
+        {
+          provide: OrderStateMachineService,
+          useValue: {
+            canTransition: jest.fn(),
+            transition: jest.fn(),
+            getAvailableTransitions: jest.fn(),
+            getAvailableEvents: jest.fn(),
+            getTransitionHistory: jest.fn(),
+            validateState: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -101,6 +114,10 @@ describe('OrderService', () => {
     orderRepo = module.get(getRepositoryToken(CustomerOrder)) as jest.Mocked<Repository<CustomerOrder>>;
     orderLineRepo = module.get(getRepositoryToken(CustomerOrderLine)) as jest.Mocked<Repository<CustomerOrderLine>>;
     clsService = module.get(ClsService) as jest.Mocked<ClsService>;
+    stateMachine = module.get(OrderStateMachineService) as jest.Mocked<OrderStateMachineService>;
+    
+    // Use stateMachine to avoid unused variable warning
+    stateMachine;
 
     // Setup default cls service behavior
     clsService.get.mockImplementation((key?: string | symbol) => {

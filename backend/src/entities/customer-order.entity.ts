@@ -15,11 +15,16 @@ import { Product } from './product.entity';
 
 export enum CustomerOrderStatus {
   DRAFT = 'draft',
+  PENDING = 'pending',
   CONFIRMED = 'confirmed',
   IN_PRODUCTION = 'in_production',
+  QUALITY_CONTROL = 'quality_control',
+  QC_PASSED = 'qc_passed',
+  QC_FAILED = 'qc_failed',
   PARTIALLY_SHIPPED = 'partially_shipped',
   SHIPPED = 'shipped',
   DELIVERED = 'delivered',
+  ON_HOLD = 'on_hold',
   CANCELLED = 'cancelled',
 }
 

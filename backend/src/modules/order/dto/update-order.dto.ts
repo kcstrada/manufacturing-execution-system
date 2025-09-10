@@ -47,4 +47,9 @@ export class UpdateOrderStatusDto {
   @IsString()
   @IsOptional()
   reason?: string;
+
+  @ApiPropertyOptional({ description: 'Shipped date (for SHIPPED status)' })
+  @IsDateString()
+  @IsOptional()
+  shippedDate?: Date;
 }
