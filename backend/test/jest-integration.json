@@ -15,7 +15,10 @@
     "!src/**/index.ts",
     "!src/main.ts",
     "!src/**/*.module.ts",
-    "!src/database/migrations/*.ts"
+    "!src/database/migrations/*.ts",
+    "!src/database/seeds/*.ts",
+    "!src/database/data-source.ts",
+    "!src/config/*.ts"
   ],
   "coverageDirectory": "./coverage-e2e",
   "coverageReporters": ["json", "lcov", "text", "text-summary", "html"],
