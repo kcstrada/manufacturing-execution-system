@@ -132,7 +132,7 @@
     - [x] 3.9 Implement minimum stock level alerts
     - [x] 3.10 Create Task service with assignment logic
     - [x] 3.11 Implement task dependency management
-    - [ ] 3.12 Build task splitting and reassignment
+    - [x] 3.12 Build task splitting and reassignment
     - [ ] 3.13 Create Worker service with skill matching
     - [ ] 3.14 Implement shift scheduling system
     - [ ] 3.15 Build clock in/out functionality
