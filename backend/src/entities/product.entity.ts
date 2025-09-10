@@ -22,6 +22,13 @@ export enum ProductType {
   CONSUMABLE = 'consumable',
 }
 
+export enum ProductStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  DISCONTINUED = 'discontinued',
+  DRAFT = 'draft',
+}
+
 @Entity('products')
 @Unique(['tenantId', 'sku'])
 @Index(['tenantId', 'sku'])

@@ -2,7 +2,7 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "../",
   "testEnvironment": "node",
-  "testRegex": "(test/.*\\.(e2e-spec|spec)\\.ts$)",
+  "testRegex": "(src|test)/.*\\.(spec|test|e2e-spec)\\.ts$",
   "transform": {
     "^.+\\.(t|j)s$": ["ts-jest", {
       "isolatedModules": true
@@ -20,16 +20,19 @@
     "!src/database/migrations/*.ts",
     "!src/database/seeds/*.ts",
     "!src/database/data-source.ts",
-    "!src/config/*.ts"
+    "!src/config/*.ts",
+    "!src/**/constants/**",
+    "!src/**/enums/**",
+    "!src/**/types/**"
   ],
-  "coverageDirectory": "./coverage-full",
-  "coverageReporters": ["json", "lcov", "text", "text-summary", "html"],
+  "coverageDirectory": "./coverage/full",
+  "coverageReporters": ["json", "lcov", "text", "text-summary", "html", "json-summary"],
   "coverageThreshold": {
     "global": {
-      "branches": 18,
-      "functions": 35,
-      "lines": 40,
-      "statements": 42
+      "branches": 80,
+      "functions": 80,
+      "lines": 80,
+      "statements": 80
     }
   },
   "setupFilesAfterEnv": ["<rootDir>/test/setup.ts"],

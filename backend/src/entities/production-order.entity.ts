@@ -23,6 +23,13 @@ export enum ProductionOrderStatus {
   CANCELLED = 'cancelled',
 }
 
+export enum ProductionOrderPriority {
+  LOW = 'low',
+  NORMAL = 'normal',
+  HIGH = 'high',
+  URGENT = 'urgent',
+}
+
 @Entity('production_orders')
 @Unique(['tenantId', 'orderNumber'])
 @Index(['tenantId', 'orderNumber'])
