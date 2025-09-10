@@ -54,6 +54,8 @@ import {
   PredictStockoutsDto,
 } from './dto/forecast.dto';
 import { InventoryForecastingService } from './services/inventory-forecasting.service';
+import { StockAlertService } from './services/stock-alert.service';
+import { StockAlert } from '../../entities/stock-alert.entity';
 
 @ApiTags('inventory')
 @ApiBearerAuth()
@@ -63,6 +65,7 @@ export class InventoryController {
   constructor(
     private readonly inventoryService: InventoryService,
     private readonly forecastingService: InventoryForecastingService,
+    private readonly stockAlertService: StockAlertService,
   ) {}
 
   // CRUD Operations
@@ -529,5 +532,95 @@ export class InventoryController {
     @Query('daysAhead') daysAhead?: number,
   ): Promise<StockoutPredictionDto[]> {
     return this.forecastingService.predictStockouts(warehouseCode, daysAhead || 14);
+  }
+
+  // Stock Alert Endpoints
+  @Get('alerts')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
+  @ApiOperation({ summary: 'Get active stock alerts' })
+  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Filter by warehouse code' })
+  @ApiResponse({ status: 200, description: 'Active stock alerts', type: [StockAlert] })
+  async getActiveAlerts(
+    @Query('warehouseCode') warehouseCode?: string,
+  ): Promise<StockAlert[]> {
+    return this.stockAlertService.getActiveAlerts(warehouseCode);
+  }
+
+  @Post('alerts/check')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk')
+  @ApiOperation({ summary: 'Manually check stock levels and generate alerts' })
+  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code to check' })
+  @ApiResponse({ status: 200, description: 'Stock check completed' })
+  async manualStockCheck(
+    @Query('warehouseCode') warehouseCode?: string,
+  ): Promise<{ message: string; alertsGenerated: number }> {
+    const alerts = await this.stockAlertService.performStockCheck(warehouseCode);
+    return {
+      message: 'Stock check completed',
+      alertsGenerated: alerts.length,
+    };
+  }
+
+  @Post('alerts/check/:productId')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk')
+  @ApiOperation({ summary: 'Check stock level for specific product' })
+  @ApiParam({ name: 'productId', description: 'Product ID' })
+  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code' })
+  @ApiResponse({ status: 200, description: 'Product stock check result' })
+  async checkProductStock(
+    @Param('productId') productId: string,
+    @Query('warehouseCode') warehouseCode?: string,
+  ): Promise<{ alert: any | null; message: string }> {
+    const alert = await this.stockAlertService.checkProductStock(productId, warehouseCode);
+    return {
+      alert,
+      message: alert ? 'Stock alert generated' : 'Stock level is acceptable',
+    };
+  }
+
+  @Patch('alerts/:id/acknowledge')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk')
+  @ApiOperation({ summary: 'Acknowledge a stock alert' })
+  @ApiParam({ name: 'id', description: 'Alert ID' })
+  @ApiResponse({ status: 200, description: 'Alert acknowledged', type: StockAlert })
+  async acknowledgeAlert(
+    @Param('id') alertId: string,
+    @Body() body: { acknowledgedBy: string; notes?: string },
+  ): Promise<StockAlert> {
+    return this.stockAlertService.acknowledgeAlert(
+      alertId,
+      body.acknowledgedBy,
+      body.notes,
+    );
+  }
+
+  @Patch('alerts/:id/resolve')
+  @RequireRoles('Admin', 'Manager', 'InventoryClerk')
+  @ApiOperation({ summary: 'Resolve a stock alert' })
+  @ApiParam({ name: 'id', description: 'Alert ID' })
+  @ApiResponse({ status: 200, description: 'Alert resolved', type: StockAlert })
+  async resolveAlert(
+    @Param('id') alertId: string,
+    @Body() body: { resolvedBy: string; resolution: string },
+  ): Promise<StockAlert> {
+    return this.stockAlertService.resolveAlert(
+      alertId,
+      body.resolvedBy,
+      body.resolution,
+    );
+  }
+
+  @Get('alerts/statistics')
+  @RequireRoles('Admin', 'Manager', 'Viewer')
+  @ApiOperation({ summary: 'Get stock alert statistics' })
+  @ApiResponse({ status: 200, description: 'Alert statistics' })
+  async getAlertStatistics(): Promise<{
+    total: number;
+    active: number;
+    acknowledged: number;
+    resolved: number;
+    bySeverity: Record<string, number>;
+  }> {
+    return this.stockAlertService.getAlertStatistics();
   }
 }

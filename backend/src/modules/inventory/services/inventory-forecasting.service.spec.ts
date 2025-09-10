@@ -15,7 +15,6 @@ describe('InventoryForecastingService', () => {
   let orderRepository: Repository<CustomerOrder>;
   let transactionRepository: Repository<InventoryTransaction>;
   let productRepository: Repository<Product>;
-  let clsService: ClsService;
 
   const mockTenantId = 'test-tenant-id';
   const mockProductId = 'test-product-id';
@@ -54,7 +53,6 @@ describe('InventoryForecastingService', () => {
     orderRepository = module.get<Repository<CustomerOrder>>(getRepositoryToken(CustomerOrder));
     transactionRepository = module.get<Repository<InventoryTransaction>>(getRepositoryToken(InventoryTransaction));
     productRepository = module.get<Repository<Product>>(getRepositoryToken(Product));
-    clsService = module.get<ClsService>(ClsService);
   });
 
   afterEach(() => {
@@ -292,11 +290,11 @@ describe('InventoryForecastingService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBeGreaterThan(0);
-      expect(result[0].productId).toBe(mockProductId);
-      expect(result[0].reorderPoint).toBeGreaterThan(0);
-      expect(result[0].safetyStock).toBeGreaterThanOrEqual(0);
-      expect(result[0].economicOrderQuantity).toBeGreaterThan(0);
-      expect(result[0].serviceLevel).toBe(serviceLevel);
+      expect(result[0]?.productId).toBe(mockProductId);
+      expect(result[0]?.reorderPoint).toBeGreaterThan(0);
+      expect(result[0]?.safetyStock).toBeGreaterThanOrEqual(0);
+      expect(result[0]?.economicOrderQuantity).toBeGreaterThan(0);
+      expect(result[0]?.serviceLevel).toBe(serviceLevel);
     });
 
     it('should handle missing products gracefully', async () => {
@@ -355,11 +353,11 @@ describe('InventoryForecastingService', () => {
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       if (result.length > 0) {
-        expect(result[0].productId).toBeDefined();
-        expect(result[0].currentStock).toBeDefined();
-        expect(result[0].risk).toBeDefined();
-        expect(['low', 'medium', 'high', 'critical']).toContain(result[0].risk);
-        expect(result[0].recommendedAction).toBeDefined();
+        expect(result[0]?.productId).toBeDefined();
+        expect(result[0]?.currentStock).toBeDefined();
+        expect(result[0]?.risk).toBeDefined();
+        expect(['low', 'medium', 'high', 'critical']).toContain(result[0]?.risk);
+        expect(result[0]?.recommendedAction).toBeDefined();
       }
     });
 
@@ -402,8 +400,8 @@ describe('InventoryForecastingService', () => {
       const result = await service.predictStockouts('WH001', 14);
 
       expect(result.length).toBeGreaterThan(0);
-      expect(result[0].risk).toBe('critical');
-      expect(result[0].daysUntilStockout).toBeLessThanOrEqual(3);
+      expect(result[0]?.risk).toBe('critical');
+      expect(result[0]?.daysUntilStockout).toBeLessThanOrEqual(3);
     });
 
     it('should sort predictions by risk level', async () => {
@@ -459,8 +457,8 @@ describe('InventoryForecastingService', () => {
       if (result.length > 1) {
         const riskOrder = { critical: 0, high: 1, medium: 2, low: 3 };
         for (let i = 1; i < result.length; i++) {
-          const prevRisk = riskOrder[result[i - 1].risk];
-          const currRisk = riskOrder[result[i].risk];
+          const prevRisk = riskOrder[result[i - 1]?.risk || 'low'];
+          const currRisk = riskOrder[result[i]?.risk || 'low'];
           expect(prevRisk).toBeLessThanOrEqual(currRisk);
         }
       }

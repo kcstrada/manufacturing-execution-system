@@ -129,7 +129,7 @@
     - [x] 3.6 Implement Inventory service with stock tracking
     - [x] 3.7 Create material consumption calculations
     - [x] 3.8 Build inventory forecasting based on orders
-    - [ ] 3.9 Implement minimum stock level alerts
+    - [x] 3.9 Implement minimum stock level alerts
     - [ ] 3.10 Create Task service with assignment logic
     - [ ] 3.11 Implement task dependency management
     - [ ] 3.12 Build task splitting and reassignment
