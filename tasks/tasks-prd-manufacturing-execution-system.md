@@ -133,7 +133,7 @@
     - [x] 3.10 Create Task service with assignment logic
     - [x] 3.11 Implement task dependency management
     - [x] 3.12 Build task splitting and reassignment
-    - [ ] 3.13 Create Worker service with skill matching
+    - [x] 3.13 Create Worker service with skill matching
     - [ ] 3.14 Implement shift scheduling system
     - [ ] 3.15 Build clock in/out functionality
     - [ ] 3.16 Create Equipment service with maintenance tracking

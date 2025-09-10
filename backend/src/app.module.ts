@@ -18,6 +18,7 @@ import { SeedModule } from './database/seeds/seed.module';
 import { OrderModule } from './modules/order/order.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { TaskModule } from './modules/task/task.module';
+import { WorkerModule } from './modules/worker/worker.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -80,6 +81,7 @@ import {
     OrderModule,
     InventoryModule,
     TaskModule,
+    WorkerModule,
     SeedModule,
   ],
   controllers: [AppController],
