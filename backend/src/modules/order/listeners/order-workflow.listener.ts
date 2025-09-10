@@ -3,6 +3,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CustomerOrder, CustomerOrderStatus } from '../../../entities/customer-order.entity';
+import { OrderToTaskConverterService } from '../services/order-to-task-converter.service';
+import { TaskPriority } from '../../../entities/task.entity';
 
 export interface OrderStateChangedEvent {
   orderId: string;
@@ -20,6 +22,7 @@ export class OrderWorkflowListener {
   constructor(
     @InjectRepository(CustomerOrder)
     private readonly orderRepo: Repository<CustomerOrder>,
+    private readonly orderToTaskConverter: OrderToTaskConverterService,
   ) {
     // orderRepo will be used in future implementations
     this.orderRepo;
@@ -65,9 +68,36 @@ export class OrderWorkflowListener {
 
   private async handleOrderConfirmed(event: OrderStateChangedEvent): Promise<void> {
     this.logger.log(`Processing confirmed order ${event.orderNumber}`);
+    
+    // Automatically generate production tasks for confirmed orders
+    try {
+      const result = await this.orderToTaskConverter.convertOrderToTasks(
+        event.orderId,
+        {
+          priority: TaskPriority.NORMAL,
+          assignToWorkCenter: true,
+          autoSchedule: true,
+          includeQualityChecks: true,
+          includeSetupTasks: true,
+        }
+      );
+      
+      this.logger.log(
+        `Generated ${result.productionOrders.length} production orders, ` +
+        `${result.workOrders.length} work orders, and ${result.tasks.length} tasks ` +
+        `for order ${event.orderNumber}`
+      );
+      
+      if (result.warnings.length > 0) {
+        this.logger.warn(`Warnings during task generation: ${result.warnings.join(', ')}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to generate tasks for order ${event.orderNumber}: ${error}`);
+      // Don't throw - we don't want to interrupt the workflow
+    }
+    
     // TODO: Send confirmation email to customer
     // TODO: Reserve inventory
-    // TODO: Schedule production
   }
 
   private async handleProductionStarted(event: OrderStateChangedEvent): Promise<void> {

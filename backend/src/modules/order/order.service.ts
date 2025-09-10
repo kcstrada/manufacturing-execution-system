@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { CustomerOrder, CustomerOrderLine, CustomerOrderStatus } from '../../entities/customer-order.entity';
+import { TaskPriority } from '../../entities/task.entity';
 import { OrderRepository, OrderLineRepository } from '../../repositories/order.repository';
 import { IOrderService } from './interfaces/order-service.interface';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -16,6 +17,8 @@ import { OrderQueryDto } from './dto/order-query.dto';
 import { ClsService } from 'nestjs-cls';
 import { OrderStateMachineService } from './services/order-state-machine.service';
 import { WorkflowEvent } from './interfaces/state-machine.interface';
+import { OrderToTaskConverterService } from './services/order-to-task-converter.service';
+import { GenerateTasksDto, TaskGenerationResultDto } from './dto/generate-tasks.dto';
 
 @Injectable()
 export class OrderService implements IOrderService {
@@ -31,6 +34,7 @@ export class OrderService implements IOrderService {
     private readonly dataSource: DataSource,
     private readonly clsService: ClsService,
     private readonly stateMachine: OrderStateMachineService,
+    private readonly orderToTaskConverter: OrderToTaskConverterService,
   ) {}
 
   /**
@@ -606,22 +610,6 @@ export class OrderService implements IOrderService {
     };
   }
 
-  /**
-   * Generate production orders from customer order
-   */
-  async generateProductionOrders(orderId: string): Promise<void> {
-    const order = await this.findOne(orderId);
-    
-    if (order.status !== CustomerOrderStatus.CONFIRMED) {
-      throw new BadRequestException('Can only generate production orders for confirmed orders');
-    }
-    
-    // TODO: Implement production order generation logic
-    // This would typically create production orders based on order lines
-    
-    order.status = CustomerOrderStatus.IN_PRODUCTION;
-    await this.orderRepo.save(order);
-  }
 
   /**
    * Duplicate an order
@@ -705,6 +693,91 @@ export class OrderService implements IOrderService {
     ].join('\n');
     
     return Buffer.from(csvContent, 'utf-8');
+  }
+
+  /**
+   * Generate production orders, work orders, and tasks from a customer order
+   */
+  async generateTasks(
+    orderId: string,
+    generateTasksDto: GenerateTasksDto,
+  ): Promise<TaskGenerationResultDto> {
+    const order = await this.findOne(orderId);
+    
+    // Validate order status
+    if (order.status !== CustomerOrderStatus.CONFIRMED) {
+      throw new BadRequestException(
+        `Order must be in CONFIRMED status to generate tasks. Current status: ${order.status}`
+      );
+    }
+
+    // Start transaction
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Convert order to tasks
+      const result = await this.orderToTaskConverter.convertOrderToTasks(
+        orderId,
+        generateTasksDto,
+        queryRunner.manager,
+      );
+
+      // Log the generation
+      this.logger.log(
+        `Generated ${result.tasks.length} tasks from order ${order.orderNumber}`,
+      );
+
+      await queryRunner.commitTransaction();
+
+      // Return formatted result
+      return {
+        productionOrdersCount: result.productionOrders.length,
+        workOrdersCount: result.workOrders.length,
+        tasksCount: result.tasks.length,
+        productionOrderIds: result.productionOrders.map(po => po.id),
+        workOrderIds: result.workOrders.map(wo => wo.id),
+        taskIds: result.tasks.map(t => t.id),
+        warnings: result.warnings,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  /**
+   * Generate production orders for an order (simplified version)
+   */
+  async generateProductionOrders(orderId: string): Promise<CustomerOrder> {
+    const order = await this.findOne(orderId);
+    
+    if (order.status !== CustomerOrderStatus.CONFIRMED) {
+      throw new BadRequestException('Order must be confirmed to generate production orders');
+    }
+
+    // Use the task converter with default options
+    const result = await this.generateTasks(orderId, {
+      priority: TaskPriority.NORMAL,
+      assignToWorkCenter: true,
+      autoSchedule: true,
+      includeQualityChecks: true,
+      includeSetupTasks: true,
+    });
+
+    // Update order with production info
+    order.notes = `Generated ${result.productionOrdersCount} production orders, ${result.workOrdersCount} work orders, and ${result.tasksCount} tasks`;
+    
+    if (result.warnings.length > 0) {
+      order.notes += `\nWarnings: ${result.warnings.join(', ')}`;
+    }
+
+    await this.orderRepo.save(order);
+    
+    return order;
   }
 
   /**

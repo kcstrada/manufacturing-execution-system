@@ -26,6 +26,7 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto, UpdateOrderStatusDto } from './dto/update-order.dto';
 import { OrderQueryDto } from './dto/order-query.dto';
+import { GenerateTasksDto, TaskGenerationResultDto } from './dto/generate-tasks.dto';
 import { CustomerOrder } from '../../entities/customer-order.entity';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -297,8 +298,28 @@ export class OrderController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Can only generate production orders for confirmed orders.',
   })
-  async generateProductionOrders(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+  async generateProductionOrders(@Param('id', ParseUUIDPipe) id: string): Promise<CustomerOrder> {
     return this.orderService.generateProductionOrders(id);
+  }
+
+  @Post(':id/generate-tasks')
+  @RequireRoles('admin', 'manager', 'operator')
+  @ApiOperation({ summary: 'Generate tasks from customer order with options' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Tasks have been generated successfully.',
+    type: TaskGenerationResultDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Can only generate tasks for confirmed orders.',
+  })
+  async generateTasks(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() generateTasksDto: GenerateTasksDto,
+  ): Promise<TaskGenerationResultDto> {
+    return this.orderService.generateTasks(id, generateTasksDto);
   }
 
   @Delete(':id')

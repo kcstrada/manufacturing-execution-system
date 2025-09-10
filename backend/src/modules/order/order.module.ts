@@ -4,6 +4,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
 import { OrderStateMachineService } from './services/order-state-machine.service';
+import { OrderToTaskConverterService } from './services/order-to-task-converter.service';
 import { OrderWorkflowListener } from './listeners/order-workflow.listener';
 import { CustomerOrder, CustomerOrderLine } from '../../entities/customer-order.entity';
 import { OrderStateTransition } from '../../entities/order-state-transition.entity';
@@ -11,6 +12,13 @@ import { OrderRepository, OrderLineRepository } from '../../repositories/order.r
 import { Product } from '../../entities/product.entity';
 import { Customer } from '../../entities/customer.entity';
 import { User } from '../../entities/user.entity';
+import { ProductionOrder } from '../../entities/production-order.entity';
+import { WorkOrder } from '../../entities/work-order.entity';
+import { Task } from '../../entities/task.entity';
+import { Routing } from '../../entities/routing.entity';
+import { ProductionStep } from '../../entities/production-step.entity';
+import { BillOfMaterials } from '../../entities/bill-of-materials.entity';
+import { WorkCenter } from '../../entities/work-center.entity';
 
 @Module({
   imports: [
@@ -21,6 +29,13 @@ import { User } from '../../entities/user.entity';
       Product,
       Customer,
       User,
+      ProductionOrder,
+      WorkOrder,
+      Task,
+      Routing,
+      ProductionStep,
+      BillOfMaterials,
+      WorkCenter,
     ]),
     EventEmitterModule.forRoot(),
   ],
@@ -30,8 +45,9 @@ import { User } from '../../entities/user.entity';
     OrderRepository,
     OrderLineRepository,
     OrderStateMachineService,
+    OrderToTaskConverterService,
     OrderWorkflowListener,
   ],
-  exports: [OrderService, OrderStateMachineService],
+  exports: [OrderService, OrderStateMachineService, OrderToTaskConverterService],
 })
 export class OrderModule {}

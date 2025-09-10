@@ -124,7 +124,7 @@ export interface IOrderService {
   /**
    * Generate production orders from customer order
    */
-  generateProductionOrders(orderId: string): Promise<void>;
+  generateProductionOrders(orderId: string): Promise<CustomerOrder>;
 
   /**
    * Duplicate an order

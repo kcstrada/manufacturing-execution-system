@@ -2,9 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrderWorkflowListener, OrderStateChangedEvent } from './order-workflow.listener';
 import { CustomerOrder, CustomerOrderStatus } from '../../../entities/customer-order.entity';
+import { OrderToTaskConverterService } from '../services/order-to-task-converter.service';
+import { TaskPriority } from '../../../entities/task.entity';
 
 describe('OrderWorkflowListener', () => {
   let listener: OrderWorkflowListener;
+  let orderToTaskConverter: jest.Mocked<OrderToTaskConverterService>;
 
   const mockOrderId = 'order-123';
   const mockOrderNumber = 'ORD-001';
@@ -22,10 +25,18 @@ describe('OrderWorkflowListener', () => {
             update: jest.fn(),
           },
         },
+        {
+          provide: OrderToTaskConverterService,
+          useValue: {
+            convertOrderToTasks: jest.fn(),
+            generateTasksForProductionOrder: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     listener = module.get<OrderWorkflowListener>(OrderWorkflowListener);
+    orderToTaskConverter = module.get(OrderToTaskConverterService) as jest.Mocked<OrderToTaskConverterService>;
   });
 
   afterEach(() => {
@@ -33,7 +44,7 @@ describe('OrderWorkflowListener', () => {
   });
 
   describe('handleOrderStateChanged', () => {
-    it('should handle order confirmed event', async () => {
+    it('should handle order confirmed event and generate tasks', async () => {
       const event: OrderStateChangedEvent = {
         orderId: mockOrderId,
         orderNumber: mockOrderNumber,
@@ -43,11 +54,82 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
+      const mockConversionResult: any = {
+        productionOrders: [{ id: 'po-1' }],
+        workOrders: [{ id: 'wo-1' }, { id: 'wo-2' }],
+        tasks: [{ id: 'task-1' }, { id: 'task-2' }, { id: 'task-3' }],
+        warnings: [],
+      };
+
+      orderToTaskConverter.convertOrderToTasks.mockResolvedValue(mockConversionResult);
+
       const handleOrderConfirmedSpy = jest.spyOn(listener as any, 'handleOrderConfirmed');
       
       await listener.handleOrderStateChanged(event);
 
       expect(handleOrderConfirmedSpy).toHaveBeenCalledWith(event);
+      expect(orderToTaskConverter.convertOrderToTasks).toHaveBeenCalledWith(
+        mockOrderId,
+        {
+          priority: TaskPriority.NORMAL,
+          assignToWorkCenter: true,
+          autoSchedule: true,
+          includeQualityChecks: true,
+          includeSetupTasks: true,
+        }
+      );
+    });
+
+    it('should handle task generation failure gracefully', async () => {
+      const event: OrderStateChangedEvent = {
+        orderId: mockOrderId,
+        orderNumber: mockOrderNumber,
+        previousState: CustomerOrderStatus.DRAFT,
+        currentState: CustomerOrderStatus.CONFIRMED,
+        userId: mockUserId,
+        timestamp: new Date(),
+      };
+
+      orderToTaskConverter.convertOrderToTasks.mockRejectedValue(
+        new Error('Task generation failed')
+      );
+
+      const loggerErrorSpy = jest.spyOn((listener as any).logger, 'error');
+      
+      await listener.handleOrderStateChanged(event);
+
+      expect(orderToTaskConverter.convertOrderToTasks).toHaveBeenCalled();
+      expect(loggerErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to generate tasks for order ORD-001')
+      );
+    });
+
+    it('should log warnings from task generation', async () => {
+      const event: OrderStateChangedEvent = {
+        orderId: mockOrderId,
+        orderNumber: mockOrderNumber,
+        previousState: CustomerOrderStatus.DRAFT,
+        currentState: CustomerOrderStatus.CONFIRMED,
+        userId: mockUserId,
+        timestamp: new Date(),
+      };
+
+      const mockConversionResult: any = {
+        productionOrders: [],
+        workOrders: [],
+        tasks: [],
+        warnings: ['No routing found', 'Missing BOM'],
+      };
+
+      orderToTaskConverter.convertOrderToTasks.mockResolvedValue(mockConversionResult);
+
+      const loggerWarnSpy = jest.spyOn((listener as any).logger, 'warn');
+      
+      await listener.handleOrderStateChanged(event);
+
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
+        'Warnings during task generation: No routing found, Missing BOM'
+      );
     });
 
     it('should handle production started event', async () => {

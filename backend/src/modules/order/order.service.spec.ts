@@ -5,6 +5,7 @@ import { NotFoundException, BadRequestException, ConflictException } from '@nest
 import { ClsService } from 'nestjs-cls';
 import { OrderService } from './order.service';
 import { OrderStateMachineService } from './services/order-state-machine.service';
+import { OrderToTaskConverterService } from './services/order-to-task-converter.service';
 import { OrderRepository, OrderLineRepository } from '../../repositories/order.repository';
 import { CustomerOrder, CustomerOrderLine, CustomerOrderStatus, OrderPriority } from '../../entities/customer-order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -103,6 +104,13 @@ describe('OrderService', () => {
             getAvailableEvents: jest.fn(),
             getTransitionHistory: jest.fn(),
             validateState: jest.fn(),
+          },
+        },
+        {
+          provide: OrderToTaskConverterService,
+          useValue: {
+            convertOrderToTasks: jest.fn(),
+            generateTasksForProductionOrder: jest.fn(),
           },
         },
       ],
@@ -710,6 +718,7 @@ describe('OrderService', () => {
     it('should generate production orders for confirmed order', async () => {
       const mockOrder = {
         id: mockOrderId,
+        orderNumber: 'ORD-001',
         status: CustomerOrderStatus.CONFIRMED,
         orderLines: [
           {
@@ -720,10 +729,21 @@ describe('OrderService', () => {
       } as CustomerOrder;
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
+      jest.spyOn(service, 'generateTasks').mockResolvedValue({
+        productionOrdersCount: 1,
+        workOrdersCount: 2,
+        tasksCount: 3,
+        productionOrderIds: ['po-1'],
+        workOrderIds: ['wo-1', 'wo-2'],
+        taskIds: ['task-1', 'task-2', 'task-3'],
+        warnings: [],
+      });
 
-      await service.generateProductionOrders(mockOrderId);
+      const result = await service.generateProductionOrders(mockOrderId);
 
       expect(service.findOne).toHaveBeenCalledWith(mockOrderId);
+      expect(service.generateTasks).toHaveBeenCalled();
+      expect(result.notes).toContain('Generated 1 production orders');
     });
 
     it('should throw BadRequestException for non-confirmed orders', async () => {
