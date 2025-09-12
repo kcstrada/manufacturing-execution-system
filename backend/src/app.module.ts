@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { BullModule } from '@nestjs/bull';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -26,6 +27,7 @@ import { QualityModule } from './modules/quality/quality.module';
 import { WasteModule } from './modules/waste/waste.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
+import { QueuesModule } from './modules/queues/queues.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -56,17 +58,18 @@ import {
     // Health Check and Monitoring Module
     HealthModule,
 
-    // Redis Queue
-    BullModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        redis: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: configService.get('REDIS_PORT', 6379),
-          password: configService.get('REDIS_PASSWORD'),
-        },
-      }),
-      inject: [ConfigService],
+    // Schedule Module for cron jobs
+    ScheduleModule.forRoot(),
+
+    // Event Emitter Module for event-driven architecture
+    EventEmitterModule.forRoot({
+      wildcard: false,
+      delimiter: '.',
+      newListener: false,
+      removeListener: false,
+      maxListeners: 10,
+      verboseMemoryLeak: false,
+      ignoreErrors: false,
     }),
 
     // Rate Limiting
@@ -96,6 +99,7 @@ import {
     WasteModule,
     ReportsModule,
     WebSocketModule,
+    QueuesModule,
     SeedModule,
   ],
   controllers: [AppController],
