@@ -145,7 +145,7 @@
     - [x] 3.19 Create Reports service with aggregations
     - [x] 3.20 Implement WebSocket gateway for real-time updates
     - [x] 3.21 Set up Bull queues for background jobs
-    - [ ] 3.22 Create notification service for alerts
+    - [x] 3.22 Create notification service for alerts
     - [ ] 3.23 Write unit tests for all services
 
 - [ ] 4.0 **Portal User Interfaces Development**

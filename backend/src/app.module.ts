@@ -28,6 +28,7 @@ import { WasteModule } from './modules/waste/waste.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
 import { QueuesModule } from './modules/queues/queues.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -100,6 +101,7 @@ import {
     ReportsModule,
     WebSocketModule,
     QueuesModule,
+    NotificationsModule,
     SeedModule,
   ],
   controllers: [AppController],
