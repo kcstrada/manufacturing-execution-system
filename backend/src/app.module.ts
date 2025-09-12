@@ -25,6 +25,7 @@ import { EquipmentModule } from './modules/equipment/equipment.module';
 import { QualityModule } from './modules/quality/quality.module';
 import { WasteModule } from './modules/waste/waste.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { WebSocketModule } from './modules/websocket/websocket.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -94,6 +95,7 @@ import {
     QualityModule,
     WasteModule,
     ReportsModule,
+    WebSocketModule,
     SeedModule,
   ],
   controllers: [AppController],
