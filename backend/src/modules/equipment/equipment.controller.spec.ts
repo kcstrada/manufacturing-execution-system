@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EquipmentController } from './equipment.controller';
 import { EquipmentService, EquipmentMetrics, MaintenanceMetrics } from './equipment.service';
+import { AuthGuard, ResourceGuard } from 'nest-keycloak-connect';
+import { mockKeycloakProviders } from '../../../test/mocks/keycloak.mock';
 import {
   Equipment,
   EquipmentStatus,
@@ -25,6 +27,7 @@ describe('EquipmentController', () => {
   let service: EquipmentService;
 
   const mockEquipment = {
+    ...({} as unknown as Equipment),
     id: 'equipment-1',
     equipmentCode: 'EQ001',
     name: 'CNC Machine',
@@ -68,7 +71,7 @@ describe('EquipmentController', () => {
     tenantId: 'tenant-1',
     maintenanceSchedules: [],
     maintenanceRecords: [],
-  } as Equipment;
+  } as unknown as Equipment;
 
   const mockSchedule = {
     id: 'schedule-1',
@@ -121,7 +124,6 @@ describe('EquipmentController', () => {
   } as MaintenanceRecord;
 
   const mockEquipmentMetrics: EquipmentMetrics = {
-    total: 10,
     byStatus: {
       'in_use': 5,
       idle: 3,
@@ -134,7 +136,6 @@ describe('EquipmentController', () => {
   };
 
   const mockMaintenanceMetrics: MaintenanceMetrics = {
-    totalMaintenances: 10,
     byType: {
       preventive: 6,
       corrective: 3,
@@ -175,8 +176,14 @@ describe('EquipmentController', () => {
             getMaintenanceHistory: jest.fn(),
           },
         },
+        ...mockKeycloakProviders,
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .overrideGuard(ResourceGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .compile();
 
     controller = module.get<EquipmentController>(EquipmentController);
     service = module.get<EquipmentService>(EquipmentService);

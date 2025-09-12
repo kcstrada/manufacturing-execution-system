@@ -245,7 +245,7 @@ describe('ShiftSchedulingService', () => {
           available: true,
         },
       ]);
-      jest.spyOn(workerService, 'getWorkerAvailability' as any).mockResolvedValue({
+      jest.spyOn(workerService, 'checkAvailability').mockResolvedValue({
         workerId: 'worker-1',
         date: new Date('2024-01-15'),
         isAvailable: true,
@@ -266,6 +266,14 @@ describe('ShiftSchedulingService', () => {
     });
 
     it('should respect calendar exceptions', async () => {
+      // Mock createQueryBuilder for getApplicableShifts
+      (shiftRepository.createQueryBuilder as jest.Mock).mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([mockShift]),
+      });
+      
       const request: ShiftScheduleRequest = {
         startDate: new Date('2024-01-15'),
         endDate: new Date('2024-01-15'),
@@ -310,13 +318,9 @@ describe('ShiftSchedulingService', () => {
       const startDate = new Date('2024-01-15');
       const endDate = new Date('2024-01-19');
 
-      // Mock createQueryBuilder for getApplicableShifts
-      (shiftRepository.createQueryBuilder as jest.Mock).mockReturnValue({
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue([mockShift]),
-      });
+      // Mock shifts find
+      jest.spyOn(shiftRepository, 'find').mockResolvedValue([mockShift]);
+      
       jest.spyOn(assignmentRepository, 'createQueryBuilder').mockReturnValue({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
@@ -336,13 +340,9 @@ describe('ShiftSchedulingService', () => {
       const startDate = new Date('2024-01-15');
       const endDate = new Date('2024-01-15');
 
-      // Mock createQueryBuilder for getApplicableShifts
-      (shiftRepository.createQueryBuilder as jest.Mock).mockReturnValue({
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue([mockShift]),
-      });
+      // Mock shifts find
+      jest.spyOn(shiftRepository, 'find').mockResolvedValue([mockShift]);
+      
       jest.spyOn(assignmentRepository, 'createQueryBuilder').mockReturnValue({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),

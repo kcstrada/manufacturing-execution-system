@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QualityController } from './quality.controller';
+import { AuthGuard, ResourceGuard } from 'nest-keycloak-connect';
+import { mockKeycloakProviders } from '../../../test/mocks/keycloak.mock';
 import {
   QualityService,
   QualityMetrics,
@@ -35,6 +37,7 @@ describe('QualityController', () => {
   let service: QualityService;
 
   const mockMetric: QualityMetric = {
+    ...({} as unknown as QualityMetric),
     id: '1',
     metricCode: 'QM001',
     name: 'Diameter Measurement',
@@ -140,7 +143,7 @@ describe('QualityController', () => {
   ];
 
   const mockControlChartData: ControlChartData = {
-    metricId: '1',
+    metric: '1',
     metricName: 'Diameter',
     targetValue: 10,
     upperControlLimit: 10.5,
@@ -210,8 +213,14 @@ describe('QualityController', () => {
             ]),
           },
         },
+        ...mockKeycloakProviders,
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .overrideGuard(ResourceGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .compile();
 
     controller = module.get<QualityController>(QualityController);
     service = module.get<QualityService>(QualityService);

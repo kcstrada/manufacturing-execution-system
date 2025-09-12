@@ -64,6 +64,13 @@ export class StockAlertService {
   async checkStockLevels(): Promise<StockLevelAlert[]> {
     this.logger.log('Starting scheduled stock level check');
     
+    // Skip scheduled check if no tenant context is available
+    const tenantId = this.clsService.get('tenantId');
+    if (!tenantId) {
+      this.logger.debug('Skipping scheduled stock check - no tenant context available');
+      return [];
+    }
+    
     try {
       const alerts = await this.performStockCheck();
       
@@ -454,7 +461,7 @@ export class StockAlertService {
   private getTenantId(): string {
     const tenantId = this.clsService.get('tenantId');
     if (!tenantId) {
-      return 'default'; // Fallback for scheduled jobs
+      throw new Error('Tenant context not available');
     }
     return tenantId;
   }

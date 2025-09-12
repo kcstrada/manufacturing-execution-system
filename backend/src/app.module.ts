@@ -24,6 +24,7 @@ import { TimeClockModule } from './modules/time-clock/time-clock.module';
 import { EquipmentModule } from './modules/equipment/equipment.module';
 import { QualityModule } from './modules/quality/quality.module';
 import { WasteModule } from './modules/waste/waste.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { 
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -92,6 +93,7 @@ import {
     EquipmentModule,
     QualityModule,
     WasteModule,
+    ReportsModule,
     SeedModule,
   ],
   controllers: [AppController],

@@ -5,6 +5,8 @@ import { CreateWasteRecordDto } from './dto/create-waste-record.dto';
 import { UpdateWasteRecordDto } from './dto/update-waste-record.dto';
 import { WasteRecord, WasteType, WasteCategory } from '../../entities/waste-record.entity';
 import { NotFoundException } from '@nestjs/common';
+import { AuthGuard, ResourceGuard } from 'nest-keycloak-connect';
+import { mockKeycloakProviders } from '../../../test/mocks/keycloak.mock';
 
 describe('WasteController', () => {
   let controller: WasteController;
@@ -33,8 +35,14 @@ describe('WasteController', () => {
             recordDisposal: jest.fn(),
           },
         },
+        ...mockKeycloakProviders,
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .overrideGuard(ResourceGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .compile();
 
     controller = module.get<WasteController>(WasteController);
     service = module.get(WasteService) as jest.Mocked<WasteService>;
