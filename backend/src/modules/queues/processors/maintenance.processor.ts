@@ -15,12 +15,16 @@ export class MaintenanceProcessor {
   @Process(JOB_NAMES.CHECK_MAINTENANCE_DUE)
   async checkMaintenanceDue(job: Job) {
     this.logger.log(`Checking maintenance due - Job ${job.id}`);
-    const { equipmentList, checkDate } = job.data;
+    const { equipmentList = [], checkDate = new Date() } = job.data || {};
 
     try {
+      // If no equipment list provided, generate mock data for demo
+      const equipmentToCheck = equipmentList.length > 0 ? equipmentList : 
+        this.generateMockEquipment();
+      
       const maintenanceDue = [];
 
-      for (const equipment of equipmentList) {
+      for (const equipment of equipmentToCheck) {
         await this.simulateProcessing(100);
 
         const isDue = Math.random() > 0.7; // 30% chance
@@ -47,7 +51,7 @@ export class MaintenanceProcessor {
 
       return {
         success: true,
-        totalChecked: equipmentList.length,
+        totalChecked: equipmentToCheck.length,
         maintenanceDue,
         checkedAt: new Date(),
       };
@@ -135,5 +139,16 @@ export class MaintenanceProcessor {
   private getRandomMaintenanceType(): string {
     const types = ['preventive', 'corrective', 'predictive', 'routine', 'emergency'];
     return types[Math.floor(Math.random() * types.length)] || 'routine';
+  }
+
+  private generateMockEquipment(): any[] {
+    // Generate mock equipment for demo purposes when no real data is available
+    return [
+      { id: 'EQ-001', name: 'CNC Machine 1', type: 'machine' },
+      { id: 'EQ-002', name: 'Assembly Robot A', type: 'robot' },
+      { id: 'EQ-003', name: 'Conveyor Belt 1', type: 'conveyor' },
+      { id: 'EQ-004', name: '3D Printer Alpha', type: 'printer' },
+      { id: 'EQ-005', name: 'Quality Scanner', type: 'scanner' },
+    ];
   }
 }

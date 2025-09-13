@@ -50,7 +50,7 @@ export class QualityProcessor {
   @Process(JOB_NAMES.CALCULATE_QUALITY_METRICS)
   async calculateQualityMetrics(job: Job) {
     this.logger.log(`Calculating quality metrics - Job ${job.id}`);
-    const { productId, period, data } = job.data;
+    const { productId = 'PROD-DEMO', period = 'daily', data = {} } = job.data || {};
 
     try {
       await this.simulateProcessing(2000);

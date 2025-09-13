@@ -15,13 +15,17 @@ export class InventoryProcessor {
   @Process(JOB_NAMES.CHECK_STOCK_LEVELS)
   async checkStockLevels(job: Job) {
     this.logger.log(`Checking stock levels - Job ${job.id}`);
-    const { warehouseId, products } = job.data;
+    const { warehouseId = 'main', products = [] } = job.data || {};
 
     try {
+      // If no products provided, generate mock data for demo
+      const productsToCheck = products.length > 0 ? products :
+        this.generateMockProducts();
+      
       const lowStockItems = [];
       const criticalStockItems = [];
 
-      for (const product of products) {
+      for (const product of productsToCheck) {
         await this.simulateProcessing(50);
 
         const currentStock = Math.floor(Math.random() * 1000);
@@ -70,7 +74,7 @@ export class InventoryProcessor {
       return {
         success: true,
         warehouseId,
-        totalChecked: products.length,
+        totalChecked: productsToCheck.length,
         lowStockItems,
         criticalStockItems,
         checkedAt: new Date(),
@@ -273,5 +277,17 @@ export class InventoryProcessor {
     const orderCost = 50;
     const holdingCost = 2;
     return Math.sqrt((2 * annualDemand * orderCost) / holdingCost);
+  }
+
+  private generateMockProducts(): any[] {
+    // Generate mock products for demo purposes when no real data is available
+    return [
+      { id: 'PROD-001', name: 'Steel Sheet 5mm', minStock: 500, reorderQuantity: 1000 },
+      { id: 'PROD-002', name: 'Aluminum Bar 10cm', minStock: 200, reorderQuantity: 500 },
+      { id: 'PROD-003', name: 'Circuit Board Type A', minStock: 100, reorderQuantity: 300 },
+      { id: 'PROD-004', name: 'Hydraulic Pump XL', minStock: 50, reorderQuantity: 100 },
+      { id: 'PROD-005', name: 'Bearing Set Standard', minStock: 150, reorderQuantity: 400 },
+      { id: 'PROD-006', name: 'Control Module V2', minStock: 75, reorderQuantity: 200 },
+    ];
   }
 }
