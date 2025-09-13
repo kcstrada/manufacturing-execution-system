@@ -20,7 +20,7 @@ describe('cn utility', () => {
 
   it('merges Tailwind classes correctly', () => {
     const result = cn('px-2 py-1', 'px-4')
-    expect(result).toBe('px-2 py-1 px-4')
+    expect(result).toBe('py-1 px-4') // tailwind-merge correctly overrides px-2 with px-4
   })
 
   it('handles arrays of classes', () => {

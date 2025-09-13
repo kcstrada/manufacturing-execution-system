@@ -154,8 +154,8 @@
     - [x] 4.2 Configure Tailwind CSS and DaisyUI
     - [x] 4.3 Create shared UI component library structure
   - **Kent**
-    - [ ] 4.4 Build shared authentication components with Keycloak JS
-    - [ ] 4.5 Create permission-based rendering hooks (usePermission)
+    - [x] 4.4 Build shared authentication components with Keycloak JS
+    - [x] 4.5 Create permission-based rendering hooks (usePermission)
     - [ ] 4.6 Implement API client with Axios interceptors
     - [ ] 4.7 Set up Redux Toolkit for state management
     - [ ] 4.8 Configure TanStack Query for server state

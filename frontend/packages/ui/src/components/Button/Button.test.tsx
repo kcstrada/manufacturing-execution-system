@@ -13,13 +13,13 @@ describe('Button Component', () => {
   it('applies primary variant class by default', () => {
     render(<Button>Primary</Button>)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('btn-primary')
+    expect(button).toHaveClass('bg-unimore-blue', 'text-white')
   })
 
   it('applies secondary variant class when specified', () => {
     render(<Button variant="secondary">Secondary</Button>)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('btn-secondary')
+    expect(button).toHaveClass('bg-unimore-navy', 'text-white')
   })
 
   it('applies size classes correctly', () => {
@@ -80,6 +80,6 @@ describe('Button Component', () => {
   it('combines multiple variant classes', () => {
     render(<Button variant="error" size="sm" fullWidth>Error Button</Button>)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('btn', 'btn-error', 'btn-sm', 'w-full')
+    expect(button).toHaveClass('btn', 'bg-error', 'btn-sm', 'w-full')
   })
 })
