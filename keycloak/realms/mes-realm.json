@@ -1,0 +1,431 @@
+{
+  "realm": "mes",
+  "enabled": true,
+  "displayName": "Manufacturing Execution System",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>Manufacturing Execution System</span></div>",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": true,
+  "rememberMe": true,
+  "verifyEmail": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "defaultSignatureAlgorithm": "RS256",
+  "offlineSessionMaxLifespanEnabled": false,
+  "offlineSessionMaxLifespan": 5184000,
+  "clientSessionIdleTimeout": 0,
+  "clientSessionMaxLifespan": 0,
+  "clientOfflineSessionIdleTimeout": 0,
+  "clientOfflineSessionMaxLifespan": 0,
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "ssoSessionIdleTimeoutRememberMe": 0,
+  "ssoSessionMaxLifespanRememberMe": 0,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "refreshTokenMaxReuse": 0,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "de", "fr", "es", "it"],
+  "defaultLocale": "en",
+  "authenticationFlows": [],
+  "authenticatorConfig": [],
+  "requiredActions": [],
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "clientAuthenticationFlow": "clients",
+  "dockerAuthenticationFlow": "docker auth",
+  "attributes": {
+    "frontendUrl": "${KEYCLOAK_FRONTEND_URL}",
+    "_browser_header.contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self' http://localhost:* https://localhost:*; object-src 'none';",
+    "permanentLockout": "false",
+    "quickLoginCheckMilliSeconds": "1000",
+    "maxDeltaTimeSeconds": "43200",
+    "failureFactor": "5",
+    "actionTokenGeneratedByUserLifespan": "300",
+    "maxFailureWaitSeconds": "900",
+    "minimumQuickLoginWaitSeconds": "60",
+    "waitIncrementSeconds": "60",
+    "offlineSessionMaxLifespan": "5184000",
+    "actionTokenGeneratedByAdminLifespan": "43200"
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "super_admin",
+        "description": "Super Administrator with full system access",
+        "composite": true,
+        "composites": {
+          "realm": ["admin", "manager", "operator", "viewer"]
+        }
+      },
+      {
+        "name": "admin",
+        "description": "Administrator with administrative access",
+        "composite": true,
+        "composites": {
+          "realm": ["manager", "operator", "viewer"]
+        }
+      },
+      {
+        "name": "production_manager",
+        "description": "Production line manager",
+        "composite": true,
+        "composites": {
+          "realm": ["operator", "viewer"]
+        }
+      },
+      {
+        "name": "quality_manager",
+        "description": "Quality control manager",
+        "composite": true,
+        "composites": {
+          "realm": ["quality_inspector", "viewer"]
+        }
+      },
+      {
+        "name": "quality_inspector",
+        "description": "Quality control inspector",
+        "composite": true,
+        "composites": {
+          "realm": ["viewer"]
+        }
+      },
+      {
+        "name": "maintenance_manager",
+        "description": "Maintenance department manager",
+        "composite": true,
+        "composites": {
+          "realm": ["maintenance_tech", "viewer"]
+        }
+      },
+      {
+        "name": "maintenance_tech",
+        "description": "Maintenance technician",
+        "composite": true,
+        "composites": {
+          "realm": ["viewer"]
+        }
+      },
+      {
+        "name": "manager",
+        "description": "General manager role",
+        "composite": true,
+        "composites": {
+          "realm": ["operator", "viewer"]
+        }
+      },
+      {
+        "name": "senior_operator",
+        "description": "Senior machine operator",
+        "composite": true,
+        "composites": {
+          "realm": ["operator", "viewer"]
+        }
+      },
+      {
+        "name": "operator",
+        "description": "Machine operator",
+        "composite": true,
+        "composites": {
+          "realm": ["viewer"]
+        }
+      },
+      {
+        "name": "viewer",
+        "description": "Read-only access",
+        "composite": false
+      },
+      {
+        "name": "offline_access",
+        "description": "${role_offline-access}",
+        "composite": false
+      },
+      {
+        "name": "uma_authorization",
+        "description": "${role_uma_authorization}",
+        "composite": false
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "mes-frontend",
+      "name": "MES Frontend Application",
+      "description": "Manufacturing Execution System Web Application",
+      "rootUrl": "${MES_FRONTEND_URL}",
+      "adminUrl": "",
+      "baseUrl": "/",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": true,
+      "clientAuthenticatorType": "client-secret",
+      "publicClient": true,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": false,
+      "nodeReRegistrationTimeout": -1,
+      "defaultClientScopes": [
+        "web-origins",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ],
+      "redirectUris": [
+        "http://localhost:3001/*",
+        "http://localhost:3002/*",
+        "https://localhost:3001/*",
+        "https://localhost:3002/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "https://localhost:3001",
+        "https://localhost:3002"
+      ]
+    },
+    {
+      "clientId": "mes-backend",
+      "name": "MES Backend Service",
+      "description": "Manufacturing Execution System Backend API",
+      "rootUrl": "${MES_BACKEND_URL}",
+      "adminUrl": "",
+      "baseUrl": "/",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${MES_BACKEND_CLIENT_SECRET}",
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "use.refresh.tokens": "true",
+        "client_credentials.use_refresh_token": "false",
+        "token.response.type.bearer.lower-case": "false",
+        "access.token.lifespan": "900"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": false,
+      "nodeReRegistrationTimeout": -1,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "tenant",
+      "description": "Tenant information",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "gui.order": "100",
+        "consent.screen.text": "Tenant information"
+      },
+      "protocolMappers": [
+        {
+          "name": "tenant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "tenant_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "tenant_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "tenant_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "tenant_name",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "tenant_name",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "manufacturing",
+      "description": "Manufacturing specific claims",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "employee_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "employee_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "employee_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "department",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "department",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "department",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "shift",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "shift",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "shift",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "plant_location",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "plant_location",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "plant_location",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "role_list",
+    "profile",
+    "email",
+    "roles",
+    "web-origins",
+    "tenant",
+    "manufacturing"
+  ],
+  "defaultOptionalClientScopes": [
+    "offline_access",
+    "address",
+    "phone",
+    "microprofile-jwt"
+  ],
+  "eventsEnabled": true,
+  "eventsExpiration": 900,
+  "eventsListeners": ["jboss-logging"],
+  "enabledEventTypes": [
+    "REGISTER",
+    "REGISTER_ERROR",
+    "LOGIN",
+    "LOGIN_ERROR",
+    "LOGOUT",
+    "LOGOUT_ERROR",
+    "CODE_TO_TOKEN",
+    "CODE_TO_TOKEN_ERROR",
+    "CLIENT_LOGIN",
+    "CLIENT_LOGIN_ERROR",
+    "REFRESH_TOKEN",
+    "REFRESH_TOKEN_ERROR"
+  ],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "identityProviders": [],
+  "identityProviderMappers": [],
+  "components": {
+    "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy": [],
+    "org.keycloak.keys.KeyProvider": []
+  },
+  "smtpServer": {
+    "host": "${SMTP_HOST}",
+    "port": "${SMTP_PORT}",
+    "from": "${SMTP_FROM}",
+    "fromDisplayName": "MES System",
+    "ssl": "${SMTP_SSL}",
+    "starttls": "${SMTP_STARTTLS}",
+    "auth": "${SMTP_AUTH}",
+    "user": "${SMTP_USER}",
+    "password": "${SMTP_PASSWORD}"
+  },
+  "loginTheme": "mes",
+  "accountTheme": "mes",
+  "adminTheme": "keycloak",
+  "emailTheme": "mes",
+  "browserSecurityHeaders": {
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  }
+}

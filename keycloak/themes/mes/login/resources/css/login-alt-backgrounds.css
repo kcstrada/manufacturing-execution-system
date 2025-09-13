@@ -1,0 +1,117 @@
+/* Alternative Background Options for Keycloak Login */
+
+/* Option 1: Mesh Gradient (Current - soft blue gradient with animated orbs) */
+.background-mesh {
+  background: linear-gradient(135deg, #ffffff 0%, #e6f4f9 40%, #d4e9f3 100%);
+}
+
+/* Option 2: Geometric Pattern */
+.background-geometric {
+  background-color: #f8fafb;
+  background-image: 
+    repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(5, 99, 137, 0.03) 35px, rgba(5, 99, 137, 0.03) 70px),
+    repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(0, 37, 58, 0.02) 35px, rgba(0, 37, 58, 0.02) 70px);
+}
+
+/* Option 3: Wave Pattern */
+.background-wave {
+  background: #f0f4f8;
+  background-image: 
+    radial-gradient(ellipse 800px 300px at 50% -50px, rgba(5, 99, 137, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 600px 300px at 50% 350px, rgba(0, 37, 58, 0.08) 0%, transparent 50%);
+}
+
+/* Option 4: Gradient Waves */
+.background-gradient-waves {
+  background: linear-gradient(180deg, #ffffff 0%, #f0f7fb 50%, #e1f0f7 100%);
+  position: relative;
+}
+
+.background-gradient-waves::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(5, 99, 137, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(6, 120, 167, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(0, 37, 58, 0.06) 0%, transparent 50%);
+}
+
+/* Option 5: Subtle Dots */
+.background-dots {
+  background-color: #fafbfc;
+  background-image: 
+    radial-gradient(circle, rgba(5, 99, 137, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* Option 6: Nordic Aurora */
+.background-aurora {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  position: relative;
+}
+
+.background-aurora::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(115deg, transparent 40%, rgba(5, 99, 137, 0.1) 50%, transparent 60%),
+    linear-gradient(65deg, transparent 30%, rgba(6, 120, 167, 0.08) 40%, transparent 50%);
+  filter: blur(60px);
+}
+
+/* Option 7: Clean Solid with Gradient Border */
+.background-solid {
+  background: #f5f8fa;
+  position: relative;
+}
+
+.background-solid::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--unimore-navy) 0%, var(--unimore-blue) 50%, var(--unimore-blue-light) 100%);
+}
+
+/* Option 8: Animated Gradient */
+.background-animated {
+  background: linear-gradient(-45deg, #f0f4f8, #e6f4f9, #ffffff, #d4e9f3);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Option 9: Layered Gradients */
+.background-layered {
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%),
+    linear-gradient(225deg, rgba(230, 244, 249, 0.8) 0%, rgba(230, 244, 249, 0) 70%),
+    linear-gradient(45deg, rgba(212, 233, 243, 0.7) 0%, rgba(212, 233, 243, 0) 70%),
+    #f8fafb;
+}
+
+/* Option 10: Minimal Gray */
+.background-minimal {
+  background: #f7f8f9;
+}

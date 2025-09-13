@@ -1,0 +1,239 @@
+[
+  {
+    "username": "admin@mes.local",
+    "email": "admin@mes.local",
+    "firstName": "System",
+    "lastName": "Administrator",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Admin123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["super_admin"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP001"],
+      "department": ["IT"],
+      "plant_location": ["Main Plant"]
+    }
+  },
+  {
+    "username": "john.smith@mes.local",
+    "email": "john.smith@mes.local",
+    "firstName": "John",
+    "lastName": "Smith",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["production_manager"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP002"],
+      "department": ["Production"],
+      "shift": ["Day"],
+      "plant_location": ["Main Plant"]
+    }
+  },
+  {
+    "username": "jane.doe@mes.local",
+    "email": "jane.doe@mes.local",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["quality_manager"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP003"],
+      "department": ["Quality"],
+      "shift": ["Day"],
+      "plant_location": ["Main Plant"]
+    }
+  },
+  {
+    "username": "mike.johnson@mes.local",
+    "email": "mike.johnson@mes.local",
+    "firstName": "Mike",
+    "lastName": "Johnson",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["maintenance_manager"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP004"],
+      "department": ["Maintenance"],
+      "shift": ["Day"],
+      "plant_location": ["Main Plant"]
+    }
+  },
+  {
+    "username": "sarah.wilson@mes.local",
+    "email": "sarah.wilson@mes.local",
+    "firstName": "Sarah",
+    "lastName": "Wilson",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["senior_operator"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP005"],
+      "department": ["Production"],
+      "shift": ["Day"],
+      "plant_location": ["Assembly Line A"]
+    }
+  },
+  {
+    "username": "robert.brown@mes.local",
+    "email": "robert.brown@mes.local",
+    "firstName": "Robert",
+    "lastName": "Brown",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["operator"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP006"],
+      "department": ["Production"],
+      "shift": ["Night"],
+      "plant_location": ["Assembly Line B"]
+    }
+  },
+  {
+    "username": "emily.davis@mes.local",
+    "email": "emily.davis@mes.local",
+    "firstName": "Emily",
+    "lastName": "Davis",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["quality_inspector"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP007"],
+      "department": ["Quality"],
+      "shift": ["Day"],
+      "plant_location": ["QC Station 1"]
+    }
+  },
+  {
+    "username": "david.miller@mes.local",
+    "email": "david.miller@mes.local",
+    "firstName": "David",
+    "lastName": "Miller",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["maintenance_tech"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP008"],
+      "department": ["Maintenance"],
+      "shift": ["Night"],
+      "plant_location": ["Main Plant"]
+    }
+  },
+  {
+    "username": "lisa.garcia@mes.local",
+    "email": "lisa.garcia@mes.local",
+    "firstName": "Lisa",
+    "lastName": "Garcia",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["viewer"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "tenant_name": ["Default Tenant"],
+      "employee_id": ["EMP009"],
+      "department": ["Management"],
+      "plant_location": ["Main Plant"]
+    }
+  },
+  {
+    "username": "tenant2.admin@mes.local",
+    "email": "tenant2.admin@mes.local",
+    "firstName": "Tenant2",
+    "lastName": "Admin",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "Password123!",
+        "temporary": true
+      }
+    ],
+    "realmRoles": ["admin"],
+    "attributes": {
+      "tenant_id": ["tenant2"],
+      "tenant_name": ["Second Manufacturing Co."],
+      "employee_id": ["T2-001"],
+      "department": ["IT"],
+      "plant_location": ["Plant 2"]
+    }
+  }
+]

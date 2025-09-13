@@ -1,3 +1,6 @@
+// Typography Components
+export * from './Typography';
+
 // Layout Components
 export * from './layout';
 

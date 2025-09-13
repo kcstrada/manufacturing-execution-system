@@ -1,0 +1,516 @@
+/* Unimore MES - Modern Login Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Unimore Brand Colors */
+  --navy: #00253a;
+  --ocean-blue: #056389;
+  --light-blue: #0678a7;
+  --ice-blue: #e6f4f9;
+  --white: #ffffff;
+  --off-white: #F5FBFE;
+  
+  /* Neutral Colors */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Reset defaults */
+html, body {
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Main Background - Base gradient only */
+body {
+  background: linear-gradient(135deg, #00253a 0%, #056389 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Large geometric triangle in background - animated */
+body::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 1400px 800px;
+  border-color: transparent transparent rgba(255, 255, 255, 0.06) transparent;
+  bottom: -200px;
+  right: -100px;
+  transform: rotate(-15deg);
+  pointer-events: none;
+  z-index: 2;
+  animation: subtleFloat 35s ease-in-out infinite;
+}
+
+/* Large geometric triangle on left side - animated */
+.login-pf-page::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 1200px 700px 0 0;
+  border-color: rgba(255, 255, 255, 0.04) transparent transparent transparent;
+  top: -150px;
+  left: -200px;
+  transform: rotate(20deg);
+  pointer-events: none;
+  z-index: 2;
+  animation: subtleDrift 40s ease-in-out infinite;
+}
+
+/* Subtle shape animations */
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: rotate(-15deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(-15deg) translate(-10px, -20px);
+  }
+}
+
+@keyframes subtleDrift {
+  0%, 100% {
+    transform: rotate(20deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(20deg) translate(15px, 10px);
+  }
+}
+
+/* Removed duplicate circles - now in body background */
+
+/* Animation removed - circles are now static in body background */
+
+/* Gradient animation removed */
+
+
+/* Removed large triangular shapes */
+
+/* Hide Keycloak defaults */
+.login-pf-page {
+  background: transparent !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  position: relative;
+}
+
+.container {
+  width: 100% !important;
+  max-width: 1100px !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+}
+
+/* Hide unnecessary elements */
+#kc-header,
+#kc-header-wrapper,
+.alert-info,
+#kc-locale,
+#kc-locale-wrapper,
+#kc-page-title,
+h1 {
+  display: none !important;
+}
+
+/* Main Card Container - Redesigned with more width */
+#kc-content {
+  display: block !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(20px) !important;
+  border-radius: 24px !important;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 37, 58, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  overflow: hidden !important;
+  max-width: 480px !important;
+  min-width: 200px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Remove left panel pseudo elements */
+#kc-content::before,
+#kc-content::after {
+  display: none !important;
+}
+
+/* Remove external text positioning - will add inside the panel */
+
+/* Form Section - Adjusted padding for wider card */
+#kc-content-wrapper {
+  padding: 55px 45px 45px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  background: transparent !important;
+  position: relative !important;
+}
+
+/* Remove old header section pseudo-element */
+#kc-content-wrapper::before {
+  display: none !important;
+}
+
+/* Form Container */
+#kc-form {
+  width: 100% !important;
+  margin: 0 auto !important;
+  position: relative;
+}
+
+/* Header container with logo and text */
+#kc-form-wrapper {
+  position: relative;
+}
+
+/* MES Header Section */
+.mes-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 25px !important;
+  padding: 0 0 20px 0 !important;
+  margin-bottom: 0 !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.2) !important;
+}
+
+.mes-logo {
+  flex: 0 0 auto !important;
+}
+
+.mes-logo img {
+  width: 70px !important;
+  height: 70px !important;
+  object-fit: contain !important;
+}
+
+.mes-title {
+  flex: 0 0 auto !important;
+}
+
+.mes-title h1 {
+  display: flex !important;
+  flex-direction: column !important;
+  font-weight: 700 !important;
+  color: #00253a !important;
+  font-family: 'Poppins', sans-serif !important;
+  letter-spacing: -0.5px !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+.mes-title h1 span {
+  display: block !important;
+}
+
+.mes-title h1 .line1 {
+  font-size: 22px !important;
+}
+
+.mes-title h1 .line2 {
+  font-size: 22px !important;
+}
+
+/* MES Description Section */
+.mes-description {
+  text-align: center !important;
+  margin-bottom: 0 !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.2) !important;
+}
+
+.mes-description p {
+  font-size: 14px !important;
+  color: #6b7280 !important;
+  font-family: 'Inter', sans-serif !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+}
+
+/* MES Form Content Section */
+.mes-form-content {
+  padding: 30px 0 0 0 !important;
+}
+
+/* Remove old pseudo-element styles since we're using real divs now */
+#kc-form-wrapper::after,
+#kc-form::before,
+#kc-form::after {
+  display: none !important;
+}
+
+/* Hide card styling */
+.card-pf {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 20px !important;
+}
+
+/* Labels */
+label {
+  display: block !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #00253a !important;
+  margin-bottom: 6px !important;
+  font-family: 'Inter', sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+.form-control,
+#username,
+#password {
+  width: 100% !important;
+  padding: 14px 16px !important;
+  font-size: 15px !important;
+  font-family: 'Inter', sans-serif !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  color: #111827 !important;
+  transition: all 0.3s ease !important;
+  outline: none !important;
+}
+
+/* Input Focus State */
+input:focus {
+  border-color: #056389 !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 0 4px rgba(5, 99, 137, 0.08) !important;
+}
+
+/* Input Hover */
+input:hover {
+  border-color: #056389 !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Remember Me Section */
+#kc-form-options {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin: 20px 0 !important;
+}
+
+.checkbox {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.checkbox label {
+  margin: 0 !important;
+  margin-left: 8px !important;
+  font-size: 14px !important;
+  color: #6b7280 !important;
+  cursor: pointer !important;
+}
+
+#rememberMe {
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer !important;
+  accent-color: #056389 !important;
+}
+
+/* Forgot Password Link */
+#kc-form-options a {
+  color: #056389 !important;
+  text-decoration: none !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  transition: color 0.2s !important;
+}
+
+#kc-form-options a:hover {
+  color: #00253a !important;
+  text-decoration: underline !important;
+}
+
+/* Submit Button */
+#kc-login,
+input[type="submit"],
+.btn-primary {
+  width: 100% !important;
+  padding: 16px 24px !important;
+  background: #056389 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  margin-top: 24px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+}
+
+/* Button Hover */
+#kc-login:hover,
+input[type="submit"]:hover,
+.btn-primary:hover {
+  background: #0678a7 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 20px rgba(5, 99, 137, 0.3) !important;
+}
+
+/* Button Active */
+#kc-login:active {
+  transform: translateY(0) !important;
+}
+
+/* Registration Link */
+#kc-registration {
+  text-align: center !important;
+  margin-top: 25px !important;
+  padding-top: 25px !important;
+  border-top: 1px solid rgba(229, 231, 235, 0.5) !important;
+}
+
+#kc-registration span {
+  color: #6b7280 !important;
+  font-size: 14px !important;
+}
+
+#kc-registration a {
+  color: #056389 !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  margin-left: 5px !important;
+}
+
+#kc-registration a:hover {
+  text-decoration: underline !important;
+}
+
+/* Error Messages */
+.alert-error {
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  color: #dc2626 !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  margin-bottom: 20px !important;
+  font-size: 14px !important;
+}
+
+/* Success Messages */
+.alert-success {
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+  color: #16a34a !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  margin-bottom: 20px !important;
+  font-size: 14px !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #kc-content {
+    max-width: 90% !important;
+  }
+  
+  #kc-content-wrapper {
+    padding: 40px 30px !important;
+  }
+  
+  #kc-form-wrapper::before {
+    font-size: 28px;
+  }
+}
+
+/* Loading State */
+.btn-primary:disabled {
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#kc-form {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Ensure form is always visible */
+#kc-form-wrapper {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.form-group,
+input,
+button {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
