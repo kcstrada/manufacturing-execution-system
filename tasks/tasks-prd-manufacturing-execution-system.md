@@ -150,9 +150,9 @@
 
 - [ ] 4.0 **Portal User Interfaces Development**
   - **Common**
-    - [ ] 4.1 Set up Next.js 15 with App Router for both portals
-    - [ ] 4.2 Configure Tailwind CSS and DaisyUI
-    - [ ] 4.3 Create shared UI component library structure
+    - [x] 4.1 Set up Next.js 15 with App Router for both portals
+    - [x] 4.2 Configure Tailwind CSS and DaisyUI
+    - [x] 4.3 Create shared UI component library structure
   - **Kent**
     - [ ] 4.4 Build shared authentication components with Keycloak JS
     - [ ] 4.5 Create permission-based rendering hooks (usePermission)

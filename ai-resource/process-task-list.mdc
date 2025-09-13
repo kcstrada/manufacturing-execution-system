@@ -1,11 +1,11 @@
 ---
-description: 
+description: Comprehensive guidelines for managing PRD task lists and development workflow
 globs: 
 alwaysApply: false
 ---
-# Task List Management
+# Task List Management & Development Guidelines
 
-Guidelines for managing task lists in markdown files to track progress on completing a PRD
+Guidelines for managing task lists in markdown files to track progress on completing a PRD, with specific instructions for frontend/backend development best practices
 
 ## Task Implementation
 - **Tell me who you are:** If not defined in this session, ask the user which developer they are (provide the names from the task list) and remember this for the entire conversation.
@@ -19,6 +19,108 @@ Guidelines for managing task lists in markdown files to track progress on comple
 - **Common tasks:** Can be completed by any developer. Coordinate with the team to avoid duplication - check with other developers before starting a common task and announce when you begin one. Common tasks should be prioritized since they unblock parallel work for everyone.
 - **When blocked:** If you encounter issues that prevent task completion, clearly document the blocker and suggest next steps rather than marking the task complete.
 
+## Frontend Development Guidelines
+
+### Package Structure & Usage
+- **Package Locations:** All shared packages are in `/frontend/packages/`
+  - `@mes/ui` → `/frontend/packages/ui` - Shared UI components library
+  - `@mes/auth` → `/frontend/packages/auth` - Authentication utilities
+  - `@mes/permissions` → `/frontend/packages/permissions` - Authorization logic
+  - `@mes/api` → `/frontend/packages/api` - API client and utilities
+  - `@mes/config` → `/frontend/packages/config` - Shared configurations
+
+### Component Development Rules
+1. **ALWAYS check existing components first:**
+   - Search in `/frontend/packages/ui/src/components/` for UI components
+   - Check component categories: layout, navigation, data-display, forms, feedback, manufacturing
+   - Review Storybook (`make ui-storybook`) to see all available components
+
+2. **Import using package aliases:**
+   ```typescript
+   // ✅ CORRECT
+   import { Button, Card, Table } from '@mes/ui'
+   import { useAuth } from '@mes/auth'
+   import { apiClient } from '@mes/api'
+   
+   // ❌ WRONG - Never use file paths
+   import { Button } from '../packages/ui/src/components/Button'
+   ```
+
+3. **Component reuse priority:**
+   - Use existing component as-is if it meets requirements
+   - Extend existing component with props if minor changes needed
+   - Modify shared component if change benefits all portals
+   - Create new shared component only if it will be reused
+   - Create portal-specific component only as last resort
+
+4. **Manufacturing domain components:**
+   - Use specialized MES components from `@mes/ui/components/manufacturing`:
+     - ProductionCard - Production line status display
+     - EquipmentStatus - Equipment monitoring widget
+     - MetricsCard - KPI and metrics display
+     - ShiftIndicator - Shift schedule display
+
+### Testing Requirements
+- **Write tests for all new components:** Use React Testing Library
+- **Test location:** Same directory as component, with `.test.tsx` extension
+- **Run tests:** Use `make frontend-test` or `make frontend-test-watch`
+- **Coverage:** Aim for >80% coverage on new code
+
+## Backend Development Guidelines
+
+### Module Structure
+- **Follow NestJS conventions:** Each feature should be a module in `/backend/src/modules/`
+- **Module components:** Each module should have:
+  - `*.module.ts` - Module definition
+  - `*.controller.ts` - HTTP endpoints
+  - `*.service.ts` - Business logic
+  - `*.entity.ts` - Database entities
+  - `dto/` - Data transfer objects
+  - `*.controller.spec.ts` - Controller tests
+  - `*.service.spec.ts` - Service tests
+
+### API Development Rules
+1. **Use existing services:** Check for existing services before creating new ones
+2. **Follow RESTful conventions:** Use proper HTTP methods and status codes
+3. **DTO validation:** Always validate input with class-validator decorators
+4. **Error handling:** Use proper exception filters and HTTP exceptions
+5. **Authentication:** Use Keycloak guards for protected endpoints
+6. **Authorization:** Use OpenFGA for fine-grained permissions
+
+### Database Guidelines
+- **Use TypeORM migrations:** Never modify database directly
+- **Entity relationships:** Define proper relationships with decorators
+- **Multi-tenancy:** Always include tenant context in queries
+- **Soft deletes:** Use soft delete for audit trail
+
+### Testing Requirements
+- **Unit tests:** Test services and controllers in isolation
+- **Integration tests:** Test full API flows with database
+- **Test commands:**
+  - `make backend-test` - Run all tests
+  - `make backend-test-watch` - Watch mode
+  - `make backend-test-integration` - Integration tests only
+
+## Development Workflow
+
+### Before Starting Any Task
+1. **Check dependencies:** Ensure infrastructure is running (`make up`)
+2. **Pull latest code:** `git pull origin main`
+3. **Install dependencies:** `npm install` in relevant directories
+4. **Check existing code:** Search for similar implementations
+
+### During Development
+1. **Follow conventions:** Match existing code style and patterns
+2. **Write tests:** TDD approach - write tests first when possible
+3. **Use Make commands:** Leverage Makefile for common tasks
+4. **Check logs:** Use `make logs` to debug issues
+
+### Before Committing
+1. **Run tests:** Ensure all tests pass
+2. **Run linters:** `make backend-lint` or `make frontend-lint`
+3. **Type check:** `make frontend-type-check` for TypeScript
+4. **Update documentation:** Keep README and inline docs current
+
 ## Task List Maintenance
 
 1. **Update the task list as you work:**
@@ -31,14 +133,47 @@ Guidelines for managing task lists in markdown files to track progress on comple
 
 ## AI Instructions
 
-When working with task lists, the AI must:
+When working with task lists and development, the AI must:
 
-1. Regularly update the task list file after finishing any significant work.
-2. Follow the completion protocol:
-   - Mark each finished **sub‑task** `[x]`.
-   - Mark the **parent task** `[x]` once **all** its subtasks are `[x]`.
-3. Add newly discovered tasks but pause for user approval.
-4. Keep "Relevant Files" accurate and up to date.
-5. Before starting work, check which sub‑task is next for your assigned developer role. If common tasks are incomplete and blocking your work, offer to complete them first.
-6. After implementing a sub‑task, update the file and then pause for user approval.
-7. For common tasks: Check with the user before starting to ensure no other developer is already working on it. If assigned common tasks, prioritize them since they unblock other developers' parallel work.
+### Task Management
+1. **Track progress meticulously:** Update task list after each subtask completion
+2. **Follow completion protocol:**
+   - Mark each finished **sub‑task** `[x]`
+   - Mark the **parent task** `[x]` once **all** its subtasks are `[x]`
+3. **Add discovered tasks:** Document new requirements but pause for approval
+4. **Maintain file tracking:** Keep "Relevant Files" section accurate and current
+5. **Check dependencies:** Verify prerequisites before starting any task
+6. **Coordinate on common tasks:** Confirm no duplication with user before starting
+
+### Development Practices
+7. **Frontend development:**
+   - ALWAYS check `/frontend/packages/` for existing components first
+   - Import using package aliases: `import { Button } from '@mes/ui'`
+   - Never create duplicate components - extend existing ones
+   - Use manufacturing-specific components for MES features
+   - Write React Testing Library tests for all new components
+
+8. **Backend development:**
+   - Follow NestJS module structure conventions
+   - Use existing services and utilities where possible
+   - Implement proper DTO validation and error handling
+   - Write both unit and integration tests
+   - Always consider multi-tenancy in database operations
+
+9. **Quality assurance:**
+   - Run tests before marking tasks complete
+   - Ensure >80% test coverage on new code
+   - Run linters and fix all warnings
+   - Verify TypeScript types compile without errors
+
+10. **Communication:**
+    - Stop after each subtask for user approval
+    - Clearly explain any blockers or issues
+    - Suggest alternatives when blocked
+    - Document assumptions and decisions
+
+### Key Commands Reference
+- **Frontend:** `make frontend-test`, `make ui-storybook`, `make frontend-lint`
+- **Backend:** `make backend-test`, `make backend-dev`, `make backend-lint`
+- **Database:** `make db-migrate`, `make db-seed`, `make db-reset`
+- **Infrastructure:** `make up`, `make down`, `make logs`

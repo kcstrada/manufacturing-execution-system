@@ -200,20 +200,70 @@ frontend-test: ## Run frontend tests
 	@echo "$(BLUE)🧪 Running frontend tests...$(NC)"
 	@cd frontend && npm run test
 
+.PHONY: frontend-test-ui
+frontend-test-ui: ## Run UI package tests
+	@echo "$(BLUE)🧪 Running UI package tests...$(NC)"
+	@cd frontend/packages/ui && npm test -- --run
+
+.PHONY: frontend-test-watch
+frontend-test-watch: ## Run frontend tests in watch mode
+	@echo "$(BLUE)👀 Starting test watch mode...$(NC)"
+	@cd frontend/packages/ui && npm test
+
+.PHONY: frontend-test-coverage
+frontend-test-coverage: ## Run frontend tests with coverage
+	@echo "$(BLUE)📊 Running tests with coverage...$(NC)"
+	@cd frontend/packages/ui && npm run test:coverage
+
+.PHONY: frontend-test-button
+frontend-test-button: ## Test Button component
+	@echo "$(BLUE)🧪 Testing Button component...$(NC)"
+	@cd frontend/packages/ui && npm test src/components/forms/Button.test.tsx -- --run
+
+.PHONY: frontend-test-badge
+frontend-test-badge: ## Test Badge component
+	@echo "$(BLUE)🧪 Testing Badge component...$(NC)"
+	@cd frontend/packages/ui && npm test src/components/data-display/Badge.test.tsx -- --run
+
+.PHONY: frontend-test-hooks
+frontend-test-hooks: ## Test React hooks
+	@echo "$(BLUE)🧪 Testing hooks...$(NC)"
+	@cd frontend/packages/ui && npm test src/hooks -- --run
+
 .PHONY: frontend-lint
 frontend-lint: ## Lint frontend code
 	@echo "$(BLUE)🔍 Linting frontend code...$(NC)"
 	@cd frontend && npm run lint
+
+.PHONY: frontend-lint-ui
+frontend-lint-ui: ## Lint UI package
+	@echo "$(BLUE)🔍 Linting UI package...$(NC)"
+	@cd frontend/packages/ui && npm run lint:check
 
 .PHONY: frontend-format
 frontend-format: ## Format frontend code
 	@echo "$(BLUE)✨ Formatting frontend code...$(NC)"
 	@cd frontend && npm run format
 
+.PHONY: frontend-type-check
+frontend-type-check: ## Run TypeScript type checking
+	@echo "$(BLUE)📝 Running TypeScript type checking...$(NC)"
+	@cd frontend/packages/ui && npm run type-check
+
 .PHONY: ui-storybook
 ui-storybook: ## Start Storybook for UI components
 	@echo "$(BLUE)📚 Starting Storybook...$(NC)"
 	@cd frontend/packages/ui && npm run storybook
+
+.PHONY: ui-storybook-build
+ui-storybook-build: ## Build Storybook static files
+	@echo "$(BLUE)🏗️ Building Storybook...$(NC)"
+	@cd frontend/packages/ui && npm run build-storybook
+
+.PHONY: ui-build
+ui-build: ## Build UI package
+	@echo "$(BLUE)🏗️ Building UI package...$(NC)"
+	@cd frontend/packages/ui && npm run build
 
 # ===============================
 # 🔐 Identity & Authorization
