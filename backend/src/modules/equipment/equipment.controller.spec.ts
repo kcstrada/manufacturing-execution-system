@@ -124,27 +124,28 @@ describe('EquipmentController', () => {
   } as MaintenanceRecord;
 
   const mockEquipmentMetrics: EquipmentMetrics = {
-    byStatus: {
-      'in_use': 5,
-      idle: 3,
-      maintenance: 1,
-      'out_of_service': 1,
-    },
-    critical: 4,
-    utilizationRate: 50,
+    totalEquipment: 10,
+    operationalCount: 8,
+    maintenanceCount: 1,
+    breakdownCount: 1,
     averageOEE: 85.5,
+    upcomingMaintenance: 3,
+    overdueMaintenance: 1,
+    criticalEquipment: {
+      total: 4,
+      operational: 3,
+    },
   };
 
   const mockMaintenanceMetrics: MaintenanceMetrics = {
-    byType: {
-      preventive: 6,
-      corrective: 3,
-      predictive: 1,
-    },
-    averageDuration: 2.5,
+    totalScheduled: 10,
+    completed: 9,
+    overdue: 1,
+    inProgress: 0,
+    mtbf: 720, // Mean Time Between Failures in hours
+    mttr: 4, // Mean Time To Repair in hours
     totalCost: 2500,
-    averageCost: 250,
-    completionRate: 95,
+    breakdownRate: 5,
   };
 
   beforeEach(async () => {

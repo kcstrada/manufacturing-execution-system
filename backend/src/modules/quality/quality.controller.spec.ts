@@ -121,8 +121,8 @@ describe('QualityController', () => {
     firstPassYield: 95,
     overallYield: 97,
     costOfQuality: 5000,
+    nonConformanceCount: 3,
     openNCRs: 3,
-    overdueNCRs: 1,
     averageNCRClosureTime: 5,
   };
 
@@ -130,32 +130,34 @@ describe('QualityController', () => {
     {
       productId: 'prod-1',
       productName: 'Product A',
-      totalInspections: 50,
-      passedInspections: 47,
-      failedInspections: 2,
-      reworkedInspections: 1,
+      totalInspected: 50,
+      totalPassed: 47,
+      totalFailed: 3,
       passRate: 94,
-      failRate: 4,
-      reworkRate: 2,
-      averageDefectsPerUnit: 0.04,
-      mostCommonDefect: 'Scratch',
+      commonDefects: [
+        {
+          code: 'D001',
+          description: 'Scratch',
+          count: 2,
+          severity: DefectSeverity.MINOR,
+        },
+        {
+          code: 'D002',
+          description: 'Dent',
+          count: 1,
+          severity: DefectSeverity.MAJOR,
+        },
+      ],
     },
   ];
 
   const mockControlChartData: ControlChartData = {
     metric: '1',
-    metricName: 'Diameter',
-    targetValue: 10,
-    upperControlLimit: 10.5,
-    lowerControlLimit: 9.5,
-    dataPoints: [
-      { date: new Date(), value: 10.1, sampleSize: 5, withinLimits: true },
-      { date: new Date(), value: 9.9, sampleSize: 5, withinLimits: true },
+    data: [
+      { date: new Date(), value: 10.1, ucl: 10.5, lcl: 9.5, mean: 10 },
+      { date: new Date(), value: 9.9, ucl: 10.5, lcl: 9.5, mean: 10 },
     ],
-    mean: 10,
-    standardDeviation: 0.15,
-    processCapabilityIndex: 1.33,
-    outOfControlPoints: 0,
+    outOfControl: false,
   };
 
   beforeEach(async () => {
@@ -501,7 +503,7 @@ describe('QualityController', () => {
       );
 
       expect(result).toHaveLength(2);
-      expect(result[0].defectCode).toBe('D001');
+      expect(result[0]?.defectCode).toBe('D001');
       expect(service.getDefectParetoAnalysis).toHaveBeenCalledWith(
         new Date('2024-01-01'),
         new Date('2024-01-31'),
@@ -512,7 +514,7 @@ describe('QualityController', () => {
       const result = await controller.getQualityAlerts();
 
       expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('high_failure_rate');
+      expect(result[0]?.type).toBe('high_failure_rate');
       expect(service.checkQualityAlerts).toHaveBeenCalled();
     });
   });

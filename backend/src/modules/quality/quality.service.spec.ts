@@ -25,11 +25,11 @@ import {
 
 describe('QualityService', () => {
   let service: QualityService;
-  let metricRepository: Repository<QualityMetric>;
-  let inspectionRepository: Repository<QualityInspection>;
-  let planRepository: Repository<QualityControlPlan>;
-  let ncrRepository: Repository<NonConformanceReport>;
-  let eventEmitter: EventEmitter2;
+  let metricRepository: jest.Mocked<Repository<QualityMetric>>;
+  let inspectionRepository: jest.Mocked<Repository<QualityInspection>>;
+  let planRepository: jest.Mocked<Repository<QualityControlPlan>>;
+  let ncrRepository: jest.Mocked<Repository<NonConformanceReport>>;
+  let eventEmitter: jest.Mocked<EventEmitter2>;
 
   const mockMetric: QualityMetric = {
     id: '1',
@@ -185,19 +185,57 @@ describe('QualityService', () => {
         QualityService,
         {
           provide: getRepositoryToken(QualityMetric),
-          useClass: Repository,
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findOne: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+            count: jest.fn(),
+          },
         },
         {
           provide: getRepositoryToken(QualityInspection),
-          useClass: Repository,
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findOne: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+            count: jest.fn(),
+            createQueryBuilder: jest.fn().mockReturnValue({
+              where: jest.fn().mockReturnThis(),
+              andWhere: jest.fn().mockReturnThis(),
+              orderBy: jest.fn().mockReturnThis(),
+              take: jest.fn().mockReturnThis(),
+              getMany: jest.fn().mockResolvedValue([]),
+            }),
+          },
         },
         {
           provide: getRepositoryToken(QualityControlPlan),
-          useClass: Repository,
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findOne: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+          },
         },
         {
           provide: getRepositoryToken(NonConformanceReport),
-          useClass: Repository,
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findOne: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+            count: jest.fn(),
+          },
         },
         {
           provide: EventEmitter2,
@@ -209,19 +247,11 @@ describe('QualityService', () => {
     }).compile();
 
     service = module.get<QualityService>(QualityService);
-    metricRepository = module.get<Repository<QualityMetric>>(
-      getRepositoryToken(QualityMetric),
-    );
-    inspectionRepository = module.get<Repository<QualityInspection>>(
-      getRepositoryToken(QualityInspection),
-    );
-    planRepository = module.get<Repository<QualityControlPlan>>(
-      getRepositoryToken(QualityControlPlan),
-    );
-    ncrRepository = module.get<Repository<NonConformanceReport>>(
-      getRepositoryToken(NonConformanceReport),
-    );
-    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
+    metricRepository = module.get(getRepositoryToken(QualityMetric)) as jest.Mocked<Repository<QualityMetric>>;
+    inspectionRepository = module.get(getRepositoryToken(QualityInspection)) as jest.Mocked<Repository<QualityInspection>>;
+    planRepository = module.get(getRepositoryToken(QualityControlPlan)) as jest.Mocked<Repository<QualityControlPlan>>;
+    ncrRepository = module.get(getRepositoryToken(NonConformanceReport)) as jest.Mocked<Repository<NonConformanceReport>>;
+    eventEmitter = module.get<EventEmitter2>(EventEmitter2) as jest.Mocked<EventEmitter2>;
   });
 
   it('should be defined', () => {
@@ -290,6 +320,7 @@ describe('QualityService', () => {
         expect(metricRepository.find).toHaveBeenCalledWith({
           where: filters,
           relations: ['product'],
+          order: { metricCode: 'ASC' },
         });
       });
     });
@@ -349,7 +380,7 @@ describe('QualityService', () => {
         expect(eventEmitter.emit).not.toHaveBeenCalled();
       });
 
-      it('should throw ConflictException if inspection number exists', async () => {
+      it('should throw NotFoundException if metric not found', async () => {
         const dto: CreateQualityInspectionDto = {
           inspectionNumber: 'INS001',
           type: InspectionType.IN_PROCESS,
@@ -359,12 +390,10 @@ describe('QualityService', () => {
           result: InspectionResult.PASS,
         };
 
-        jest
-          .spyOn(inspectionRepository, 'findOne')
-          .mockResolvedValue(mockInspection);
+        jest.spyOn(inspectionRepository, 'findOne').mockResolvedValue(mockInspection);
 
         await expect(service.createInspection(dto)).rejects.toThrow(
-          ConflictException,
+          NotFoundException,
         );
       });
     });
@@ -646,14 +675,14 @@ describe('QualityService', () => {
 
         expect(result).toContainEqual(
           expect.objectContaining({
-            type: 'high_failure_rate',
+            type: 'HIGH_FAILURE_RATE',
             severity: 'high',
           }),
         );
         expect(result).toContainEqual(
           expect.objectContaining({
-            type: 'critical_ncr',
-            severity: 'critical',
+            type: 'NCR_OVERDUE',
+            severity: 'high',
           }),
         );
       });

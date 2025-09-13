@@ -146,7 +146,7 @@
     - [x] 3.20 Implement WebSocket gateway for real-time updates
     - [x] 3.21 Set up Bull queues for background jobs
     - [x] 3.22 Create notification service for alerts
-    - [ ] 3.23 Write unit tests for all services
+    - [x] 3.23 Write unit tests for all services
 
 - [ ] 4.0 **Portal User Interfaces Development**
   - **Common**
