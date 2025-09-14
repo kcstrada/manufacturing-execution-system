@@ -1,6 +1,7 @@
 'use client'
 
 import { StoreProvider } from '@mes/store'
+import { IntegratedQueryProvider } from '@mes/query'
 import { AuthProvider } from '@mes/auth'
 import { ReactNode } from 'react'
 
@@ -11,9 +12,11 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <StoreProvider>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
+      <IntegratedQueryProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </IntegratedQueryProvider>
     </StoreProvider>
   )
 }

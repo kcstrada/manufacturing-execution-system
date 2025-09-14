@@ -158,7 +158,7 @@
     - [x] 4.5 Create permission-based rendering hooks (usePermission)
     - [x] 4.6 Implement API client with Axios interceptors
     - [x] 4.7 Set up Redux Toolkit for state management
-    - [ ] 4.8 Configure TanStack Query for server state
+    - [x] 4.8 Configure TanStack Query for server state
     - [ ] 4.9 **Admin Portal - Dashboard**: Create executive dashboard with KPIs
     - [ ] 4.10 **Admin Portal - Orders**: Build order management interface
     - [ ] 4.11 **Admin Portal - Inventory**: Create inventory management UI
