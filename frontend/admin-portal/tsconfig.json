@@ -19,7 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@mes/store": ["../packages/store/src"],
+      "@mes/query": ["../packages/query/src"],
+      "@mes/auth": ["../packages/auth/src"],
+      "@mes/ui": ["../packages/ui/src"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

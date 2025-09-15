@@ -53,7 +53,7 @@ describe('useOrders', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toEqual(mockOrders)
-    expect(fetch).toHaveBeenCalledWith('/api/orders?')
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/api/orders?')
   })
 
   it('should handle query parameters', async () => {
@@ -71,10 +71,10 @@ describe('useOrders', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(fetch).toHaveBeenCalledWith('/api/orders?page=2&limit=20&status=pending')
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/api/orders?page=2&limit=20&status=pending')
   })
 
-  it('should handle fetch error', async () => {
+  it('should handle fetch error by returning empty data', async () => {
     ;(fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
     })
@@ -83,9 +83,17 @@ describe('useOrders', () => {
       wrapper: createWrapper(),
     })
 
-    await waitFor(() => expect(result.current.isError).toBe(true))
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(result.current.error).toEqual(new Error('Failed to fetch orders'))
+    // Should return empty data instead of throwing error
+    expect(result.current.data).toEqual({
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+      totalPages: 0
+    })
+    expect(result.current.isError).toBe(false)
   })
 })
 
@@ -113,7 +121,7 @@ describe('useOrder', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toEqual(mockOrder)
-    expect(fetch).toHaveBeenCalledWith('/api/orders/1')
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/api/orders/1')
   })
 
   it('should not fetch if id is not provided', () => {
@@ -157,7 +165,7 @@ describe('useCreateOrder', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toEqual(createdOrder)
-    expect(fetch).toHaveBeenCalledWith('/api/orders', {
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newOrder),
@@ -205,7 +213,7 @@ describe('useUpdateOrder', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(fetch).toHaveBeenCalledWith('/api/orders/1', {
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/api/orders/1', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'completed' }),

@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'primary' | 'secondary' | 'accent' | 'info' | 'success' | 'warning' | 'error' | 'ghost' | 'link';
+  variant?: 'default' | 'primary' | 'secondary' | 'accent' | 'info' | 'success' | 'warning' | 'error' | 'ghost' | 'link' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   outline?: boolean;
   loading?: boolean;
@@ -11,7 +11,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
-  variant = 'default',
+  variant = 'primary',
   size = 'md',
   outline = false,
   loading = false,
@@ -23,17 +23,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   disabled,
   ...props
 }, ref) => {
+  // Use DaisyUI with Unimore theme (defined in tailwind config)
   const variantClasses = {
     default: 'btn',
-    primary: 'btn btn-primary',
-    secondary: 'btn btn-secondary',
-    accent: 'btn btn-accent',
+    primary: 'btn btn-primary', // Uses Unimore blue from theme
+    secondary: 'btn btn-secondary', // Uses Unimore navy from theme
+    accent: 'btn btn-accent', // Uses Unimore light blue from theme
     info: 'btn btn-info',
     success: 'btn btn-success',
     warning: 'btn btn-warning',
     error: 'btn btn-error',
     ghost: 'btn btn-ghost',
-    link: 'btn btn-link'
+    link: 'btn btn-link',
+    outline: 'btn btn-outline btn-primary'
   };
 
   const sizeClasses = {
@@ -45,9 +47,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   const buttonClasses = [
     variantClasses[variant],
     sizeClasses[size],
-    outline ? 'btn-outline' : '',
-    fullWidth ? 'btn-block' : '',
+    outline && variant !== 'outline' ? 'btn-outline' : '',
+    fullWidth ? 'btn-block w-full' : '',
     loading ? 'loading' : '',
+    'font-poppins transition-all hover:shadow-md',
     className
   ].filter(Boolean).join(' ');
 
@@ -59,9 +62,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
       {...props}
     >
       {loading && <span className="loading loading-spinner loading-sm"></span>}
-      {leftIcon && !loading && <span className="w-4 h-4">{leftIcon}</span>}
+      {leftIcon && !loading && <span className="inline-flex items-center mr-2">{leftIcon}</span>}
       {children}
-      {rightIcon && !loading && <span className="w-4 h-4">{rightIcon}</span>}
+      {rightIcon && !loading && <span className="inline-flex items-center ml-2">{rightIcon}</span>}
     </button>
   );
 });

@@ -18,10 +18,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   const [token, setToken] = useState<string | null>(null)
   const keycloakRef = useRef<Keycloak | null>(null)
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const initializedRef = useRef(false)
 
   // Initialize Keycloak
   useEffect(() => {
     const initKeycloak = async () => {
+      // Prevent double initialization
+      if (initializedRef.current) return
+      initializedRef.current = true
+
       try {
         const keycloak = new Keycloak({
           url: keycloakConfig.url,
@@ -36,6 +41,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
           pkceMethod: 'S256',
           checkLoginIframe: false,
+          enableLogging: true,
+          responseMode: 'fragment',
         })
 
         setIsAuthenticated(authenticated)
@@ -44,7 +51,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           setToken(keycloak.token || null)
           const userData = parseUserFromToken(keycloak)
           setUser(userData)
-          
+
+          // Clean up the URL after successful authentication
+          if (window.location.hash.includes('code=') || window.location.hash.includes('state=')) {
+            window.history.replaceState(null, '', window.location.pathname)
+          }
+
           if (onAuthSuccess) {
             onAuthSuccess(userData)
           }

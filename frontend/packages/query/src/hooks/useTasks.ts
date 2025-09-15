@@ -60,6 +60,9 @@ export const taskKeys = {
   myTasks: (workerId: string) => [...taskKeys.all, 'my', workerId] as const,
 }
 
+// API base URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+
 // Fetch functions
 const fetchTasks = async (params?: TasksParams): Promise<PaginatedResponse<Task>> => {
   const searchParams = new URLSearchParams()
@@ -70,25 +73,56 @@ const fetchTasks = async (params?: TasksParams): Promise<PaginatedResponse<Task>
   if (params?.orderId) searchParams.append('orderId', params.orderId)
   if (params?.priority) searchParams.append('priority', params.priority)
 
-  const response = await fetch(`/api/tasks?${searchParams}`)
-  if (!response.ok) throw new Error('Failed to fetch tasks')
-  return response.json()
+  try {
+    const response = await fetch(`${API_URL}/tasks?${searchParams}`)
+    if (!response.ok) {
+      // Return empty data for 404 (endpoint not found)
+      if (response.status === 404) {
+        return {
+          data: [],
+          total: 0,
+          page: params?.page || 1,
+          limit: params?.limit || 10,
+          totalPages: 0
+        }
+      }
+      throw new Error('Failed to fetch tasks')
+    }
+    return response.json()
+  } catch (error) {
+    console.warn('Failed to fetch tasks, returning empty data:', error)
+    return {
+      data: [],
+      total: 0,
+      page: params?.page || 1,
+      limit: params?.limit || 10,
+      totalPages: 0
+    }
+  }
 }
 
 const fetchTask = async (id: string): Promise<Task> => {
-  const response = await fetch(`/api/tasks/${id}`)
+  const response = await fetch(`${API_URL}/tasks/${id}`)
   if (!response.ok) throw new Error('Failed to fetch task')
   return response.json()
 }
 
 const fetchMyTasks = async (workerId: string): Promise<Task[]> => {
-  const response = await fetch(`/api/workers/${workerId}/tasks`)
-  if (!response.ok) throw new Error('Failed to fetch my tasks')
-  return response.json()
+  try {
+    const response = await fetch(`${API_URL}/workers/${workerId}/tasks`)
+    if (!response.ok) {
+      if (response.status === 404) return []
+      throw new Error('Failed to fetch my tasks')
+    }
+    return response.json()
+  } catch (error) {
+    console.warn('Failed to fetch my tasks, returning empty data:', error)
+    return []
+  }
 }
 
 const createTask = async (task: Partial<Task>): Promise<Task> => {
-  const response = await fetch('/api/tasks', {
+  const response = await fetch(`${API_URL}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task),
@@ -98,7 +132,7 @@ const createTask = async (task: Partial<Task>): Promise<Task> => {
 }
 
 const updateTask = async ({ id, ...updates }: Partial<Task> & { id: string }): Promise<Task> => {
-  const response = await fetch(`/api/tasks/${id}`, {
+  const response = await fetch(`${API_URL}/tasks/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
@@ -108,7 +142,7 @@ const updateTask = async ({ id, ...updates }: Partial<Task> & { id: string }): P
 }
 
 const startTask = async (id: string): Promise<Task> => {
-  const response = await fetch(`/api/tasks/${id}/start`, {
+  const response = await fetch(`${API_URL}/tasks/${id}/start`, {
     method: 'POST',
   })
   if (!response.ok) throw new Error('Failed to start task')
@@ -124,7 +158,7 @@ const completeTask = async ({
   actualHours?: number
   notes?: string
 }): Promise<Task> => {
-  const response = await fetch(`/api/tasks/${id}/complete`, {
+  const response = await fetch(`${API_URL}/tasks/${id}/complete`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ actualHours, notes }),

@@ -54,6 +54,8 @@ make admin-dev      # http://localhost:3001
 make user-dev       # http://localhost:3002
 ```
 
+> 📖 **See [Make Commands Reference](docs/MAKE_COMMANDS.md) for all available commands**
+
 ## 📊 Key Features
 
 - **Multi-tenant Architecture**: Isolated data per organization

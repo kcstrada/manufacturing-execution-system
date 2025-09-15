@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
 export interface ProtectedRouteProps {
@@ -20,7 +20,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   redirectTo,
   onUnauthorized,
 }) => {
-  const { isAuthenticated, isLoading, hasRole, hasPermission, hasAnyRole, hasAllRoles } = useAuth()
+  const { isAuthenticated, isLoading, hasRole, hasPermission, hasAnyRole, hasAllRoles, login } = useAuth()
+
+  // Trigger login if not authenticated (but not if we're processing an auth callback)
+  useEffect(() => {
+    const hasAuthCode = window.location.hash.includes('code=') || window.location.search.includes('code=')
+    const hasError = window.location.hash.includes('error=') || window.location.search.includes('error=')
+
+    // Don't trigger login if we're processing an auth response
+    if (!isLoading && !isAuthenticated && !hasAuthCode && !hasError) {
+      login()
+    }
+  }, [isLoading, isAuthenticated, login])
 
   // Show loading state
   if (isLoading) {
@@ -33,14 +44,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check authentication
   if (!isAuthenticated) {
-    if (redirectTo) {
-      window.location.href = redirectTo
-      return null
-    }
-    if (onUnauthorized) {
-      onUnauthorized()
-    }
-    return <>{fallback || <UnauthorizedMessage />}</>
+    // Will trigger login via useEffect
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    )
   }
 
   // Check roles
