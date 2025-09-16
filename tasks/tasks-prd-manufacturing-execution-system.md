@@ -127,8 +127,8 @@
     - [x] 2.23 Create WorkInstruction entity for detailed step instructions
     - [x] 2.24 Add BOM fields: isDefault, totalCost, alternateComponents
     - [x] 2.25 Add Routing fields: isDefault, expectedYield, alternateRoutes
-    - [ ] 2.26 Add ProductionStep fields: validationRules, mediaFiles, alternateWorkCenterId
-    - [ ] 2.27 Create composite indexes for product queries
+    - [x] 2.26 Add ProductionStep fields: validationRules, mediaFiles, alternateWorkCenterId
+    - [x] 2.27 Create composite indexes for product queries
     - [ ] 2.28 Run migrations for new product management tables
 
 - [ ] 3.0 **Manufacturing Operations Backend Services**
