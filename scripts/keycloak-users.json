@@ -13,7 +13,7 @@
         "temporary": false
       }
     ],
-    "realmRoles": ["admin", "default-roles-mes"],
+    "realmRoles": ["super_admin", "admin", "default-roles-mes"],
     "attributes": {
       "tenant_id": ["default"],
       "department": ["Management"],
@@ -106,6 +106,27 @@
       "employee_id": ["EMP005"],
       "worker_id": ["WRK002"],
       "skills": ["machining", "welding", "maintenance"]
+    }
+  },
+  {
+    "username": "superadmin",
+    "email": "superadmin@mes.local",
+    "emailVerified": true,
+    "enabled": true,
+    "firstName": "Super",
+    "lastName": "Admin",
+    "credentials": [
+      {
+        "type": "password",
+        "value": "SuperAdmin@2024",
+        "temporary": false
+      }
+    ],
+    "realmRoles": ["super_admin", "default-roles-mes"],
+    "attributes": {
+      "tenant_id": ["default"],
+      "department": ["IT"],
+      "employee_id": ["EMP000"]
     }
   }
 ]

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { MainLayout } from "@/components/layout";
+import { LayoutWrapper } from "@/components/layout";
 
 // Primary font - Poppins
 const poppins = Poppins({
@@ -36,9 +36,9 @@ export default function RootLayout({
         className={`${poppins.variable} ${jetbrainsMono.variable} font-poppins antialiased bg-unimore-white-off text-unimore-navy`}
       >
         <Providers>
-          <MainLayout>
+          <LayoutWrapper>
             {children}
-          </MainLayout>
+          </LayoutWrapper>
         </Providers>
       </body>
     </html>

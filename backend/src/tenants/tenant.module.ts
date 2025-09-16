@@ -6,6 +6,7 @@ import { TenantInterceptor } from './tenant.interceptor';
 import { TenantGuard } from './tenant.guard';
 import { TenantController } from './tenant.controller';
 import { Tenant } from './entities/tenant.entity';
+import { AuthModule } from '../auth/auth.module';
 
 /**
  * Global module for multi-tenant functionality
@@ -15,6 +16,7 @@ import { Tenant } from './entities/tenant.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Tenant]),
+    AuthModule,
   ],
   controllers: [TenantController],
   providers: [

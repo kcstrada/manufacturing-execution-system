@@ -18,6 +18,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { CombinedAuthGuard } from './guards/combined-auth.guard';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { KeycloakAdminService } from './keycloak-admin.service';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PermissionsModule } from '../permissions/permissions.module';
   controllers: [AuthController, AuthDemoController],
   providers: [
     AuthService,
+    KeycloakAdminService,
     JwtStrategy,
     RefreshStrategy,
     JwtAccessGuard,
@@ -51,6 +53,7 @@ import { PermissionsModule } from '../permissions/permissions.module';
   ],
   exports: [
     AuthService,
+    KeycloakAdminService,
     JwtAccessGuard,
     JwtRefreshGuard,
     RolesGuard,

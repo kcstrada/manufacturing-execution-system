@@ -5,16 +5,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
-  Package,
   ShoppingCart,
   Users,
-  BarChart3,
   Settings,
-  FileText,
   Factory,
-  Truck,
-  ClipboardList,
-  AlertCircle,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -22,12 +16,8 @@ import {
   Activity,
   Zap,
   Shield,
-  Database,
-  Workflow,
   TrendingUp,
-  Box,
-  Layers,
-  PieChart
+  Box
 } from 'lucide-react'
 
 interface NavItem {

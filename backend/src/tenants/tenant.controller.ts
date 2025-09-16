@@ -9,12 +9,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { 
-  ApiTags, 
-  ApiOperation, 
+import {
+  ApiTags,
+  ApiOperation,
   ApiBearerAuth,
   ApiResponse,
-  ApiForbiddenResponse 
+  ApiForbiddenResponse
 } from '@nestjs/swagger';
 // import { AuthGuard, Roles } from 'nest-keycloak-connect';
 import { TenantService } from './tenant.service';
@@ -23,6 +23,9 @@ import { TenantGuard } from './tenant.guard';
 import { TenantId, TenantContext, CrossTenant } from './decorators/tenant.decorators';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ApiAuth, ApiStandardResponses, ApiTenant } from '../common/swagger/swagger.decorators';
+import { CreateTenantDto } from './dto/create-tenant.dto';
+import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { KeycloakAdminService } from '../auth/keycloak-admin.service';
 
 @ApiTags('tenants')
 @Controller('tenants')
@@ -32,7 +35,10 @@ import { ApiAuth, ApiStandardResponses, ApiTenant } from '../common/swagger/swag
 @ApiTenant()
 @ApiStandardResponses()
 export class TenantController {
-  constructor(private readonly tenantService: TenantService) {}
+  constructor(
+    private readonly tenantService: TenantService,
+    private readonly keycloakAdminService: KeycloakAdminService,
+  ) {}
 
   @Get('current')
   @ApiOperation({ 
@@ -145,21 +151,10 @@ export class TenantController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all tenants (admin only)' })
   async getAllTenants() {
-    // This would return all tenants from database
+    const tenants = await this.tenantService.findAll();
     return {
-      tenants: [
-        {
-          id: 'default',
-          name: 'Default Tenant',
-          status: 'active',
-        },
-        {
-          id: 'tenant-acme',
-          name: 'ACME Corporation',
-          status: 'active',
-        },
-      ],
-      total: 2,
+      tenants,
+      total: tenants.length,
     };
   }
 
@@ -168,14 +163,11 @@ export class TenantController {
   // @Roles({ roles: ['admin'] })
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new tenant (admin only)' })
-  async createTenant(@Body() createTenantDto: any) {
-    // This would create a new tenant
+  async createTenant(@Body() createTenantDto: CreateTenantDto) {
+    const tenant = await this.tenantService.create(createTenantDto);
     return {
       success: true,
-      tenant: {
-        id: 'new-tenant-id',
-        ...createTenantDto,
-      },
+      tenant,
     };
   }
 
@@ -186,15 +178,12 @@ export class TenantController {
   @ApiOperation({ summary: 'Update tenant (admin only)' })
   async updateTenant(
     @Param('tenantId') tenantId: string,
-    @Body() updateTenantDto: any,
+    @Body() updateTenantDto: UpdateTenantDto,
   ) {
-    // This would update the tenant
+    const tenant = await this.tenantService.update(tenantId, updateTenantDto);
     return {
       success: true,
-      tenant: {
-        id: tenantId,
-        ...updateTenantDto,
-      },
+      tenant,
     };
   }
 
@@ -204,7 +193,7 @@ export class TenantController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete tenant (admin only)' })
   async deleteTenant(@Param('tenantId') tenantId: string) {
-    // This would soft-delete the tenant
+    await this.tenantService.remove(tenantId);
     return {
       success: true,
       message: `Tenant ${tenantId} has been deleted`,
@@ -220,10 +209,11 @@ export class TenantController {
     @Param('tenantId') tenantId: string,
     @Body('reason') reason: string,
   ) {
-    // This would suspend the tenant
+    const tenant = await this.tenantService.suspend(tenantId, reason);
     return {
       success: true,
       message: `Tenant ${tenantId} has been suspended`,
+      tenant,
       reason,
     };
   }
@@ -234,10 +224,95 @@ export class TenantController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Activate tenant (admin only)' })
   async activateTenant(@Param('tenantId') tenantId: string) {
-    // This would activate the tenant
+    const tenant = await this.tenantService.activate(tenantId);
     return {
       success: true,
       message: `Tenant ${tenantId} has been activated`,
+      tenant,
     };
+  }
+
+  @Post(':tenantId/users/create-admin')
+  @CrossTenant()
+  // @Roles({ roles: ['admin'] })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create admin user for tenant' })
+  async createAdminUser(
+    @Param('tenantId') tenantId: string,
+    @Body() userData?: {
+      username?: string;
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      password?: string;
+      role?: 'super_admin' | 'executive' | 'admin' | 'worker' | 'sales';
+    },
+  ) {
+    try {
+      const user = await this.keycloakAdminService.createAdminUser(tenantId, userData);
+      return {
+        success: true,
+        message: `Admin user created for tenant ${tenantId}`,
+        user,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Failed to create admin user',
+      };
+    }
+  }
+
+  @Post(':tenantId/users/create')
+  @CrossTenant()
+  // @Roles({ roles: ['admin'] })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create regular user for tenant' })
+  async createRegularUser(
+    @Param('tenantId') tenantId: string,
+    @Body() userData?: {
+      username?: string;
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      password?: string;
+      role?: 'super_admin' | 'executive' | 'admin' | 'worker' | 'sales';
+    },
+  ) {
+    try {
+      const user = await this.keycloakAdminService.createRegularUser(tenantId, userData);
+      return {
+        success: true,
+        message: `User created for tenant ${tenantId}`,
+        user,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Failed to create user',
+      };
+    }
+  }
+
+  @Get(':tenantId/users')
+  @CrossTenant()
+  // @Roles({ roles: ['admin'] })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List users for tenant' })
+  async listTenantUsers(@Param('tenantId') tenantId: string) {
+    try {
+      const users = await this.keycloakAdminService.listUsers(tenantId);
+      return {
+        success: true,
+        users,
+        total: users.length,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Failed to list users',
+        users: [],
+      };
+    }
   }
 }

@@ -45,6 +45,7 @@
     "fga:model:apply": "echo 'OpenFGA model apply placeholder'"
   },
   "dependencies": {
+    "@keycloak/keycloak-admin-client": "^26.3.4",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/bull": "^11.0.3",
     "@nestjs/cache-manager": "^3.0.1",

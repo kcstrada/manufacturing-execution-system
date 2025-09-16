@@ -92,17 +92,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     const tokenParsed = keycloak.tokenParsed as TokenPayload
     const profile = keycloak.profile
 
+    // Debug: Log the entire token to see its structure
+    console.log('Full token parsed:', tokenParsed)
+    console.log('Keycloak profile:', profile)
+
     const roles: string[] = []
-    
+
     // Get realm roles
     if (tokenParsed?.realm_access?.roles) {
+      console.log('Found realm roles:', tokenParsed.realm_access.roles)
       roles.push(...tokenParsed.realm_access.roles)
     }
-    
+
     // Get client roles
     if (tokenParsed?.resource_access?.[keycloakConfig.clientId]?.roles) {
+      console.log('Found client roles for', keycloakConfig.clientId, ':', tokenParsed.resource_access[keycloakConfig.clientId].roles)
       roles.push(...tokenParsed.resource_access[keycloakConfig.clientId].roles)
     }
+
+    // Also check for roles in different locations (some Keycloak configs put them elsewhere)
+    if (tokenParsed?.roles && Array.isArray(tokenParsed.roles)) {
+      console.log('Found direct roles:', tokenParsed.roles)
+      roles.push(...tokenParsed.roles)
+    }
+
+    // Check resource_access for 'account' client (common default)
+    if (tokenParsed?.resource_access?.account?.roles) {
+      console.log('Found account roles:', tokenParsed.resource_access.account.roles)
+      roles.push(...tokenParsed.resource_access.account.roles)
+    }
+
+    console.log('Final extracted roles:', roles)
 
     return {
       id: keycloak.subject || '',

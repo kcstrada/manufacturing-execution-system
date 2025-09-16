@@ -82,6 +82,12 @@ backend-dev: ## Run backend in development mode
 	@echo "$(BLUE)🚀 Starting backend in development mode...$(NC)"
 	@cd backend && npm run start:dev
 
+.PHONY: backend-stop
+backend-stop: ## Stop the running backend server
+	@echo "$(RED)🛑 Stopping backend server...$(NC)"
+	@pkill -f "node.*backend/dist/main" || echo "$(YELLOW)⚠️  No backend server process found$(NC)"
+	@echo "$(GREEN)✅ Backend server stopped$(NC)"
+
 .PHONY: backend-build
 backend-build: ## Build backend for production
 	@echo "$(BLUE)🏗️ Building backend...$(NC)"

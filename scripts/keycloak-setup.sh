@@ -112,7 +112,7 @@ echo -e "${GREEN}✅ Clients configured${NC}"
 
 # Create roles
 echo "Creating roles..."
-ROLES=("admin" "executive" "sales" "worker")
+ROLES=("super_admin" "admin" "executive" "sales" "worker")
 
 for ROLE in "${ROLES[@]}"; do
     # Create description with capitalized first letter
@@ -185,7 +185,8 @@ echo -e "${GREEN}✅ Default users created${NC}"
 echo -e "${GREEN}🎉 Keycloak setup complete!${NC}"
 echo ""
 echo "Default users created:"
-echo "  Admin:     admin@mes.local / admin123"
-echo "  Executive: executive@mes.local / executive123"
-echo "  Sales:     sales@mes.local / sales123"
-echo "  Worker:    worker@mes.local / worker123"
+echo "  Super Admin: superadmin@mes.local / SuperAdmin@2024"
+echo "  Admin:       admin@mes.local / admin123 (has super_admin role)"
+echo "  Executive:   executive@mes.local / executive123"
+echo "  Sales:       sales@mes.local / sales123"
+echo "  Worker:      worker@mes.local / worker123"

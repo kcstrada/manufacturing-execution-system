@@ -1,7 +1,9 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Scope, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectEntityManager } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { Tenant } from './entities/tenant.entity';
+import { KeycloakAdminService } from '../auth/keycloak-admin.service';
 
 /**
  * Service for tenant-specific operations
@@ -14,8 +16,11 @@ export class TenantService {
 
   constructor(
     @InjectEntityManager() private readonly entityManager: EntityManager,
+    @InjectRepository(Tenant) private readonly tenantRepository: Repository<Tenant>,
     // @ts-ignore - configService might be used in future tenant switching logic
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => KeycloakAdminService))
+    private readonly keycloakAdminService: KeycloakAdminService,
   ) {}
 
   /**
@@ -84,7 +89,7 @@ export class TenantService {
   /**
    * Find one entity with automatic tenant filtering
    */
-  async findOne<T = any>(entityClass: any, options?: any): Promise<T | null> {
+  async findOneEntity<T = any>(entityClass: any, options?: any): Promise<T | null> {
     const repository = this.entityManager.getRepository(entityClass);
     
     // Check if entity has tenantId field
@@ -202,15 +207,135 @@ export class TenantService {
   /**
    * Get tenant statistics
    */
-  async getTenantStats(): Promise<any> {
-    // Example statistics - would be computed from actual data
+  async getTenantStats(tenantId?: string): Promise<any> {
+    const id = tenantId || this.tenantId;
+
+    // Get actual counts from database
+    const userCount = await this.entityManager
+      .createQueryBuilder('User', 'u')
+      .where('u.tenantId = :tenantId', { tenantId: id })
+      .getCount();
+
+    const orderCount = await this.entityManager
+      .createQueryBuilder('CustomerOrder', 'o')
+      .where('o.tenantId = :tenantId', { tenantId: id })
+      .getCount();
+
     return {
-      tenantId: this.tenantId,
-      userCount: 0,
-      orderCount: 0,
-      taskCount: 0,
-      storageUsed: 0,
+      tenantId: id,
+      userCount,
+      orderCount,
+      taskCount: 0, // Add actual query
+      storageUsed: 0, // Calculate from files/attachments
       lastActivity: new Date(),
     };
+  }
+
+  /**
+   * Get all tenants with real user counts from Keycloak
+   */
+  async findAll(): Promise<Tenant[]> {
+    const tenants = await this.tenantRepository.find({
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    // Update each tenant with real user count from Keycloak
+    for (const tenant of tenants) {
+      try {
+        const userCount = await this.keycloakAdminService.getUserCountByTenant(tenant.id);
+        tenant.userCount = userCount;
+      } catch (error) {
+        console.error(`Failed to get user count for tenant ${tenant.id}:`, error);
+        // Keep the existing userCount from database if Keycloak query fails
+      }
+    }
+
+    return tenants;
+  }
+
+  /**
+   * Get tenant by ID
+   */
+  async findTenantById(id: string): Promise<Tenant> {
+    const tenant = await this.tenantRepository.findOne({
+      where: { id },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant with ID ${id} not found`);
+    }
+
+    return tenant;
+  }
+
+  /**
+   * Create new tenant
+   */
+  async create(createTenantDto: any): Promise<Tenant> {
+    const tenant = this.tenantRepository.create({
+      ...createTenantDto,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isActive: true,
+      userCount: 0,
+      orderCount: 0,
+      storageUsed: 0,
+    });
+
+    const savedTenant = await this.tenantRepository.save(tenant);
+    // TypeORM save() can return array or single entity, we know it's single here
+    return Array.isArray(savedTenant) ? savedTenant[0]! : savedTenant;
+  }
+
+  /**
+   * Update tenant
+   */
+  async update(id: string, updateTenantDto: any): Promise<Tenant> {
+    const tenant = await this.findTenantById(id);
+
+    Object.assign(tenant, {
+      ...updateTenantDto,
+      updatedAt: new Date(),
+    });
+
+    const saved = await this.tenantRepository.save(tenant);
+    return Array.isArray(saved) ? saved[0]! : saved;
+  }
+
+  /**
+   * Delete tenant (soft delete)
+   */
+  async remove(id: string): Promise<void> {
+    const tenant = await this.findTenantById(id);
+    tenant.isActive = false;
+    tenant.suspendedAt = new Date();
+    tenant.suspendedReason = 'Deleted by administrator';
+    await this.tenantRepository.save(tenant);
+  }
+
+  /**
+   * Activate tenant
+   */
+  async activate(id: string): Promise<Tenant> {
+    const tenant = await this.findTenantById(id);
+    tenant.isActive = true;
+    tenant.suspendedAt = undefined;
+    tenant.suspendedReason = undefined;
+    const saved = await this.tenantRepository.save(tenant);
+    return Array.isArray(saved) ? saved[0]! : saved;
+  }
+
+  /**
+   * Suspend tenant
+   */
+  async suspend(id: string, reason: string): Promise<Tenant> {
+    const tenant = await this.findTenantById(id);
+    tenant.isActive = false;
+    tenant.suspendedAt = new Date();
+    tenant.suspendedReason = reason;
+    const saved = await this.tenantRepository.save(tenant);
+    return Array.isArray(saved) ? saved[0]! : saved;
   }
 }
