@@ -11,6 +11,7 @@ export * from './department.entity';
 export * from './product.entity';
 export * from './product-category.entity';
 export * from './product-template.entity';
+export * from './product-revision.entity';
 export * from './bill-of-materials.entity';
 export * from './unit-of-measure.entity';
 

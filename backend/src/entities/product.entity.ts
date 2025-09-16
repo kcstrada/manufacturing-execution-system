@@ -139,4 +139,14 @@ export class Product extends TenantBaseEntity {
   @ManyToOne(() => Routing, { nullable: true })
   @JoinColumn({ name: 'default_routing_id' })
   defaultRouting?: Routing;
+
+  // Revision tracking - will be linked via ProductRevision entity
+  // @OneToMany(() => ProductRevision, (revision) => revision.product)
+  // revisions!: ProductRevision[];
+
+  @Column({ type: 'int', default: 0 })
+  currentRevisionNumber!: number;
+
+  @Column({ type: 'uuid', nullable: true })
+  currentRevisionId?: string;
 }
