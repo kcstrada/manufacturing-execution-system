@@ -59,6 +59,40 @@ export class Routing extends TenantBaseEntity {
   @Column({ type: 'jsonb', nullable: true })
   notes?: Record<string, any>;
 
+  // New fields for task 2.25
+  @Column({ type: 'boolean', default: false })
+  isDefault!: boolean;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 100 })
+  expectedYield!: number; // Percentage (0-100)
+
+  @Column({ type: 'jsonb', nullable: true })
+  alternateRoutes?: Array<{
+    alternateRoutingId: string;
+    alternateRoutingName: string;
+    reason: string; // Why use this alternate (e.g., "Machine breakdown", "Capacity constraint")
+    preferenceOrder: number;
+    conditions?: string; // When to use this alternate
+    setupTimeMinutes: number;
+    runTimePerUnitMinutes: number;
+    costPerUnit: number;
+    yieldPercentage: number;
+    requiredWorkCenters?: string[];
+    requiredSkills?: string[];
+    capacityRequired?: number;
+    approvedBy?: string;
+    approvedDate?: Date;
+    lastUsedDate?: Date;
+    usageCount?: number;
+    performanceMetrics?: {
+      averageYield?: number;
+      averageQuality?: number;
+      averageCycleTime?: number;
+    };
+    notes?: string;
+    isActive: boolean;
+  }>;
+
   // Relations
   @ManyToOne(() => Product, (product) => product.routings)
   @JoinColumn({ name: 'product_id' })
@@ -86,4 +120,64 @@ export class Routing extends TenantBaseEntity {
 
   @OneToMany(() => ProductionStep, (step) => step.routing)
   steps!: ProductionStep[];
+
+  // Helper methods
+  calculateActualYield(inputQuantity: number, outputQuantity: number): number {
+    if (inputQuantity === 0) return 0;
+    return (outputQuantity / inputQuantity) * 100;
+  }
+
+  getExpectedOutput(inputQuantity: number): number {
+    return inputQuantity * (this.expectedYield / 100);
+  }
+
+  getActiveAlternates(): any[] {
+    if (!this.alternateRoutes) return [];
+    return this.alternateRoutes
+      .filter(route => route.isActive)
+      .sort((a, b) => a.preferenceOrder - b.preferenceOrder);
+  }
+
+  getBestAlternate(conditions?: string[]): any | null {
+    const activeAlternates = this.getActiveAlternates();
+    if (activeAlternates.length === 0) return null;
+
+    if (conditions && conditions.length > 0) {
+      // Find alternates matching any of the conditions
+      const matchingAlternates = activeAlternates.filter(route =>
+        conditions.some(condition =>
+          route.reason?.toLowerCase().includes(condition.toLowerCase()) ||
+          route.conditions?.toLowerCase().includes(condition.toLowerCase())
+        )
+      );
+      if (matchingAlternates.length > 0) {
+        return matchingAlternates[0];
+      }
+    }
+
+    // Return the first (highest preference) alternate
+    return activeAlternates[0];
+  }
+
+  hasAlternates(): boolean {
+    return this.alternateRoutes ? this.alternateRoutes.length > 0 : false;
+  }
+
+  getTotalProcessTime(): number {
+    return this.totalSetupTimeMinutes + this.totalRunTimePerUnitMinutes;
+  }
+
+  updatePerformanceMetrics(alternateRoutingId: string, metrics: any): void {
+    if (!this.alternateRoutes) return;
+
+    const alternate = this.alternateRoutes.find(r => r.alternateRoutingId === alternateRoutingId);
+    if (alternate) {
+      alternate.performanceMetrics = {
+        ...alternate.performanceMetrics,
+        ...metrics
+      };
+      alternate.lastUsedDate = new Date();
+      alternate.usageCount = (alternate.usageCount || 0) + 1;
+    }
+  }
 }

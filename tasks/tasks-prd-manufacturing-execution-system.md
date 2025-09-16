@@ -126,7 +126,7 @@
     - [x] 2.22 Create ProcessParameter entity for production step parameters
     - [x] 2.23 Create WorkInstruction entity for detailed step instructions
     - [x] 2.24 Add BOM fields: isDefault, totalCost, alternateComponents
-    - [ ] 2.25 Add Routing fields: isDefault, expectedYield, alternateRoutes
+    - [x] 2.25 Add Routing fields: isDefault, expectedYield, alternateRoutes
     - [ ] 2.26 Add ProductionStep fields: validationRules, mediaFiles, alternateWorkCenterId
     - [ ] 2.27 Create composite indexes for product queries
     - [ ] 2.28 Run migrations for new product management tables
