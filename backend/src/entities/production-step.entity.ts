@@ -160,6 +160,65 @@ export class ProductionStep extends TenantBaseEntity {
     sops?: string[];
   };
 
+  // New fields for task 2.26
+  @Column({ type: 'jsonb', nullable: true })
+  validationRules?: Array<{
+    ruleId: string;
+    ruleName: string;
+    ruleType: 'range' | 'list' | 'pattern' | 'custom' | 'comparison' | 'calculation';
+    parameter: string; // Parameter to validate
+    condition: string; // Validation condition
+    expectedValue?: any;
+    minValue?: number;
+    maxValue?: number;
+    allowedValues?: any[];
+    pattern?: string; // Regex pattern
+    formula?: string; // Calculation formula
+    severity: 'error' | 'warning' | 'info';
+    errorMessage: string;
+    correctionHint?: string;
+    requiresSignOff?: boolean;
+    autoStop?: boolean; // Stop production if validation fails
+    notificationGroups?: string[];
+    isActive: boolean;
+    sequence?: number;
+  }>;
+
+  @Column({ type: 'jsonb', nullable: true })
+  mediaFiles?: Array<{
+    fileId: string;
+    fileName: string;
+    fileType: 'image' | 'video' | 'pdf' | 'cad' | '3d-model' | 'document' | 'spreadsheet';
+    fileUrl: string;
+    thumbnailUrl?: string;
+    fileSize: number;
+    mimeType: string;
+    purpose: 'instruction' | 'reference' | 'quality' | 'safety' | 'training' | 'troubleshooting';
+    description?: string;
+    tags?: string[];
+    language?: string;
+    version?: string;
+    uploadedBy: string;
+    uploadedAt: Date;
+    lastAccessedAt?: Date;
+    accessCount?: number;
+    duration?: number; // For videos in seconds
+    dimensions?: {
+      width: number;
+      height: number;
+    };
+    metadata?: Record<string, any>;
+    isRequired?: boolean;
+    displayOrder?: number;
+  }>;
+
+  @Column({ type: 'uuid', nullable: true })
+  alternateWorkCenterId?: string;
+
+  @ManyToOne(() => WorkCenter, { nullable: true })
+  @JoinColumn({ name: 'alternate_work_center_id' })
+  alternateWorkCenter?: WorkCenter;
+
   @Column({ type: 'int', default: 1 })
   override version!: number;
 
@@ -223,5 +282,85 @@ export class ProductionStep extends TenantBaseEntity {
   getLaborCost(hourlyRate: number): number {
     const totalHours = this.getTotalTime() / 60;
     return totalHours * hourlyRate * this.crewSize;
+  }
+
+  // Helper methods for task 2.26
+  getActiveValidationRules(): any[] {
+    if (!this.validationRules) return [];
+    return this.validationRules
+      .filter(rule => rule.isActive)
+      .sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+  }
+
+  getCriticalValidationRules(): any[] {
+    return this.getActiveValidationRules()
+      .filter(rule => rule.severity === 'error' || rule.autoStop === true);
+  }
+
+  validateParameter(parameterName: string, value: any): { valid: boolean; errors: any[] } {
+    const errors: any[] = [];
+    const rules = this.getActiveValidationRules()
+      .filter(rule => rule.parameter === parameterName);
+
+    for (const rule of rules) {
+      let isValid = true;
+
+      switch (rule.ruleType) {
+        case 'range':
+          if (rule.minValue !== undefined && value < rule.minValue) isValid = false;
+          if (rule.maxValue !== undefined && value > rule.maxValue) isValid = false;
+          break;
+        case 'list':
+          if (rule.allowedValues && !rule.allowedValues.includes(value)) isValid = false;
+          break;
+        case 'pattern':
+          if (rule.pattern && !new RegExp(rule.pattern).test(value)) isValid = false;
+          break;
+        case 'comparison':
+          // This would need runtime context for comparison
+          break;
+      }
+
+      if (!isValid) {
+        errors.push({
+          rule: rule.ruleName,
+          severity: rule.severity,
+          message: rule.errorMessage,
+          hint: rule.correctionHint
+        });
+      }
+    }
+
+    return { valid: errors.length === 0, errors };
+  }
+
+  getMediaFilesByPurpose(purpose: string): any[] {
+    if (!this.mediaFiles) return [];
+    return this.mediaFiles
+      .filter(file => file.purpose === purpose)
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+  }
+
+  getRequiredMediaFiles(): any[] {
+    if (!this.mediaFiles) return [];
+    return this.mediaFiles.filter(file => file.isRequired === true);
+  }
+
+  hasAlternateWorkCenter(): boolean {
+    return this.alternateWorkCenterId !== null && this.alternateWorkCenterId !== undefined;
+  }
+
+  getPreferredWorkCenter(): string | undefined {
+    return this.workCenterId || this.alternateWorkCenterId;
+  }
+
+  updateMediaFileAccess(fileId: string): void {
+    if (!this.mediaFiles) return;
+
+    const file = this.mediaFiles.find(f => f.fileId === fileId);
+    if (file) {
+      file.lastAccessedAt = new Date();
+      file.accessCount = (file.accessCount || 0) + 1;
+    }
   }
 }
