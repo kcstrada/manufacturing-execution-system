@@ -120,7 +120,7 @@
     - [x] 2.16 Create seed data for development testing
     - [x] 2.17 Implement repository pattern for data access
     - [x] 2.18 Add database indexes for performance
-    - [ ] 2.19 Add Product entity fields: isManufacturable, isPurchasable, barcode, defaultBomId, defaultRoutingId
+    - [x] 2.19 Add Product entity fields: isManufacturable, isPurchasable, barcode, defaultBomId, defaultRoutingId
     - [ ] 2.20 Create ProductTemplate entity for quick product creation
     - [ ] 2.21 Create ProductRevision entity for tracking changes
     - [ ] 2.22 Create ProcessParameter entity for production step parameters

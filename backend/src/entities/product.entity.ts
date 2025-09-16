@@ -35,6 +35,9 @@ export enum ProductStatus {
 @Index(['tenantId', 'name'])
 @Index(['tenantId', 'type'])
 @Index(['tenantId', 'isActive'])
+@Index(['tenantId', 'barcode'])
+@Index(['tenantId', 'isManufacturable'])
+@Index(['tenantId', 'isPurchasable'])
 export class Product extends TenantBaseEntity {
   @Column({ type: 'varchar', length: 100 })
   sku!: string;
@@ -87,6 +90,20 @@ export class Product extends TenantBaseEntity {
   @Column({ type: 'decimal', precision: 15, scale: 3, nullable: true })
   reorderQuantity?: number;
 
+  @Column({ type: 'boolean', default: true })
+  isManufacturable!: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  isPurchasable!: boolean;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  barcode?: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  defaultBomId?: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  defaultRoutingId?: string;
 
   // Relations
   @ManyToOne(() => ProductCategory, { nullable: true })
@@ -114,4 +131,12 @@ export class Product extends TenantBaseEntity {
 
   @OneToMany(() => Routing, (routing) => routing.product)
   routings!: Routing[];
+
+  @ManyToOne(() => BillOfMaterials, { nullable: true })
+  @JoinColumn({ name: 'default_bom_id' })
+  defaultBom?: BillOfMaterials;
+
+  @ManyToOne(() => Routing, { nullable: true })
+  @JoinColumn({ name: 'default_routing_id' })
+  defaultRouting?: Routing;
 }

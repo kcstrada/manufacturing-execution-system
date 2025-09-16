@@ -59,6 +59,9 @@ Guidelines for managing task lists in markdown files to track progress on comple
      - EquipmentStatus - Equipment monitoring widget
      - MetricsCard - KPI and metrics display
      - ShiftIndicator - Shift schedule display
+     - BOMTreeView - Hierarchical bill of materials display
+     - RoutingStepCard - Production step visualization
+     - WorkInstructionViewer - Media-rich instruction display
 
 ### Testing Requirements
 - **Write tests for all new components:** Use React Testing Library
@@ -92,6 +95,8 @@ Guidelines for managing task lists in markdown files to track progress on comple
 - **Entity relationships:** Define proper relationships with decorators
 - **Multi-tenancy:** Always include tenant context in queries
 - **Soft deletes:** Use soft delete for audit trail
+- **Version control:** For BOM and Routing entities, always maintain version history
+- **Default selections:** Products should reference their active BOM/Routing versions
 
 ### Testing Requirements
 - **Unit tests:** Test services and controllers in isolation
@@ -100,6 +105,47 @@ Guidelines for managing task lists in markdown files to track progress on comple
   - `make backend-test` - Run all tests
   - `make backend-test-watch` - Watch mode
   - `make backend-test-integration` - Integration tests only
+
+## Product Management Implementation Guidelines
+
+### When Implementing Product Features
+1. **Entity Hierarchy:** Remember the relationship hierarchy:
+   - Product → BOM → BOMComponents
+   - Product → Routing → ProductionSteps
+   - ProductionSteps → WorkCenter
+   - Product → ProductRevisions (for tracking changes)
+
+2. **Version Management:**
+   - Always implement version tracking for BOM and Routing
+   - Products should reference defaultBomId and defaultRoutingId
+   - Keep revision history in ProductRevision entity
+   - Use isDefault flag to mark active versions
+
+3. **Manufacturing Data Structure:**
+   - **Products:** Can be raw_material, component, finished_good, or consumable
+   - **BOM:** Multi-level with parent-child relationships
+   - **Routing:** Sequential steps with dependencies
+   - **Work Instructions:** Support text, images, videos as JSONB
+
+4. **UI Component Patterns:**
+   - Use tree view for BOM hierarchy
+   - Implement drag-drop for routing sequence
+   - Support file upload for work instructions
+   - Show cost rollup calculations
+   - Display revision history timeline
+
+5. **Service Layer Patterns:**
+   - ProductService: CRUD + template management
+   - BOMService: Explosion logic + cost rollup
+   - RoutingService: Step sequencing + time calculations
+   - Always calculate totalCost when BOM changes
+   - Update routing times when steps change
+
+6. **Validation Rules:**
+   - Ensure circular dependencies are prevented in BOM
+   - Validate work center availability for routing steps
+   - Check material availability against BOM requirements
+   - Verify step dependencies in routing sequence
 
 ## Development Workflow
 
@@ -152,6 +198,11 @@ When working with task lists and development, the AI must:
    - Never create duplicate components - extend existing ones
    - Use manufacturing-specific components for MES features
    - Write React Testing Library tests for all new components
+   - For product management UI:
+     * Use TreeView component for BOM hierarchy
+     * Implement drag-drop for routing steps
+     * Support rich media for work instructions
+     * Show real-time cost calculations
 
 8. **Backend development:**
    - Follow NestJS module structure conventions
@@ -159,6 +210,12 @@ When working with task lists and development, the AI must:
    - Implement proper DTO validation and error handling
    - Write both unit and integration tests
    - Always consider multi-tenancy in database operations
+   - For product management services:
+     * Implement BOM explosion recursively
+     * Calculate costs bottom-up from components
+     * Maintain version history for changes
+     * Validate circular dependencies
+     * Support alternate materials/routes
 
 9. **Quality assurance:**
    - Run tests before marking tasks complete
