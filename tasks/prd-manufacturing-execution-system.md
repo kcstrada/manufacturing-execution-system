@@ -526,10 +526,20 @@ When implementing this template, replace the following placeholders throughout a
 - As a factory worker, I want to report task completion and any issues so that supervisors are informed
 - As a factory worker, I want to request materials needed for my tasks so that I can complete work without delays
 
+### Production Manager User Stories
+- As a production manager, I want to create and maintain product specifications so that manufacturing has clear requirements
+- As a production manager, I want to define Bills of Materials (BOM) so that material requirements are documented
+- As a production manager, I want to create manufacturing routings with detailed steps so that workers know the production process
+- As a production manager, I want to attach work instructions and media to production steps so that workers have visual guidance
+- As a production manager, I want to manage product revisions so that engineering changes are tracked
+- As a production manager, I want to configure work centers and their capabilities so that routing can be optimized
+- As a production manager, I want to set quality checkpoints in the routing so that quality standards are maintained
+
 ### Sales Team User Stories
 - As a sales team member, I want to create and file new orders so that production can begin
 - As a sales team member, I want to track order status in real-time so that I can update customers
 - As a sales team member, I want to view production capacity so that I can provide accurate delivery estimates
+- As a sales team member, I want to access product catalog with specifications so that I can provide accurate quotes
 
 ## Functional Requirements
 
@@ -572,19 +582,34 @@ When implementing this template, replace the following placeholders throughout a
 28. The system must provide real-time production dashboards
 29. The system must allow custom report generation with filters
 
+### Product Management & Manufacturing Configuration
+30. The system must provide comprehensive product catalog management with SKU, specifications, and categorization
+31. The system must allow creation and management of Bills of Materials (BOM) with multi-level components
+32. The system must support BOM versioning and revision control
+33. The system must allow definition of manufacturing routing with sequential production steps
+34. The system must enable configuration of work centers and their capabilities
+35. The system must support production step details including setup time, run time, required tools, and work instructions
+36. The system must allow attachment of documents, images, and videos to production steps
+37. The system must support alternate materials and routing paths
+38. The system must track product revisions and engineering changes
+39. The system must allow definition of quality specifications and inspection points per product
+40. The system must support product templates for faster product creation
+41. The system must calculate product costs based on BOM and routing
+42. The system must support both manufactured and purchased product types
+
 ### Administrative Functions
-30. The system must support shift scheduling for workers
-31. The system must track equipment maintenance schedules and history
-32. The system must manage quality control checkpoints and standards
-33. The system must support end-product catalog management
-34. The system must provide user role and permission management
+43. The system must support shift scheduling for workers
+44. The system must track equipment maintenance schedules and history
+45. The system must manage quality control checkpoints and standards
+46. The system must provide user role and permission management
 
 ### System Access & Permissions
-35. The system must support role-based access control with the following permissions:
-    - Admin: Full CRUD access to all modules
+47. The system must support role-based access control with the following permissions:
+    - Admin: Full CRUD access to all modules including product configuration
     - Executive: Full CRUD access to all modules
-    - Sales: Read and Update access to orders and inventory
-    - Worker: Read and Update access to assigned tasks and materials
+    - Production Manager: Full access to products, BOM, routing, and production planning
+    - Sales: Read and Update access to orders and inventory, Read access to products
+    - Worker: Read and Update access to assigned tasks and materials, Read access to work instructions
 
 ## Non-Goals (Out of Scope)
 

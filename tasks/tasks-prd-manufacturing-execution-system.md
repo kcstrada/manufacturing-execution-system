@@ -120,6 +120,16 @@
     - [x] 2.16 Create seed data for development testing
     - [x] 2.17 Implement repository pattern for data access
     - [x] 2.18 Add database indexes for performance
+    - [ ] 2.19 Add Product entity fields: isManufacturable, isPurchasable, barcode, defaultBomId, defaultRoutingId
+    - [ ] 2.20 Create ProductTemplate entity for quick product creation
+    - [ ] 2.21 Create ProductRevision entity for tracking changes
+    - [ ] 2.22 Create ProcessParameter entity for production step parameters
+    - [ ] 2.23 Create WorkInstruction entity for detailed step instructions
+    - [ ] 2.24 Add BOM fields: isDefault, totalCost, alternateComponents
+    - [ ] 2.25 Add Routing fields: isDefault, expectedYield, alternateRoutes
+    - [ ] 2.26 Add ProductionStep fields: validationRules, mediaFiles, alternateWorkCenterId
+    - [ ] 2.27 Create composite indexes for product queries
+    - [ ] 2.28 Run migrations for new product management tables
 
 - [ ] 3.0 **Manufacturing Operations Backend Services**
   - **Common**
@@ -148,6 +158,33 @@
     - [x] 3.22 Create notification service for alerts
     - [x] 3.23 Write unit tests for all services
 
+- [ ] 3.5 **Product Management Backend Services**
+  - **Common**
+    - [ ] 3.24 Design Product, BOM, and Routing service architecture
+    - [ ] 3.25 Create DTOs for product management operations
+  - **Kent**
+    - [ ] 3.26 Implement Product service with CRUD operations
+    - [ ] 3.27 Create Product categorization and search functionality
+    - [ ] 3.28 Build Product template system for quick creation
+    - [ ] 3.29 Implement BOM (Bill of Materials) service
+    - [ ] 3.30 Create multi-level BOM explosion logic
+    - [ ] 3.31 Build BOM versioning and revision control
+    - [ ] 3.32 Implement material cost rollup calculations
+    - [ ] 3.33 Create alternate component management
+    - [ ] 3.34 Implement Routing service with step sequencing
+    - [ ] 3.35 Build ProductionStep management with work instructions
+    - [ ] 3.36 Create work center assignment logic
+    - [ ] 3.37 Implement routing time and cost calculations
+    - [ ] 3.38 Build alternate routing path management
+    - [ ] 3.39 Create product revision tracking system
+    - [ ] 3.40 Implement engineering change order (ECO) workflow
+    - [ ] 3.41 Build product-to-production order conversion
+    - [ ] 3.42 Create product cost calculation engine
+    - [ ] 3.43 Implement product document attachment system
+    - [ ] 3.44 Build quality specification management per product
+    - [ ] 3.45 Create product lifecycle status management
+    - [ ] 3.46 Write comprehensive tests for product services
+
 - [ ] 4.0 **Portal User Interfaces Development**
   - **Common**
     - [x] 4.1 Set up Next.js 15 with App Router for both portals
@@ -164,7 +201,19 @@
     - [ ] 4.11 **Admin Portal - Inventory**: Create inventory management UI
     - [ ] 4.12 **Admin Portal - Tasks**: Build task assignment interface
     - [ ] 4.13 **Admin Portal - Workers**: Create worker management UI
-    - [ ] 4.14 **Admin Portal - Products**: Build product catalog management
+    - [ ] 4.14 **Admin Portal - Products**: Build comprehensive product management interface
+    - [ ] 4.14.1 Create product list view with filtering and search
+    - [ ] 4.14.2 Build product creation/edit form with specifications
+    - [ ] 4.14.3 Implement BOM management interface with tree view
+    - [ ] 4.14.4 Create BOM component picker with quantity management
+    - [ ] 4.14.5 Build routing definition interface with drag-drop sequencing
+    - [ ] 4.14.6 Create production step detail forms with work instructions
+    - [ ] 4.14.7 Implement document/media attachment interface
+    - [ ] 4.14.8 Build product revision history viewer
+    - [ ] 4.14.9 Create product template management UI
+    - [ ] 4.14.10 Implement product cost calculator interface
+    - [ ] 4.14.11 Build work center assignment interface
+    - [ ] 4.14.12 Create quality specification forms
     - [ ] 4.15 **Admin Portal - Reports**: Create reporting interface
     - [ ] 4.16 **Admin Portal - Settings**: Build system configuration UI
     - [ ] 4.17 **User Portal - Dashboard**: Create worker dashboard
@@ -209,22 +258,25 @@
 ```
 1.0 Infrastructure (1.1-1.5 Common → 1.6-1.19 Kent)
     ↓
-2.0 Database Models (2.1-2.2 Common → 2.3-2.18 Kent)
+2.0 Database Models (2.1-2.2 Common → 2.3-2.28 Kent including Product Management)
     ↓
-3.0 Backend Services (3.1-3.2 Common → 3.3-3.23 Kent)
+3.0 Backend Services (3.1-3.2 Common → 3.3-3.23 Kent Core Services)
     ↓
-4.0 User Interfaces (4.1-4.3 Common → 4.4-4.25 Kent)
+3.5 Product Management Services (3.24-3.25 Common → 3.26-3.46 Kent Product/BOM/Routing)
+    ↓
+4.0 User Interfaces (4.1-4.3 Common → 4.4-4.25 Kent including 4.14.1-4.14.12 Product UI)
     ↓
 5.0 Real-time & Analytics (5.1-5.2 Common → 5.3-5.22 Kent)
 ```
 
 ### Critical Path
 1. **Week 1**: Complete infrastructure setup (1.0)
-2. **Week 2**: Finish database architecture (2.0)
+2. **Week 2**: Finish database architecture including product tables (2.0-2.28)
 3. **Week 3-4**: Implement core backend services (3.0)
-4. **Week 5-6**: Build portal interfaces (4.0)
-5. **Week 7**: Add real-time features and analytics (5.0)
-6. **Week 8**: Integration testing and optimization
+4. **Week 5**: Build product management services (3.5)
+5. **Week 6-7**: Build portal interfaces including product UI (4.0)
+6. **Week 8**: Add real-time features and analytics (5.0)
+7. **Week 9**: Integration testing and optimization
 
 ### Integration Points
 - After 1.0: Verify all services are running via health checks
