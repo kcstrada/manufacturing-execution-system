@@ -20,6 +20,7 @@ export * from './production-order.entity';
 export * from './work-order.entity';
 export * from './work-center.entity';
 export * from './routing.entity';
+export * from './process-parameter.entity';
 
 // Customer management
 export * from './customer.entity';

@@ -4,6 +4,7 @@ import {
   Index,
   ManyToOne,
   ManyToMany,
+  OneToMany,
   JoinColumn,
   JoinTable,
   Unique,
@@ -12,6 +13,7 @@ import { TenantBaseEntity } from './base.entity';
 import { Product } from './product.entity';
 import { WorkCenter } from './work-center.entity';
 import { Routing } from './routing.entity';
+import { ProcessParameter } from './process-parameter.entity';
 
 export enum StepType {
   SETUP = 'setup',
@@ -202,6 +204,10 @@ export class ProductionStep extends TenantBaseEntity {
     },
   })
   dependencies!: ProductionStep[];
+
+  // Process parameters for this step
+  @OneToMany(() => ProcessParameter, (parameter) => parameter.productionStep)
+  processParameters!: ProcessParameter[];
 
   // Calculate total time for the step
   getTotalTime(): number {
