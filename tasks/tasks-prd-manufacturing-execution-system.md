@@ -124,8 +124,8 @@
     - [x] 2.20 Create ProductTemplate entity for quick product creation
     - [x] 2.21 Create ProductRevision entity for tracking changes
     - [x] 2.22 Create ProcessParameter entity for production step parameters
-    - [ ] 2.23 Create WorkInstruction entity for detailed step instructions
-    - [ ] 2.24 Add BOM fields: isDefault, totalCost, alternateComponents
+    - [x] 2.23 Create WorkInstruction entity for detailed step instructions
+    - [x] 2.24 Add BOM fields: isDefault, totalCost, alternateComponents
     - [ ] 2.25 Add Routing fields: isDefault, expectedYield, alternateRoutes
     - [ ] 2.26 Add ProductionStep fields: validationRules, mediaFiles, alternateWorkCenterId
     - [ ] 2.27 Create composite indexes for product queries

@@ -56,6 +56,31 @@ export class BillOfMaterials extends TenantBaseEntity {
   @Column({ type: 'jsonb', nullable: true })
   notes?: Record<string, any>;
 
+  // New fields for task 2.24
+  @Column({ type: 'boolean', default: false })
+  isDefault!: boolean;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
+  totalCost?: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  alternateComponents?: Array<{
+    primaryComponentId: string;
+    alternateComponentId: string;
+    alternateComponentName: string;
+    alternateComponentSku: string;
+    preferenceOrder: number;
+    conversionFactor: number; // Quantity multiplier if units differ
+    notes?: string;
+    conditions?: string; // When to use this alternate
+    costDifference?: number;
+    leadTimeDifference?: number; // in days
+    qualityNotes?: string;
+    approvedBy?: string;
+    approvedDate?: Date;
+    isActive: boolean;
+  }>;
+
   // Relations
   @ManyToOne(() => Product, (product) => product.billsOfMaterials)
   @JoinColumn({ name: 'product_id' })
@@ -83,6 +108,28 @@ export class BillOfMaterials extends TenantBaseEntity {
 
   @OneToMany(() => BOMComponent, (component) => component.billOfMaterials)
   components!: BOMComponent[];
+
+  // Helper methods
+  calculateTotalCost(componentCosts: Map<string, number>): number {
+    let total = 0;
+    for (const component of this.components) {
+      const componentCost = componentCosts.get(component.componentId) || 0;
+      const quantityWithScrap = component.quantity * (1 + component.scrapPercentage / 100);
+      total += componentCost * quantityWithScrap;
+    }
+    return total;
+  }
+
+  getAlternatesForComponent(componentId: string): any[] {
+    if (!this.alternateComponents) return [];
+    return this.alternateComponents
+      .filter(alt => alt.primaryComponentId === componentId && alt.isActive)
+      .sort((a, b) => a.preferenceOrder - b.preferenceOrder);
+  }
+
+  hasAlternates(): boolean {
+    return this.alternateComponents ? this.alternateComponents.length > 0 : false;
+  }
 }
 
 @Entity('bom_components')
@@ -111,6 +158,22 @@ export class BOMComponent extends TenantBaseEntity {
 
   @Column({ type: 'text', nullable: true })
   notes?: string;
+
+  // Additional fields for cost tracking
+  @Column({ type: 'decimal', precision: 15, scale: 4, nullable: true })
+  unitCost?: number;
+
+  @Column({ type: 'decimal', precision: 15, scale: 4, nullable: true })
+  extendedCost?: number;
+
+  @Column({ type: 'boolean', default: false })
+  isAlternateAllowed!: boolean;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  supplyType?: string; // 'stock', 'purchase', 'manufacture', 'phantom'
+
+  @Column({ type: 'int', nullable: true })
+  leadTimeDays?: number;
 
   // Relations
   @ManyToOne(() => BillOfMaterials, (bom) => bom.components)
