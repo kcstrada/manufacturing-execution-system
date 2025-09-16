@@ -21,6 +21,7 @@ export * from './work-order.entity';
 export * from './work-center.entity';
 export * from './routing.entity';
 export * from './process-parameter.entity';
+export * from './work-instruction.entity';
 
 // Customer management
 export * from './customer.entity';

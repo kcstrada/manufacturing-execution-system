@@ -14,6 +14,7 @@ import { Product } from './product.entity';
 import { WorkCenter } from './work-center.entity';
 import { Routing } from './routing.entity';
 import { ProcessParameter } from './process-parameter.entity';
+import { WorkInstruction } from './work-instruction.entity';
 
 export enum StepType {
   SETUP = 'setup',
@@ -208,6 +209,10 @@ export class ProductionStep extends TenantBaseEntity {
   // Process parameters for this step
   @OneToMany(() => ProcessParameter, (parameter) => parameter.productionStep)
   processParameters!: ProcessParameter[];
+
+  // Work instructions for this step
+  @OneToMany(() => WorkInstruction, (instruction) => instruction.productionStep)
+  workInstructions!: WorkInstruction[];
 
   // Calculate total time for the step
   getTotalTime(): number {
