@@ -129,7 +129,7 @@
     - [x] 2.25 Add Routing fields: isDefault, expectedYield, alternateRoutes
     - [x] 2.26 Add ProductionStep fields: validationRules, mediaFiles, alternateWorkCenterId
     - [x] 2.27 Create composite indexes for product queries
-    - [ ] 2.28 Run migrations for new product management tables
+    - [x] 2.28 Run migrations for new product management tables
 
 - [ ] 3.0 **Manufacturing Operations Backend Services**
   - **Common**
