@@ -121,7 +121,7 @@
     - [x] 2.17 Implement repository pattern for data access
     - [x] 2.18 Add database indexes for performance
     - [x] 2.19 Add Product entity fields: isManufacturable, isPurchasable, barcode, defaultBomId, defaultRoutingId
-    - [ ] 2.20 Create ProductTemplate entity for quick product creation
+    - [x] 2.20 Create ProductTemplate entity for quick product creation
     - [ ] 2.21 Create ProductRevision entity for tracking changes
     - [ ] 2.22 Create ProcessParameter entity for production step parameters
     - [ ] 2.23 Create WorkInstruction entity for detailed step instructions
