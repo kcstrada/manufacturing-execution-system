@@ -161,7 +161,7 @@
 - [ ] 3.5 **Product Management Backend Services**
   - **Common**
     - [x] 3.24 Design Product, BOM, and Routing service architecture
-    - [ ] 3.25 Create DTOs for product management operations
+    - [x] 3.25 Create DTOs for product management operations
   - **Kent**
     - [ ] 3.26 Implement Product service with CRUD operations
     - [ ] 3.27 Create Product categorization and search functionality
