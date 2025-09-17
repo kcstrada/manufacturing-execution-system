@@ -164,7 +164,7 @@
     - [x] 3.25 Create DTOs for product management operations
   - **Kent**
     - [x] 3.26 Implement Product service with CRUD operations
-    - [ ] 3.27 Create Product categorization and search functionality
+    - [x] 3.27 Create Product categorization and search functionality
     - [ ] 3.28 Build Product template system for quick creation
     - [ ] 3.29 Implement BOM (Bill of Materials) service
     - [ ] 3.30 Create multi-level BOM explosion logic
