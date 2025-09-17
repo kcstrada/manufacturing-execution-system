@@ -29,6 +29,9 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
 import { QueuesModule } from './modules/queues/queues.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ProductModule } from './modules/product/product.module';
+import { BOMModule } from './modules/bom/bom.module';
+import { RoutingModule } from './modules/routing/routing.module';
 import {
   AllExceptionsFilter,
   HttpExceptionFilter,
@@ -89,6 +92,9 @@ import {
     TenantModule, // Must be first to apply middleware
     AuthModule,
     PermissionsModule,
+    ProductModule,
+    BOMModule,
+    RoutingModule,
     OrderModule,
     InventoryModule,
     TaskModule,

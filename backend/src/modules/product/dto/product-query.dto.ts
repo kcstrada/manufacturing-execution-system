@@ -9,7 +9,7 @@ import {
   IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ProductType } from '../../../entities/product.entity';
+import { ProductType, ProductStatus } from '../../../entities/product.entity';
 
 export class ProductQueryDto {
   @ApiPropertyOptional({ description: 'Search term' })
@@ -36,6 +36,11 @@ export class ProductQueryDto {
   @IsUUID()
   @IsOptional()
   categoryId?: string;
+
+  @ApiPropertyOptional({ description: 'Product status', enum: ProductStatus })
+  @IsEnum(ProductStatus)
+  @IsOptional()
+  status?: ProductStatus;
 
   @ApiPropertyOptional({ description: 'Is active' })
   @IsBoolean()
@@ -64,7 +69,35 @@ export class ProductQueryDto {
   @IsNumber()
   @Min(1)
   @IsOptional()
-  limit?: number = 10;
+  pageSize?: number = 10;
+
+  @ApiPropertyOptional({ description: 'Minimum price' })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  minPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Maximum price' })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  maxPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Minimum stock level' })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  minStock?: number;
+
+  @ApiPropertyOptional({ description: 'Maximum stock level' })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  maxStock?: number;
 
   @ApiPropertyOptional({ description: 'Sort field' })
   @IsString()

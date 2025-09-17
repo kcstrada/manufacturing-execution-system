@@ -163,7 +163,7 @@
     - [x] 3.24 Design Product, BOM, and Routing service architecture
     - [x] 3.25 Create DTOs for product management operations
   - **Kent**
-    - [ ] 3.26 Implement Product service with CRUD operations
+    - [x] 3.26 Implement Product service with CRUD operations
     - [ ] 3.27 Create Product categorization and search functionality
     - [ ] 3.28 Build Product template system for quick creation
     - [ ] 3.29 Implement BOM (Bill of Materials) service
