@@ -13,7 +13,11 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TaskStatus, TaskPriority, TaskType } from '../../../entities/task.entity';
+import {
+  TaskStatus,
+  TaskPriority,
+  TaskType,
+} from '../../../entities/task.entity';
 
 export class CreateTaskDto {
   @ApiProperty({ description: 'Task name' })
@@ -253,7 +257,9 @@ export class AssignTaskDto {
   @IsString()
   notes?: string;
 
-  @ApiPropertyOptional({ description: 'Force assignment even if user lacks skills' })
+  @ApiPropertyOptional({
+    description: 'Force assignment even if user lacks skills',
+  })
   @IsOptional()
   @IsBoolean()
   force?: boolean;
@@ -320,7 +326,10 @@ export class TaskFilterDto {
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
-  @ApiPropertyOptional({ enum: TaskPriority, description: 'Filter by priority' })
+  @ApiPropertyOptional({
+    enum: TaskPriority,
+    description: 'Filter by priority',
+  })
   @IsOptional()
   @IsEnum(TaskPriority)
   priority?: TaskPriority;

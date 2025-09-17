@@ -3,7 +3,11 @@ import { WasteController } from './waste.controller';
 import { WasteService } from './waste.service';
 import { CreateWasteRecordDto } from './dto/create-waste-record.dto';
 import { UpdateWasteRecordDto } from './dto/update-waste-record.dto';
-import { WasteRecord, WasteType, WasteCategory } from '../../entities/waste-record.entity';
+import {
+  WasteRecord,
+  WasteType,
+  WasteCategory,
+} from '../../entities/waste-record.entity';
 import { NotFoundException } from '@nestjs/common';
 import { AuthGuard, ResourceGuard } from 'nest-keycloak-connect';
 import { mockKeycloakProviders } from '../../../test/mocks/keycloak.mock';
@@ -45,7 +49,7 @@ describe('WasteController', () => {
       .compile();
 
     controller = module.get<WasteController>(WasteController);
-    service = module.get(WasteService) as jest.Mocked<WasteService>;
+    service = module.get(WasteService);
   });
 
   describe('create', () => {
@@ -110,7 +114,9 @@ describe('WasteController', () => {
     it('should handle not found error', async () => {
       service.findOne.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -170,7 +176,7 @@ describe('WasteController', () => {
       expect(service.getWasteMetrics).toHaveBeenCalledWith(
         new Date(startDate),
         new Date(endDate),
-        productId
+        productId,
       );
     });
   });
@@ -201,7 +207,7 @@ describe('WasteController', () => {
       expect(result).toEqual(mockSummary);
       expect(service.getWasteSummary).toHaveBeenCalledWith(
         new Date(startDate),
-        new Date(endDate)
+        new Date(endDate),
       );
     });
   });

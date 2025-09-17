@@ -29,10 +29,7 @@ import { InventoryTransactionRepository } from '../../repositories/inventory-tra
     ]),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    BullModule.registerQueue(
-      { name: 'notifications' },
-      { name: 'email' },
-    ),
+    BullModule.registerQueue({ name: 'notifications' }, { name: 'email' }),
     ClsModule,
     AuthModule,
   ],

@@ -1,26 +1,42 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddProductionStepFields1758042000000 implements MigrationInterface {
-    name = 'AddProductionStepFields1758042000000'
+export class AddProductionStepFields1758042000000
+  implements MigrationInterface
+{
+  name = 'AddProductionStepFields1758042000000';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // Add new fields to production_steps table
-        await queryRunner.query(`ALTER TABLE "production_steps" ADD "validation_rules" jsonb`);
-        await queryRunner.query(`ALTER TABLE "production_steps" ADD "media_files" jsonb`);
-        await queryRunner.query(`ALTER TABLE "production_steps" ADD "alternate_work_center_id" uuid`);
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Add new fields to production_steps table
+    await queryRunner.query(
+      `ALTER TABLE "production_steps" ADD "validation_rules" jsonb`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "production_steps" ADD "media_files" jsonb`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "production_steps" ADD "alternate_work_center_id" uuid`,
+    );
 
-        // Create GIN indexes for JSONB search
-        await queryRunner.query(`CREATE INDEX "idx_production_steps_validation_rules_gin" ON "production_steps" USING gin("validation_rules") WHERE "validation_rules" IS NOT NULL`);
-        await queryRunner.query(`CREATE INDEX "idx_production_steps_media_files_gin" ON "production_steps" USING gin("media_files") WHERE "media_files" IS NOT NULL`);
+    // Create GIN indexes for JSONB search
+    await queryRunner.query(
+      `CREATE INDEX "idx_production_steps_validation_rules_gin" ON "production_steps" USING gin("validation_rules") WHERE "validation_rules" IS NOT NULL`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_production_steps_media_files_gin" ON "production_steps" USING gin("media_files") WHERE "media_files" IS NOT NULL`,
+    );
 
-        // Create index for alternate work center
-        await queryRunner.query(`CREATE INDEX "idx_production_steps_tenant_id_alternate_work_center_id" ON "production_steps" ("tenant_id", "alternate_work_center_id") WHERE "alternate_work_center_id" IS NOT NULL`);
+    // Create index for alternate work center
+    await queryRunner.query(
+      `CREATE INDEX "idx_production_steps_tenant_id_alternate_work_center_id" ON "production_steps" ("tenant_id", "alternate_work_center_id") WHERE "alternate_work_center_id" IS NOT NULL`,
+    );
 
-        // Add foreign key constraint for alternate work center
-        await queryRunner.query(`ALTER TABLE "production_steps" ADD CONSTRAINT "fk_production_steps_alternate_work_center_id" FOREIGN KEY ("alternate_work_center_id") REFERENCES "work_centers"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+    // Add foreign key constraint for alternate work center
+    await queryRunner.query(
+      `ALTER TABLE "production_steps" ADD CONSTRAINT "fk_production_steps_alternate_work_center_id" FOREIGN KEY ("alternate_work_center_id") REFERENCES "work_centers"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
 
-        // Create function to validate step parameters
-        await queryRunner.query(`
+    // Create function to validate step parameters
+    await queryRunner.query(`
             CREATE OR REPLACE FUNCTION validate_step_parameters(
                 p_step_id UUID,
                 p_parameter_name TEXT,
@@ -81,8 +97,8 @@ export class AddProductionStepFields1758042000000 implements MigrationInterface 
             $$ LANGUAGE plpgsql;
         `);
 
-        // Create function to track media file access
-        await queryRunner.query(`
+    // Create function to track media file access
+    await queryRunner.query(`
             CREATE OR REPLACE FUNCTION track_media_file_access(
                 p_step_id UUID,
                 p_file_id TEXT
@@ -126,8 +142,8 @@ export class AddProductionStepFields1758042000000 implements MigrationInterface 
             $$ LANGUAGE plpgsql;
         `);
 
-        // Create view for steps with validation rules
-        await queryRunner.query(`
+    // Create view for steps with validation rules
+    await queryRunner.query(`
             CREATE OR REPLACE VIEW v_production_steps_with_validations AS
             SELECT 
                 ps.id,
@@ -173,8 +189,8 @@ export class AddProductionStepFields1758042000000 implements MigrationInterface 
             WHERE ps.deleted_at IS NULL;
         `);
 
-        // Create materialized view for media file statistics
-        await queryRunner.query(`
+    // Create materialized view for media file statistics
+    await queryRunner.query(`
             CREATE MATERIALIZED VIEW mv_media_file_statistics AS
             SELECT 
                 ps.tenant_id,
@@ -216,33 +232,59 @@ export class AddProductionStepFields1758042000000 implements MigrationInterface 
             GROUP BY ps.tenant_id, ps.routing_id, r.name;
         `);
 
-        // Create index on materialized view
-        await queryRunner.query(`CREATE INDEX idx_mv_media_file_statistics_tenant_routing ON mv_media_file_statistics(tenant_id, routing_id)`);
-    }
+    // Create index on materialized view
+    await queryRunner.query(
+      `CREATE INDEX idx_mv_media_file_statistics_tenant_routing ON mv_media_file_statistics(tenant_id, routing_id)`,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop materialized view and index
-        await queryRunner.query(`DROP INDEX IF EXISTS idx_mv_media_file_statistics_tenant_routing`);
-        await queryRunner.query(`DROP MATERIALIZED VIEW IF EXISTS mv_media_file_statistics`);
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop materialized view and index
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS idx_mv_media_file_statistics_tenant_routing`,
+    );
+    await queryRunner.query(
+      `DROP MATERIALIZED VIEW IF EXISTS mv_media_file_statistics`,
+    );
 
-        // Drop views
-        await queryRunner.query(`DROP VIEW IF EXISTS v_production_steps_with_validations`);
+    // Drop views
+    await queryRunner.query(
+      `DROP VIEW IF EXISTS v_production_steps_with_validations`,
+    );
 
-        // Drop functions
-        await queryRunner.query(`DROP FUNCTION IF EXISTS track_media_file_access(UUID, TEXT)`);
-        await queryRunner.query(`DROP FUNCTION IF EXISTS validate_step_parameters(UUID, TEXT, NUMERIC)`);
+    // Drop functions
+    await queryRunner.query(
+      `DROP FUNCTION IF EXISTS track_media_file_access(UUID, TEXT)`,
+    );
+    await queryRunner.query(
+      `DROP FUNCTION IF EXISTS validate_step_parameters(UUID, TEXT, NUMERIC)`,
+    );
 
-        // Drop foreign key constraint
-        await queryRunner.query(`ALTER TABLE "production_steps" DROP CONSTRAINT IF EXISTS "fk_production_steps_alternate_work_center_id"`);
+    // Drop foreign key constraint
+    await queryRunner.query(
+      `ALTER TABLE "production_steps" DROP CONSTRAINT IF EXISTS "fk_production_steps_alternate_work_center_id"`,
+    );
 
-        // Drop indexes
-        await queryRunner.query(`DROP INDEX IF EXISTS "idx_production_steps_tenant_id_alternate_work_center_id"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "idx_production_steps_media_files_gin"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "idx_production_steps_validation_rules_gin"`);
+    // Drop indexes
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_production_steps_tenant_id_alternate_work_center_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_production_steps_media_files_gin"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_production_steps_validation_rules_gin"`,
+    );
 
-        // Remove fields from production_steps
-        await queryRunner.query(`ALTER TABLE "production_steps" DROP COLUMN IF EXISTS "alternate_work_center_id"`);
-        await queryRunner.query(`ALTER TABLE "production_steps" DROP COLUMN IF EXISTS "media_files"`);
-        await queryRunner.query(`ALTER TABLE "production_steps" DROP COLUMN IF EXISTS "validation_rules"`);
-    }
+    // Remove fields from production_steps
+    await queryRunner.query(
+      `ALTER TABLE "production_steps" DROP COLUMN IF EXISTS "alternate_work_center_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "production_steps" DROP COLUMN IF EXISTS "media_files"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "production_steps" DROP COLUMN IF EXISTS "validation_rules"`,
+    );
+  }
 }

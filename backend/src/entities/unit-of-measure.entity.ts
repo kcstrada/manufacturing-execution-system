@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  Index,
-  OneToMany,
-  Unique,
-} from 'typeorm';
+import { Entity, Column, Index, OneToMany, Unique } from 'typeorm';
 import { TenantBaseEntity } from './base.entity';
 import { Product } from './product.entity';
 import { ProductionOrder } from './production-order.entity';
@@ -53,7 +47,6 @@ export class UnitOfMeasure extends TenantBaseEntity {
 
   @Column({ type: 'int', default: 2 })
   decimalPlaces!: number;
-
 
   // Relations
   @OneToMany(() => Product, (product) => product.unitOfMeasure)

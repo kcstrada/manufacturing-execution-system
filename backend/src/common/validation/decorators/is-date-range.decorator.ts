@@ -12,18 +12,18 @@ export class IsDateRangeConstraint implements ValidatorConstraintInterface {
     const object = args.object as any;
     const [relatedPropertyName] = args.constraints;
     const relatedValue = object[relatedPropertyName];
-    
+
     if (!value || !relatedValue) {
       return true; // Let other validators handle required validation
     }
-    
+
     const startDate = new Date(value);
     const endDate = new Date(relatedValue);
-    
+
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return false;
     }
-    
+
     return startDate <= endDate;
   }
 
@@ -36,8 +36,11 @@ export class IsDateRangeConstraint implements ValidatorConstraintInterface {
 /**
  * Validates that a date is within a valid range relative to another date property
  */
-export function IsDateRange(property: string, validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+export function IsDateRange(
+  property: string,
+  validationOptions?: ValidationOptions,
+) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isDateRange',
       target: object.constructor,

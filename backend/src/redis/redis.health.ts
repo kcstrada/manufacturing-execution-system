@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
+import {
+  HealthIndicator,
+  HealthIndicatorResult,
+  HealthCheckError,
+} from '@nestjs/terminus';
 import { RedisService } from './redis.service';
 
 /**
@@ -17,12 +21,12 @@ export class RedisHealthIndicator extends HealthIndicator {
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
     try {
       const client = this.redisService.getClient();
-      
+
       // Ping Redis
       const startTime = Date.now();
       const pong = await client.ping();
       const responseTime = Date.now() - startTime;
-      
+
       if (pong !== 'PONG') {
         throw new HealthCheckError('Redis ping failed', {
           redis: {
@@ -34,7 +38,7 @@ export class RedisHealthIndicator extends HealthIndicator {
 
       // Get Redis stats
       const stats = await this.redisService.getStats();
-      
+
       return this.getStatus(key, true, {
         status: 'up',
         responseTime: `${responseTime}ms`,
@@ -59,13 +63,13 @@ export class RedisHealthIndicator extends HealthIndicator {
       const client = this.redisService.getClient();
       const testKey = 'health:check:cache';
       const testValue = Date.now().toString();
-      
+
       // Test set
       await client.set(testKey, testValue, 'EX', 10);
-      
+
       // Test get
       const retrieved = await client.get(testKey);
-      
+
       if (retrieved !== testValue) {
         throw new HealthCheckError('Cache test failed', {
           cache: {
@@ -74,10 +78,10 @@ export class RedisHealthIndicator extends HealthIndicator {
           },
         });
       }
-      
+
       // Clean up
       await client.del(testKey);
-      
+
       return this.getStatus(key, true, {
         status: 'healthy',
         test: 'passed',
@@ -99,22 +103,23 @@ export class RedisHealthIndicator extends HealthIndicator {
   async checkQueues(key: string): Promise<HealthIndicatorResult> {
     try {
       const client = this.redisService.getClient();
-      
+
       // Check for Bull queue keys
       const queueKeys = await client.keys('bull:*');
       const queueCount = queueKeys.length;
-      
+
       // Get queue metrics
       const metrics: any = {};
-      
-      for (const queueKey of queueKeys.slice(0, 5)) { // Limit to first 5 queues
+
+      for (const queueKey of queueKeys.slice(0, 5)) {
+        // Limit to first 5 queues
         const queueName = queueKey.split(':')[1];
         if (queueName) {
           const waiting = await client.llen(`bull:${queueName}:wait`);
           const active = await client.llen(`bull:${queueName}:active`);
           const completed = await client.zcard(`bull:${queueName}:completed`);
           const failed = await client.zcard(`bull:${queueName}:failed`);
-          
+
           metrics[queueName] = {
             waiting,
             active,
@@ -123,7 +128,7 @@ export class RedisHealthIndicator extends HealthIndicator {
           };
         }
       }
-      
+
       return this.getStatus(key, true, {
         status: 'healthy',
         queueCount,
@@ -147,26 +152,29 @@ export class RedisHealthIndicator extends HealthIndicator {
     try {
       const client = this.redisService.getClient();
       const info = await client.info('memory');
-      
+
       // Parse memory info
       const usedMemoryMatch = info.match(/used_memory:(\d+)/);
       const maxMemoryMatch = info.match(/maxmemory:(\d+)/);
       const usedMemoryRssMatch = info.match(/used_memory_rss:(\d+)/);
       const usedMemoryPeakMatch = info.match(/used_memory_peak:(\d+)/);
-      
+
       const usedMemory = usedMemoryMatch ? parseInt(usedMemoryMatch[1]!) : 0;
       const maxMemory = maxMemoryMatch ? parseInt(maxMemoryMatch[1]!) : 0;
-      const usedMemoryRss = usedMemoryRssMatch ? parseInt(usedMemoryRssMatch[1]!) : 0;
-      const usedMemoryPeak = usedMemoryPeakMatch ? parseInt(usedMemoryPeakMatch[1]!) : 0;
-      
+      const usedMemoryRss = usedMemoryRssMatch
+        ? parseInt(usedMemoryRssMatch[1]!)
+        : 0;
+      const usedMemoryPeak = usedMemoryPeakMatch
+        ? parseInt(usedMemoryPeakMatch[1]!)
+        : 0;
+
       // Calculate memory usage percentage
-      const memoryUsagePercent = maxMemory > 0 
-        ? ((usedMemory / maxMemory) * 100).toFixed(2)
-        : 'N/A';
-      
+      const memoryUsagePercent =
+        maxMemory > 0 ? ((usedMemory / maxMemory) * 100).toFixed(2) : 'N/A';
+
       // Determine health based on memory usage
-      const isHealthy = maxMemory === 0 || (usedMemory / maxMemory) < 0.9;
-      
+      const isHealthy = maxMemory === 0 || usedMemory / maxMemory < 0.9;
+
       return this.getStatus(key, isHealthy, {
         status: isHealthy ? 'healthy' : 'warning',
         memory: {
@@ -195,18 +203,22 @@ export class RedisHealthIndicator extends HealthIndicator {
     try {
       const client = this.redisService.getClient();
       const info = await client.info('replication');
-      
+
       // Parse replication info
       const roleMatch = info.match(/role:(\w+)/);
       const connectedSlavesMatch = info.match(/connected_slaves:(\d+)/);
-      
+
       const role = roleMatch ? roleMatch[1] : 'unknown';
-      const connectedSlaves = connectedSlavesMatch ? parseInt(connectedSlavesMatch[1]!) : 0;
-      
+      const connectedSlaves = connectedSlavesMatch
+        ? parseInt(connectedSlavesMatch[1]!)
+        : 0;
+
       // Parse slave info
       const slaves = [];
       for (let i = 0; i < connectedSlaves; i++) {
-        const slaveRegex = new RegExp(`slave${i}:ip=([^,]+),port=(\\d+),state=([^,]+)`);
+        const slaveRegex = new RegExp(
+          `slave${i}:ip=([^,]+),port=(\\d+),state=([^,]+)`,
+        );
         const slaveMatch = info.match(slaveRegex);
         if (slaveMatch) {
           slaves.push({
@@ -216,7 +228,7 @@ export class RedisHealthIndicator extends HealthIndicator {
           });
         }
       }
-      
+
       return this.getStatus(key, true, {
         status: 'healthy',
         replication: {

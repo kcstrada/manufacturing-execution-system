@@ -2,13 +2,19 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationTemplate } from '../entities/notification-template.entity';
-import { NotificationType, NotificationChannel } from '../types/notification.types';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../types/notification.types';
 import * as Handlebars from 'handlebars';
 
 @Injectable()
 export class NotificationTemplateService {
   private readonly logger = new Logger(NotificationTemplateService.name);
-  private readonly templateCache = new Map<string, Handlebars.TemplateDelegate>();
+  private readonly templateCache = new Map<
+    string,
+    Handlebars.TemplateDelegate
+  >();
 
   constructor(
     @InjectRepository(NotificationTemplate)
@@ -42,9 +48,12 @@ export class NotificationTemplateService {
       return str ? str.toLowerCase() : '';
     });
 
-    Handlebars.registerHelper('pluralize', (count: number, singular: string, plural: string) => {
-      return count === 1 ? singular : plural;
-    });
+    Handlebars.registerHelper(
+      'pluralize',
+      (count: number, singular: string, plural: string) => {
+        return count === 1 ? singular : plural;
+      },
+    );
 
     Handlebars.registerHelper('eq', (a: any, b: any) => a === b);
     Handlebars.registerHelper('ne', (a: any, b: any) => a !== b);
@@ -107,7 +116,8 @@ export class NotificationTemplateService {
     type?: NotificationType,
     channel?: NotificationChannel,
   ): Promise<NotificationTemplate[]> {
-    const query = this.templateRepository.createQueryBuilder('template')
+    const query = this.templateRepository
+      .createQueryBuilder('template')
       .where('template.tenantId = :tenantId', { tenantId })
       .andWhere('template.active = :active', { active: true });
 
@@ -128,14 +138,23 @@ export class NotificationTemplateService {
   ): Promise<{ subject: string; body: string }> {
     try {
       // Compile and cache templates
-      const subjectTemplate = this.compileTemplate(`subject_${template.id}`, template.subject);
-      const bodyTemplate = this.compileTemplate(`body_${template.id}`, template.body);
+      const subjectTemplate = this.compileTemplate(
+        `subject_${template.id}`,
+        template.subject,
+      );
+      const bodyTemplate = this.compileTemplate(
+        `body_${template.id}`,
+        template.body,
+      );
 
       // Apply default values for missing variables
       const templateData = { ...data };
       if (template.variables) {
         for (const variable of template.variables) {
-          if (!(variable.name in templateData) && variable.defaultValue !== undefined) {
+          if (
+            !(variable.name in templateData) &&
+            variable.defaultValue !== undefined
+          ) {
             templateData[variable.name] = variable.defaultValue;
           }
         }
@@ -147,14 +166,19 @@ export class NotificationTemplateService {
 
       return { subject, body };
     } catch (error) {
-      this.logger.error(`Failed to render template ${template.id}: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to render template ${template.id}: ${(error as Error).message}`,
+      );
       throw error;
     }
   }
 
-  private compileTemplate(cacheKey: string, templateString: string): Handlebars.TemplateDelegate {
+  private compileTemplate(
+    cacheKey: string,
+    templateString: string,
+  ): Handlebars.TemplateDelegate {
     let compiledTemplate = this.templateCache.get(cacheKey);
-    
+
     if (!compiledTemplate) {
       compiledTemplate = Handlebars.compile(templateString);
       this.templateCache.set(cacheKey, compiledTemplate);
@@ -259,7 +283,12 @@ export class NotificationTemplateService {
           { name: 'productName', type: 'string', required: true },
           { name: 'batchNumber', type: 'string', required: true },
           { name: 'issueDescription', type: 'string', required: true },
-          { name: 'severity', type: 'string', required: true, defaultValue: 'Medium' },
+          {
+            name: 'severity',
+            type: 'string',
+            required: true,
+            defaultValue: 'Medium',
+          },
         ],
       },
       {
@@ -290,7 +319,10 @@ export class NotificationTemplateService {
     ];
 
     for (const templateData of defaultTemplates) {
-      const existing = await this.getTemplateByCode(tenantId, templateData.code);
+      const existing = await this.getTemplateByCode(
+        tenantId,
+        templateData.code,
+      );
       if (!existing) {
         await this.createTemplate(tenantId, {
           ...templateData,

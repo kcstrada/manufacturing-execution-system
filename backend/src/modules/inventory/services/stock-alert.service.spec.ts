@@ -7,7 +7,11 @@ import { StockAlertService } from './stock-alert.service';
 import { InventoryService } from '../inventory.service';
 import { Inventory } from '../../../entities/inventory.entity';
 import { Product } from '../../../entities/product.entity';
-import { StockAlert, AlertStatus, AlertSeverity } from '../../../entities/stock-alert.entity';
+import {
+  StockAlert,
+  AlertStatus,
+  AlertSeverity,
+} from '../../../entities/stock-alert.entity';
 
 describe('StockAlertService', () => {
   let service: StockAlertService;
@@ -88,19 +92,31 @@ describe('StockAlertService', () => {
     }).compile();
 
     service = module.get<StockAlertService>(StockAlertService);
-    productRepository = module.get<Repository<Product>>(getRepositoryToken(Product));
-    alertRepository = module.get<Repository<StockAlert>>(getRepositoryToken(StockAlert));
+    productRepository = module.get<Repository<Product>>(
+      getRepositoryToken(Product),
+    );
+    alertRepository = module.get<Repository<StockAlert>>(
+      getRepositoryToken(StockAlert),
+    );
     inventoryService = module.get<InventoryService>(InventoryService);
     eventEmitter = module.get<EventEmitter2>(EventEmitter2);
   });
 
   describe('performStockCheck', () => {
     it('should identify products with low stock', async () => {
-      jest.spyOn(productRepository, 'find').mockResolvedValue([mockProduct as Product]);
-      jest.spyOn(inventoryService, 'getAvailableQuantity').mockResolvedValue(75);
+      jest
+        .spyOn(productRepository, 'find')
+        .mockResolvedValue([mockProduct as Product]);
+      jest
+        .spyOn(inventoryService, 'getAvailableQuantity')
+        .mockResolvedValue(75);
       jest.spyOn(alertRepository, 'findOne').mockResolvedValue(null);
-      jest.spyOn(alertRepository, 'create').mockReturnValue(mockAlert as StockAlert);
-      jest.spyOn(alertRepository, 'save').mockResolvedValue(mockAlert as StockAlert);
+      jest
+        .spyOn(alertRepository, 'create')
+        .mockReturnValue(mockAlert as StockAlert);
+      jest
+        .spyOn(alertRepository, 'save')
+        .mockResolvedValue(mockAlert as StockAlert);
 
       const alerts = await service.performStockCheck();
 
@@ -112,8 +128,12 @@ describe('StockAlertService', () => {
     });
 
     it('should not create alerts for products with sufficient stock', async () => {
-      jest.spyOn(productRepository, 'find').mockResolvedValue([mockProduct as Product]);
-      jest.spyOn(inventoryService, 'getAvailableQuantity').mockResolvedValue(150);
+      jest
+        .spyOn(productRepository, 'find')
+        .mockResolvedValue([mockProduct as Product]);
+      jest
+        .spyOn(inventoryService, 'getAvailableQuantity')
+        .mockResolvedValue(150);
 
       const alerts = await service.performStockCheck();
 
@@ -122,10 +142,17 @@ describe('StockAlertService', () => {
     });
 
     it('should update existing alert if severity changes', async () => {
-      const existingAlert = { ...mockAlert, severity: AlertSeverity.LOW } as StockAlert;
-      
-      jest.spyOn(productRepository, 'find').mockResolvedValue([mockProduct as Product]);
-      jest.spyOn(inventoryService, 'getAvailableQuantity').mockResolvedValue(45); // Critical level
+      const existingAlert = {
+        ...mockAlert,
+        severity: AlertSeverity.LOW,
+      } as StockAlert;
+
+      jest
+        .spyOn(productRepository, 'find')
+        .mockResolvedValue([mockProduct as Product]);
+      jest
+        .spyOn(inventoryService, 'getAvailableQuantity')
+        .mockResolvedValue(45); // Critical level
       jest.spyOn(alertRepository, 'findOne').mockResolvedValue(existingAlert);
       jest.spyOn(alertRepository, 'save').mockResolvedValue({
         ...existingAlert,
@@ -142,8 +169,12 @@ describe('StockAlertService', () => {
 
   describe('checkProductStock', () => {
     it('should return alert for low stock product', async () => {
-      jest.spyOn(productRepository, 'findOne').mockResolvedValue(mockProduct as Product);
-      jest.spyOn(inventoryService, 'getAvailableQuantity').mockResolvedValue(75);
+      jest
+        .spyOn(productRepository, 'findOne')
+        .mockResolvedValue(mockProduct as Product);
+      jest
+        .spyOn(inventoryService, 'getAvailableQuantity')
+        .mockResolvedValue(75);
 
       const alert = await service.checkProductStock('product-1');
 
@@ -154,8 +185,12 @@ describe('StockAlertService', () => {
     });
 
     it('should return null for product with sufficient stock', async () => {
-      jest.spyOn(productRepository, 'findOne').mockResolvedValue(mockProduct as Product);
-      jest.spyOn(inventoryService, 'getAvailableQuantity').mockResolvedValue(150);
+      jest
+        .spyOn(productRepository, 'findOne')
+        .mockResolvedValue(mockProduct as Product);
+      jest
+        .spyOn(inventoryService, 'getAvailableQuantity')
+        .mockResolvedValue(150);
 
       const alert = await service.checkProductStock('product-1');
 
@@ -164,7 +199,9 @@ describe('StockAlertService', () => {
 
     it('should return null for product without min stock level', async () => {
       const productNoMin = { ...mockProduct, minStockLevel: undefined };
-      jest.spyOn(productRepository, 'findOne').mockResolvedValue(productNoMin as Product);
+      jest
+        .spyOn(productRepository, 'findOne')
+        .mockResolvedValue(productNoMin as Product);
 
       const alert = await service.checkProductStock('product-1');
 
@@ -186,7 +223,11 @@ describe('StockAlertService', () => {
       jest.spyOn(alertRepository, 'findOne').mockResolvedValue(activeAlert);
       jest.spyOn(alertRepository, 'save').mockResolvedValue(acknowledgedAlert);
 
-      const result = await service.acknowledgeAlert('alert-1', 'user-1', 'Reorder placed');
+      const result = await service.acknowledgeAlert(
+        'alert-1',
+        'user-1',
+        'Reorder placed',
+      );
 
       expect(result.status).toBe(AlertStatus.ACKNOWLEDGED);
       expect(result.acknowledgedById).toBe('user-1');
@@ -196,7 +237,9 @@ describe('StockAlertService', () => {
     it('should throw error if alert not found', async () => {
       jest.spyOn(alertRepository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.acknowledgeAlert('invalid-id', 'user-1')).rejects.toThrow('Alert not found');
+      await expect(
+        service.acknowledgeAlert('invalid-id', 'user-1'),
+      ).rejects.toThrow('Alert not found');
     });
   });
 
@@ -214,7 +257,11 @@ describe('StockAlertService', () => {
       jest.spyOn(alertRepository, 'findOne').mockResolvedValue(activeAlert);
       jest.spyOn(alertRepository, 'save').mockResolvedValue(resolvedAlert);
 
-      const result = await service.resolveAlert('alert-1', 'user-1', 'Stock replenished');
+      const result = await service.resolveAlert(
+        'alert-1',
+        'user-1',
+        'Stock replenished',
+      );
 
       expect(result.status).toBe(AlertStatus.RESOLVED);
       expect(result.resolvedById).toBe('user-1');
@@ -225,9 +272,13 @@ describe('StockAlertService', () => {
   describe('checkAndResolveAlerts', () => {
     it('should auto-resolve alerts when stock is replenished', async () => {
       const activeAlerts = [mockAlert as StockAlert];
-      
-      jest.spyOn(productRepository, 'findOne').mockResolvedValue(mockProduct as Product);
-      jest.spyOn(inventoryService, 'getAvailableQuantity').mockResolvedValue(150);
+
+      jest
+        .spyOn(productRepository, 'findOne')
+        .mockResolvedValue(mockProduct as Product);
+      jest
+        .spyOn(inventoryService, 'getAvailableQuantity')
+        .mockResolvedValue(150);
       jest.spyOn(alertRepository, 'find').mockResolvedValue(activeAlerts);
       jest.spyOn(alertRepository, 'save').mockResolvedValue({
         ...mockAlert,
@@ -242,13 +293,17 @@ describe('StockAlertService', () => {
         expect.objectContaining({
           status: AlertStatus.RESOLVED,
           resolvedById: 'system',
-        })
+        }),
       );
     });
 
     it('should not resolve alerts if stock is still low', async () => {
-      jest.spyOn(productRepository, 'findOne').mockResolvedValue(mockProduct as Product);
-      jest.spyOn(inventoryService, 'getAvailableQuantity').mockResolvedValue(75);
+      jest
+        .spyOn(productRepository, 'findOne')
+        .mockResolvedValue(mockProduct as Product);
+      jest
+        .spyOn(inventoryService, 'getAvailableQuantity')
+        .mockResolvedValue(75);
 
       await service.checkAndResolveAlerts('product-1');
 
@@ -266,18 +321,20 @@ describe('StockAlertService', () => {
         getMany: jest.fn().mockResolvedValue([mockAlert]),
       };
 
-      jest.spyOn(alertRepository, 'createQueryBuilder').mockReturnValue(mockQueryBuilder as any);
+      jest
+        .spyOn(alertRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
 
       const alerts = await service.getActiveAlerts();
 
       expect(alerts).toHaveLength(1);
       expect(mockQueryBuilder.where).toHaveBeenCalledWith(
         'alert.tenantId = :tenantId',
-        { tenantId: 'test-tenant' }
+        { tenantId: 'test-tenant' },
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'alert.status = :status',
-        { status: AlertStatus.ACTIVE }
+        { status: AlertStatus.ACTIVE },
       );
     });
 
@@ -290,13 +347,15 @@ describe('StockAlertService', () => {
         getMany: jest.fn().mockResolvedValue([mockAlert]),
       };
 
-      jest.spyOn(alertRepository, 'createQueryBuilder').mockReturnValue(mockQueryBuilder as any);
+      jest
+        .spyOn(alertRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
 
       await service.getActiveAlerts('WAREHOUSE-01');
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'alert.warehouseCode = :warehouseCode',
-        { warehouseCode: 'WAREHOUSE-01' }
+        { warehouseCode: 'WAREHOUSE-01' },
       );
     });
   });
@@ -309,13 +368,27 @@ describe('StockAlertService', () => {
         where: jest.fn().mockReturnThis(),
         groupBy: jest.fn().mockReturnThis(),
         getRawMany: jest.fn().mockResolvedValue([
-          { status: AlertStatus.ACTIVE, severity: AlertSeverity.CRITICAL, count: '2' },
-          { status: AlertStatus.ACTIVE, severity: AlertSeverity.WARNING, count: '3' },
-          { status: AlertStatus.RESOLVED, severity: AlertSeverity.LOW, count: '5' },
+          {
+            status: AlertStatus.ACTIVE,
+            severity: AlertSeverity.CRITICAL,
+            count: '2',
+          },
+          {
+            status: AlertStatus.ACTIVE,
+            severity: AlertSeverity.WARNING,
+            count: '3',
+          },
+          {
+            status: AlertStatus.RESOLVED,
+            severity: AlertSeverity.LOW,
+            count: '5',
+          },
         ]),
       };
 
-      jest.spyOn(alertRepository, 'createQueryBuilder').mockReturnValue(mockQueryBuilder as any);
+      jest
+        .spyOn(alertRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
 
       const stats = await service.getAlertStatistics();
 

@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Queue } from 'bull';
 import { StockAlertListener, StockAlertEvent } from './stock-alert.listener';
-import { StockAlert, AlertSeverity, AlertStatus } from '../../../entities/stock-alert.entity';
+import {
+  StockAlert,
+  AlertSeverity,
+  AlertStatus,
+} from '../../../entities/stock-alert.entity';
 import { StockLevelAlert } from '../services/stock-alert.service';
 
 describe('StockAlertListener', () => {
@@ -77,7 +81,7 @@ describe('StockAlertListener', () => {
           severity: AlertSeverity.CRITICAL,
           title: 'Stock Alert: Test Product',
           message: 'Critical stock level',
-        })
+        }),
       );
     });
 
@@ -93,7 +97,7 @@ describe('StockAlertListener', () => {
         expect.objectContaining({
           priority: 1,
           attempts: 3,
-        })
+        }),
       );
     });
 
@@ -114,7 +118,7 @@ describe('StockAlertListener', () => {
         }),
         expect.objectContaining({
           priority: 2,
-        })
+        }),
       );
     });
 
@@ -131,7 +135,8 @@ describe('StockAlertListener', () => {
     });
 
     it('should send webhook notification if configured', async () => {
-      process.env.STOCK_ALERT_WEBHOOK_URL = 'https://webhook.example.com/alerts';
+      process.env.STOCK_ALERT_WEBHOOK_URL =
+        'https://webhook.example.com/alerts';
 
       await listener.handleAlertCreated(mockEvent);
 
@@ -147,7 +152,7 @@ describe('StockAlertListener', () => {
         }),
         expect.objectContaining({
           attempts: 3,
-        })
+        }),
       );
 
       delete process.env.STOCK_ALERT_WEBHOOK_URL;
@@ -161,7 +166,7 @@ describe('StockAlertListener', () => {
       expect(notificationQueue.add).not.toHaveBeenCalledWith(
         'webhook-notification',
         expect.any(Object),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -185,7 +190,7 @@ describe('StockAlertListener', () => {
         expect.objectContaining({
           type: 'alert-acknowledged',
           alertId: 'alert-1',
-        })
+        }),
       );
     });
   });
@@ -211,7 +216,7 @@ describe('StockAlertListener', () => {
           type: 'alert-resolved',
           alertId: 'alert-1',
           resolution: 'Stock replenished',
-        })
+        }),
       );
     });
   });
@@ -219,22 +224,46 @@ describe('StockAlertListener', () => {
   describe('getAlertRecipients', () => {
     it('should return appropriate recipients based on severity', async () => {
       // Critical severity
-      const criticalRecipients = await (listener as any).getAlertRecipients(AlertSeverity.CRITICAL);
-      expect(criticalRecipients).toContain(process.env.INVENTORY_MANAGER_EMAIL || 'inventory@example.com');
-      expect(criticalRecipients).toContain(process.env.WAREHOUSE_MANAGER_EMAIL || 'warehouse@example.com');
-      expect(criticalRecipients).toContain(process.env.EXECUTIVE_EMAIL || 'executive@example.com');
+      const criticalRecipients = await (listener as any).getAlertRecipients(
+        AlertSeverity.CRITICAL,
+      );
+      expect(criticalRecipients).toContain(
+        process.env.INVENTORY_MANAGER_EMAIL || 'inventory@example.com',
+      );
+      expect(criticalRecipients).toContain(
+        process.env.WAREHOUSE_MANAGER_EMAIL || 'warehouse@example.com',
+      );
+      expect(criticalRecipients).toContain(
+        process.env.EXECUTIVE_EMAIL || 'executive@example.com',
+      );
 
       // High severity
-      const highRecipients = await (listener as any).getAlertRecipients(AlertSeverity.HIGH);
-      expect(highRecipients).toContain(process.env.INVENTORY_MANAGER_EMAIL || 'inventory@example.com');
-      expect(highRecipients).toContain(process.env.WAREHOUSE_MANAGER_EMAIL || 'warehouse@example.com');
-      expect(highRecipients).not.toContain(process.env.EXECUTIVE_EMAIL || 'executive@example.com');
+      const highRecipients = await (listener as any).getAlertRecipients(
+        AlertSeverity.HIGH,
+      );
+      expect(highRecipients).toContain(
+        process.env.INVENTORY_MANAGER_EMAIL || 'inventory@example.com',
+      );
+      expect(highRecipients).toContain(
+        process.env.WAREHOUSE_MANAGER_EMAIL || 'warehouse@example.com',
+      );
+      expect(highRecipients).not.toContain(
+        process.env.EXECUTIVE_EMAIL || 'executive@example.com',
+      );
 
       // Low severity
-      const lowRecipients = await (listener as any).getAlertRecipients(AlertSeverity.LOW);
-      expect(lowRecipients).toContain(process.env.INVENTORY_MANAGER_EMAIL || 'inventory@example.com');
-      expect(lowRecipients).not.toContain(process.env.WAREHOUSE_MANAGER_EMAIL || 'warehouse@example.com');
-      expect(lowRecipients).not.toContain(process.env.EXECUTIVE_EMAIL || 'executive@example.com');
+      const lowRecipients = await (listener as any).getAlertRecipients(
+        AlertSeverity.LOW,
+      );
+      expect(lowRecipients).toContain(
+        process.env.INVENTORY_MANAGER_EMAIL || 'inventory@example.com',
+      );
+      expect(lowRecipients).not.toContain(
+        process.env.WAREHOUSE_MANAGER_EMAIL || 'warehouse@example.com',
+      );
+      expect(lowRecipients).not.toContain(
+        process.env.EXECUTIVE_EMAIL || 'executive@example.com',
+      );
     });
   });
 });

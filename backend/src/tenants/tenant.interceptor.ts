@@ -17,7 +17,7 @@ export class TenantInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<RequestWithTenant>();
-    
+
     // Set tenant context in the service
     if (request.tenantId) {
       this.tenantService.setTenant(request.tenantId, request.tenant);

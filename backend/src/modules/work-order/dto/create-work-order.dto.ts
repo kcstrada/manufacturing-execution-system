@@ -50,7 +50,10 @@ export class CreateWorkOrderDto {
   @IsOptional()
   setupTimeMinutes?: number = 0;
 
-  @ApiPropertyOptional({ description: 'Run time per unit in minutes', minimum: 0 })
+  @ApiPropertyOptional({
+    description: 'Run time per unit in minutes',
+    minimum: 0,
+  })
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   @IsOptional()

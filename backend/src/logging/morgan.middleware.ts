@@ -23,7 +23,7 @@ export class MorganMiddleware implements NestMiddleware {
 
     // Custom token for request ID
     morgan.token('request-id', (req: Request) => {
-      return req.headers['x-request-id'] as string || '-';
+      return (req.headers['x-request-id'] as string) || '-';
     });
 
     // Custom token for response time in milliseconds
@@ -33,9 +33,10 @@ export class MorganMiddleware implements NestMiddleware {
     });
 
     // Define custom format
-    const format = process.env.NODE_ENV === 'production'
-      ? ':remote-addr - :user-id [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time-ms ms :tenant-id :request-id'
-      : ':method :url :status :response-time ms - :res[content-length] - :tenant-id - :user-id - :request-id';
+    const format =
+      process.env.NODE_ENV === 'production'
+        ? ':remote-addr - :user-id [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time-ms ms :tenant-id :request-id'
+        : ':method :url :status :response-time ms - :res[content-length] - :tenant-id - :user-id - :request-id';
 
     // Create Morgan middleware with custom stream
     this.morganMiddleware = morgan(format, {
@@ -43,7 +44,7 @@ export class MorganMiddleware implements NestMiddleware {
         write: (message: string) => {
           // Remove trailing newline
           const trimmedMessage = message.trim();
-          
+
           // Log to Winston
           this.loggingService.http(trimmedMessage, {
             type: 'ACCESS_LOG',
@@ -55,13 +56,22 @@ export class MorganMiddleware implements NestMiddleware {
         if (req.url === '/health' || req.url === '/api/health') {
           return true;
         }
-        
+
         // Skip static assets in development
         if (process.env.NODE_ENV !== 'production') {
-          const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico'];
-          return staticExtensions.some(ext => req.url.endsWith(ext));
+          const staticExtensions = [
+            '.js',
+            '.css',
+            '.png',
+            '.jpg',
+            '.jpeg',
+            '.gif',
+            '.svg',
+            '.ico',
+          ];
+          return staticExtensions.some((ext) => req.url.endsWith(ext));
         }
-        
+
         return false;
       },
     });
@@ -83,17 +93,17 @@ export class ExtendedMorganMiddleware implements NestMiddleware {
     morgan.token('body', (req: Request) => {
       const body = req.body;
       if (!body || Object.keys(body).length === 0) return '-';
-      
+
       // Sanitize sensitive data
       const sanitized = { ...body };
       const sensitiveFields = ['password', 'token', 'secret', 'apiKey'];
-      
-      sensitiveFields.forEach(field => {
+
+      sensitiveFields.forEach((field) => {
         if (sanitized[field]) {
           sanitized[field] = '[REDACTED]';
         }
       });
-      
+
       return JSON.stringify(sanitized);
     });
 

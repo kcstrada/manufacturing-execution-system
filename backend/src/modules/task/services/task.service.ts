@@ -8,8 +8,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, LessThan, Not } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ClsService } from 'nestjs-cls';
-import { Task, TaskStatus, TaskPriority, TaskType } from '../../../entities/task.entity';
-import { TaskAssignment, AssignmentStatus, AssignmentMethod } from '../../../entities/task-assignment.entity';
+import {
+  Task,
+  TaskStatus,
+  TaskPriority,
+  TaskType,
+} from '../../../entities/task.entity';
+import {
+  TaskAssignment,
+  AssignmentStatus,
+  AssignmentMethod,
+} from '../../../entities/task-assignment.entity';
 import { User } from '../../../entities/user.entity';
 import { CreateTaskDto, UpdateTaskDto, AssignTaskDto } from '../dto/task.dto';
 import { TaskAssignmentService } from './task-assignment.service';
@@ -37,7 +46,7 @@ export class TaskService {
    */
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
     const tenantId = this.getTenantId();
-    
+
     const task = this.taskRepository.create({
       ...createTaskDto,
       tenantId,
@@ -72,15 +81,18 @@ export class TaskService {
     // Update progress percentage based on quantities
     if (updateTaskDto.completedQuantity !== undefined) {
       task.progressPercentage = Math.round(
-        (updateTaskDto.completedQuantity / task.targetQuantity) * 100
+        (updateTaskDto.completedQuantity / task.targetQuantity) * 100,
       );
     }
 
     // Set actual dates based on status changes
-    if (updateTaskDto.status === TaskStatus.IN_PROGRESS && !task.actualStartDate) {
+    if (
+      updateTaskDto.status === TaskStatus.IN_PROGRESS &&
+      !task.actualStartDate
+    ) {
       task.actualStartDate = new Date();
     }
-    
+
     if (updateTaskDto.status === TaskStatus.COMPLETED) {
       task.actualEndDate = new Date();
       task.progressPercentage = 100;
@@ -90,7 +102,7 @@ export class TaskService {
     const updatedTask = await this.taskRepository.save(task);
 
     this.eventEmitter.emit('task.updated', { task: updatedTask });
-    
+
     return updatedTask;
   }
 
@@ -100,7 +112,13 @@ export class TaskService {
   async findOne(id: string): Promise<Task> {
     const task = await this.taskRepository.findOne({
       where: { id, tenantId: this.getTenantId() },
-      relations: ['workOrder', 'assignedTo', 'workCenter', 'product', 'dependencies'],
+      relations: [
+        'workOrder',
+        'assignedTo',
+        'workCenter',
+        'product',
+        'dependencies',
+      ],
     });
 
     if (!task) {
@@ -122,7 +140,8 @@ export class TaskService {
     workCenterId?: string;
     overdue?: boolean;
   }): Promise<Task[]> {
-    const query = this.taskRepository.createQueryBuilder('task')
+    const query = this.taskRepository
+      .createQueryBuilder('task')
       .leftJoinAndSelect('task.workOrder', 'workOrder')
       .leftJoinAndSelect('task.assignedTo', 'assignedTo')
       .leftJoinAndSelect('task.workCenter', 'workCenter')
@@ -134,7 +153,9 @@ export class TaskService {
     }
 
     if (filters?.priority) {
-      query.andWhere('task.priority = :priority', { priority: filters.priority });
+      query.andWhere('task.priority = :priority', {
+        priority: filters.priority,
+      });
     }
 
     if (filters?.type) {
@@ -142,45 +163,65 @@ export class TaskService {
     }
 
     if (filters?.workOrderId) {
-      query.andWhere('task.workOrderId = :workOrderId', { workOrderId: filters.workOrderId });
+      query.andWhere('task.workOrderId = :workOrderId', {
+        workOrderId: filters.workOrderId,
+      });
     }
 
     if (filters?.assignedToId) {
-      query.andWhere('task.assignedToId = :assignedToId', { assignedToId: filters.assignedToId });
+      query.andWhere('task.assignedToId = :assignedToId', {
+        assignedToId: filters.assignedToId,
+      });
     }
 
     if (filters?.workCenterId) {
-      query.andWhere('task.workCenterId = :workCenterId', { workCenterId: filters.workCenterId });
+      query.andWhere('task.workCenterId = :workCenterId', {
+        workCenterId: filters.workCenterId,
+      });
     }
 
     if (filters?.overdue) {
-      query.andWhere('task.dueDate < :now', { now: new Date() })
-           .andWhere('task.status != :completed', { completed: TaskStatus.COMPLETED });
+      query
+        .andWhere('task.dueDate < :now', { now: new Date() })
+        .andWhere('task.status != :completed', {
+          completed: TaskStatus.COMPLETED,
+        });
     }
 
-    return query.orderBy('task.priority', 'DESC')
-                .addOrderBy('task.dueDate', 'ASC')
-                .getMany();
+    return query
+      .orderBy('task.priority', 'DESC')
+      .addOrderBy('task.dueDate', 'ASC')
+      .getMany();
   }
 
   /**
    * Manually assign a task to a user
    */
-  async assignTask(taskId: string, assignTaskDto: AssignTaskDto): Promise<TaskAssignment> {
+  async assignTask(
+    taskId: string,
+    assignTaskDto: AssignTaskDto,
+  ): Promise<TaskAssignment> {
     const task = await this.findOne(taskId);
     const user = await this.userRepository.findOne({
       where: { id: assignTaskDto.userId, tenantId: this.getTenantId() },
     });
 
     if (!user) {
-      throw new NotFoundException(`User with ID ${assignTaskDto.userId} not found`);
+      throw new NotFoundException(
+        `User with ID ${assignTaskDto.userId} not found`,
+      );
     }
 
     // Check if user has required skills
     if (task.requiredSkills && task.requiredSkills.length > 0) {
-      const hasRequiredSkills = await this.checkUserSkills(user.id, task.requiredSkills);
+      const hasRequiredSkills = await this.checkUserSkills(
+        user.id,
+        task.requiredSkills,
+      );
       if (!hasRequiredSkills && !assignTaskDto.force) {
-        throw new BadRequestException('User does not have required skills for this task');
+        throw new BadRequestException(
+          'User does not have required skills for this task',
+        );
       }
     }
 
@@ -193,7 +234,10 @@ export class TaskService {
       assignmentMethod: AssignmentMethod.MANUAL,
       assignedAt: new Date(),
       assignedById: assignTaskDto.assignedById,
-      priority: assignTaskDto.priority || task.priority === TaskPriority.URGENT ? 100 : 50,
+      priority:
+        assignTaskDto.priority || task.priority === TaskPriority.URGENT
+          ? 100
+          : 50,
       dueDate: task.dueDate,
       notes: assignTaskDto.notes,
     });
@@ -204,8 +248,8 @@ export class TaskService {
     task.assignedToId = user.id;
     await this.taskRepository.save(task);
 
-    this.eventEmitter.emit('task.assigned', { 
-      task, 
+    this.eventEmitter.emit('task.assigned', {
+      task,
       assignment: savedAssignment,
       user,
     });
@@ -230,23 +274,23 @@ export class TaskService {
       case AssignmentMethod.AUTO_SKILL_BASED:
         assignedUser = await this.assignmentService.findBestSkillMatch(task);
         break;
-      
+
       case AssignmentMethod.AUTO_WORKLOAD:
         assignedUser = await this.assignmentService.findLeastLoadedUser(task);
         break;
-      
+
       case AssignmentMethod.AUTO_ROUND_ROBIN:
         assignedUser = await this.assignmentService.findNextInRotation(task);
         break;
-      
+
       case AssignmentMethod.AUTO_PRIORITY:
         assignedUser = await this.assignmentService.findByPriority(task);
         break;
-      
+
       case AssignmentMethod.AUTO_LOCATION:
         assignedUser = await this.assignmentService.findNearestUser(task);
         break;
-      
+
       default:
         this.logger.warn(`Unknown assignment strategy: ${strategy}`);
         return null;
@@ -267,8 +311,13 @@ export class TaskService {
       assignedAt: new Date(),
       priority: this.calculatePriority(task),
       dueDate: task.dueDate,
-      skillMatchScore: await this.assignmentService.calculateSkillMatch(assignedUser, task),
-      userWorkload: await this.assignmentService.getUserWorkload(assignedUser.id),
+      skillMatchScore: await this.assignmentService.calculateSkillMatch(
+        assignedUser,
+        task,
+      ),
+      userWorkload: await this.assignmentService.getUserWorkload(
+        assignedUser.id,
+      ),
     });
 
     const savedAssignment = await this.assignmentRepository.save(assignment);
@@ -300,7 +349,9 @@ export class TaskService {
     const currentAssignment = await this.assignmentRepository.findOne({
       where: {
         taskId: task.id,
-        status: Not(In([AssignmentStatus.COMPLETED, AssignmentStatus.REASSIGNED])),
+        status: Not(
+          In([AssignmentStatus.COMPLETED, AssignmentStatus.REASSIGNED]),
+        ),
       },
       order: { createdAt: 'DESC' },
     });
@@ -356,7 +407,8 @@ export class TaskService {
    * Get user's current tasks
    */
   async getUserTasks(userId: string, status?: TaskStatus): Promise<Task[]> {
-    const query = this.taskRepository.createQueryBuilder('task')
+    const query = this.taskRepository
+      .createQueryBuilder('task')
       .leftJoinAndSelect('task.workOrder', 'workOrder')
       .leftJoinAndSelect('task.workCenter', 'workCenter')
       .leftJoinAndSelect('task.product', 'product')
@@ -367,9 +419,10 @@ export class TaskService {
       query.andWhere('task.status = :status', { status });
     }
 
-    return query.orderBy('task.priority', 'DESC')
-                .addOrderBy('task.dueDate', 'ASC')
-                .getMany();
+    return query
+      .orderBy('task.priority', 'DESC')
+      .addOrderBy('task.dueDate', 'ASC')
+      .getMany();
   }
 
   /**
@@ -406,11 +459,14 @@ export class TaskService {
     }
 
     task.progressPercentage = Math.round(
-      (completedQuantity / task.targetQuantity) * 100
+      (completedQuantity / task.targetQuantity) * 100,
     );
 
     // Auto-complete if 100%
-    if (task.progressPercentage >= 100 && task.status !== TaskStatus.COMPLETED) {
+    if (
+      task.progressPercentage >= 100 &&
+      task.status !== TaskStatus.COMPLETED
+    ) {
       task.status = TaskStatus.COMPLETED;
       task.actualEndDate = new Date();
     }
@@ -428,8 +484,13 @@ export class TaskService {
   async startTask(taskId: string, userId: string): Promise<Task> {
     const task = await this.findOne(taskId);
 
-    if (task.status !== TaskStatus.READY && task.status !== TaskStatus.PENDING) {
-      throw new BadRequestException('Task cannot be started from current status');
+    if (
+      task.status !== TaskStatus.READY &&
+      task.status !== TaskStatus.PENDING
+    ) {
+      throw new BadRequestException(
+        'Task cannot be started from current status',
+      );
     }
 
     // Check dependencies
@@ -446,7 +507,9 @@ export class TaskService {
       where: {
         taskId: task.id,
         userId,
-        status: Not(In([AssignmentStatus.COMPLETED, AssignmentStatus.REASSIGNED])),
+        status: Not(
+          In([AssignmentStatus.COMPLETED, AssignmentStatus.REASSIGNED]),
+        ),
       },
     });
 
@@ -486,7 +549,9 @@ export class TaskService {
 
     // Calculate actual hours
     if (task.actualStartDate) {
-      const hours = (task.actualEndDate.getTime() - task.actualStartDate.getTime()) / (1000 * 60 * 60);
+      const hours =
+        (task.actualEndDate.getTime() - task.actualStartDate.getTime()) /
+        (1000 * 60 * 60);
       task.actualHours = Math.round(hours * 100) / 100;
     }
 
@@ -523,11 +588,18 @@ export class TaskService {
   /**
    * Validate status transition
    */
-  private validateStatusTransition(currentStatus: TaskStatus, newStatus: TaskStatus): void {
+  private validateStatusTransition(
+    currentStatus: TaskStatus,
+    newStatus: TaskStatus,
+  ): void {
     const validTransitions: Record<TaskStatus, TaskStatus[]> = {
       [TaskStatus.PENDING]: [TaskStatus.READY, TaskStatus.CANCELLED],
       [TaskStatus.READY]: [TaskStatus.IN_PROGRESS, TaskStatus.CANCELLED],
-      [TaskStatus.IN_PROGRESS]: [TaskStatus.PAUSED, TaskStatus.COMPLETED, TaskStatus.FAILED],
+      [TaskStatus.IN_PROGRESS]: [
+        TaskStatus.PAUSED,
+        TaskStatus.COMPLETED,
+        TaskStatus.FAILED,
+      ],
       [TaskStatus.PAUSED]: [TaskStatus.IN_PROGRESS, TaskStatus.CANCELLED],
       [TaskStatus.COMPLETED]: [],
       [TaskStatus.CANCELLED]: [],
@@ -536,7 +608,7 @@ export class TaskService {
 
     if (!validTransitions[currentStatus].includes(newStatus)) {
       throw new BadRequestException(
-        `Invalid status transition from ${currentStatus} to ${newStatus}`
+        `Invalid status transition from ${currentStatus} to ${newStatus}`,
       );
     }
   }
@@ -567,8 +639,8 @@ export class TaskService {
       where: { workOrderId, tenantId: this.getTenantId() },
     });
 
-    const allCompleted = tasks.every(t => t.status === TaskStatus.COMPLETED);
-    
+    const allCompleted = tasks.every((t) => t.status === TaskStatus.COMPLETED);
+
     if (allCompleted) {
       this.eventEmitter.emit('workorder.tasks-completed', { workOrderId });
     }
@@ -589,7 +661,10 @@ export class TaskService {
    */
   private determineAssignmentStrategy(task: Task): AssignmentMethod {
     // Priority-based assignment for urgent tasks
-    if (task.priority === TaskPriority.URGENT || task.priority === TaskPriority.CRITICAL) {
+    if (
+      task.priority === TaskPriority.URGENT ||
+      task.priority === TaskPriority.CRITICAL
+    ) {
       return AssignmentMethod.AUTO_PRIORITY;
     }
 
@@ -634,7 +709,8 @@ export class TaskService {
 
     // Add urgency based on due date
     if (task.dueDate) {
-      const hoursUntilDue = (task.dueDate.getTime() - Date.now()) / (1000 * 60 * 60);
+      const hoursUntilDue =
+        (task.dueDate.getTime() - Date.now()) / (1000 * 60 * 60);
       if (hoursUntilDue < 24) {
         priority += 20;
       } else if (hoursUntilDue < 48) {
@@ -648,7 +724,10 @@ export class TaskService {
   /**
    * Check if user has required skills
    */
-  private async checkUserSkills(_userId: string, _requiredSkills: string[]): Promise<boolean> {
+  private async checkUserSkills(
+    _userId: string,
+    _requiredSkills: string[],
+  ): Promise<boolean> {
     // This would typically check against a user skills table
     // For now, returning true as placeholder
     return true;

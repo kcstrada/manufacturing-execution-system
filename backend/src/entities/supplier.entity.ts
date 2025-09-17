@@ -1,9 +1,4 @@
-import {
-  Entity,
-  Column,
-  Index,
-  Unique,
-} from 'typeorm';
+import { Entity, Column, Index, Unique } from 'typeorm';
 import { TenantBaseEntity } from './base.entity';
 
 export enum SupplierStatus {

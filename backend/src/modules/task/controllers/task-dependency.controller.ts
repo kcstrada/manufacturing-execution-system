@@ -32,21 +32,19 @@ import { Task } from '../../../entities/task.entity';
 @Controller('tasks/:taskId/dependencies')
 @UseGuards(AuthGuard, RoleGuard)
 export class TaskDependencyController {
-  constructor(
-    private readonly dependencyService: TaskDependencyService,
-  ) {}
+  constructor(private readonly dependencyService: TaskDependencyService) {}
 
   @Post()
   @Roles({ roles: ['admin', 'executive', 'sales'] })
   @ApiOperation({ summary: 'Add a dependency to a task' })
   @ApiParam({ name: 'taskId', description: 'Task ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Dependency added successfully',
     type: Task,
   })
-  @ApiResponse({ 
-    status: HttpStatus.BAD_REQUEST, 
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
     description: 'Invalid dependency or would create circular dependency',
   })
   async addDependency(
@@ -60,9 +58,12 @@ export class TaskDependencyController {
   @Roles({ roles: ['admin', 'executive', 'sales'] })
   @ApiOperation({ summary: 'Remove a dependency from a task' })
   @ApiParam({ name: 'taskId', description: 'Task ID' })
-  @ApiParam({ name: 'dependencyId', description: 'Dependency task ID to remove' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiParam({
+    name: 'dependencyId',
+    description: 'Dependency task ID to remove',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Dependency removed successfully',
     type: Task,
   })
@@ -77,8 +78,8 @@ export class TaskDependencyController {
   @Roles({ roles: ['admin', 'executive', 'sales', 'worker'] })
   @ApiOperation({ summary: 'Get dependencies for a task' })
   @ApiParam({ name: 'taskId', description: 'Task ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Task dependencies retrieved',
     type: [Task],
   })
@@ -96,8 +97,8 @@ export class TaskDependencyController {
   @Roles({ roles: ['admin', 'executive', 'sales', 'worker'] })
   @ApiOperation({ summary: 'Get tasks that depend on this task' })
   @ApiParam({ name: 'taskId', description: 'Task ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Dependent tasks retrieved',
     type: [Task],
   })
@@ -115,13 +116,13 @@ export class TaskDependencyController {
   @Roles({ roles: ['admin', 'executive', 'sales'] })
   @ApiOperation({ summary: 'Split a task into subtasks' })
   @ApiParam({ name: 'taskId', description: 'Task ID to split' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Task split successfully',
     type: [Task],
   })
-  @ApiResponse({ 
-    status: HttpStatus.BAD_REQUEST, 
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
     description: 'Task cannot be split (already started or completed)',
   })
   async splitTask(
@@ -137,16 +138,14 @@ export class TaskDependencyController {
 @Controller('work-orders/:workOrderId/dependencies')
 @UseGuards(AuthGuard, RoleGuard)
 export class WorkOrderDependencyController {
-  constructor(
-    private readonly dependencyService: TaskDependencyService,
-  ) {}
+  constructor(private readonly dependencyService: TaskDependencyService) {}
 
   @Get('validate')
   @Roles({ roles: ['admin', 'executive', 'sales', 'worker'] })
   @ApiOperation({ summary: 'Validate dependencies for a work order' })
   @ApiParam({ name: 'workOrderId', description: 'Work Order ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Dependency validation results',
     type: DependencyValidationResultDto,
   })
@@ -160,17 +159,19 @@ export class WorkOrderDependencyController {
   @Roles({ roles: ['admin', 'executive', 'sales', 'worker'] })
   @ApiOperation({ summary: 'Get dependency graph for a work order' })
   @ApiParam({ name: 'workOrderId', description: 'Work Order ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Dependency graph data',
     type: DependencyGraphDto,
   })
   async getDependencyGraph(
     @Param('workOrderId') workOrderId: string,
   ): Promise<DependencyGraphDto> {
-    const graph = await this.dependencyService.buildDependencyGraph(workOrderId);
-    const criticalPath = await this.dependencyService.getCriticalPath(workOrderId);
-    
+    const graph =
+      await this.dependencyService.buildDependencyGraph(workOrderId);
+    const criticalPath =
+      await this.dependencyService.getCriticalPath(workOrderId);
+
     // Calculate total duration
     let totalDuration = 0;
     for (const task of criticalPath) {
@@ -178,7 +179,7 @@ export class WorkOrderDependencyController {
     }
 
     // Convert graph to DTO format
-    const nodes = Array.from(graph.nodes.values()).map(task => ({
+    const nodes = Array.from(graph.nodes.values()).map((task) => ({
       id: task.id,
       taskNumber: task.taskNumber,
       name: task.name,
@@ -190,7 +191,7 @@ export class WorkOrderDependencyController {
 
     return {
       nodes,
-      criticalPath: criticalPath.map(t => t.id),
+      criticalPath: criticalPath.map((t) => t.id),
       totalDuration,
     };
   }
@@ -199,13 +200,13 @@ export class WorkOrderDependencyController {
   @Roles({ roles: ['admin', 'executive', 'sales', 'worker'] })
   @ApiOperation({ summary: 'Get critical path for a work order' })
   @ApiParam({ name: 'workOrderId', description: 'Work Order ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Critical path tasks',
     type: [Task],
   })
-  @ApiResponse({ 
-    status: HttpStatus.BAD_REQUEST, 
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
     description: 'Cannot calculate critical path due to circular dependencies',
   })
   async getCriticalPath(

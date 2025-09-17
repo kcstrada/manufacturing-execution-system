@@ -1,11 +1,4 @@
-import {
-  Entity,
-  Column,
-  Index,
-  ManyToOne,
-  JoinColumn,
-  Unique,
-} from 'typeorm';
+import { Entity, Column, Index, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { TenantBaseEntity } from './base.entity';
 import { ProductCategory } from './product-category.entity';
 import { UnitOfMeasure } from './unit-of-measure.entity';

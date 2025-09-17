@@ -1,4 +1,8 @@
-import { SetMetadata, createParamDecorator, ExecutionContext } from '@nestjs/common';
+import {
+  SetMetadata,
+  createParamDecorator,
+  ExecutionContext,
+} from '@nestjs/common';
 import { RequestWithTenant } from '../tenant.middleware';
 
 /**
@@ -41,9 +45,9 @@ export const CrossTenant = () => SetMetadata('crossTenant', true);
  * Decorator to specify tenant isolation strategy
  */
 export enum TenantIsolationStrategy {
-  DATABASE = 'database',  // Separate database per tenant
-  SCHEMA = 'schema',      // Separate schema per tenant
-  ROW = 'row',           // Row-level isolation (shared tables)
+  DATABASE = 'database', // Separate database per tenant
+  SCHEMA = 'schema', // Separate schema per tenant
+  ROW = 'row', // Row-level isolation (shared tables)
 }
 
 export const TenantIsolation = (strategy: TenantIsolationStrategy) =>

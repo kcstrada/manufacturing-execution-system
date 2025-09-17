@@ -26,15 +26,26 @@ import { KeycloakAdminService } from './keycloak-admin.service';
     KeycloakConnectModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService): Promise<KeycloakConnectOptions> => ({
-        authServerUrl: configService.get<string>('KEYCLOAK_URL', 'http://localhost:8080'),
+      useFactory: async (
+        configService: ConfigService,
+      ): Promise<KeycloakConnectOptions> => ({
+        authServerUrl: configService.get<string>(
+          'KEYCLOAK_URL',
+          'http://localhost:8080',
+        ),
         realm: configService.get<string>('KEYCLOAK_REALM', 'mes'),
         clientId: configService.get<string>('KEYCLOAK_CLIENT_ID', 'backend'),
-        secret: configService.get<string>('KEYCLOAK_CLIENT_SECRET', 'backend-secret'),
+        secret: configService.get<string>(
+          'KEYCLOAK_CLIENT_SECRET',
+          'backend-secret',
+        ),
         policyEnforcement: PolicyEnforcementMode.PERMISSIVE,
         tokenValidation: TokenValidation.ONLINE,
         useNestLogger: true,
-        logLevels: configService.get('NODE_ENV') === 'development' ? ['verbose'] : ['error'],
+        logLevels:
+          configService.get('NODE_ENV') === 'development'
+            ? ['verbose']
+            : ['error'],
       }),
     }),
     PermissionsModule,

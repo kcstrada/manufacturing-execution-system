@@ -12,14 +12,14 @@ describe('Tenant Management and Isolation (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     app.setGlobalPrefix('api');
     app.enableVersioning({
       type: VersioningType.URI,
       defaultVersion: '1',
       prefix: 'v',
     });
-    
+
     await app.init();
   });
 
@@ -290,7 +290,9 @@ describe('Tenant Management and Isolation (e2e)', () => {
 
       it('should support date range filtering', async () => {
         await request(app.getHttpServer())
-          .get('/api/v1/tenants/test-tenant/metrics?from=2024-01-01&to=2024-12-31')
+          .get(
+            '/api/v1/tenants/test-tenant/metrics?from=2024-01-01&to=2024-12-31',
+          )
           .expect(HttpStatus.UNAUTHORIZED);
       });
     });

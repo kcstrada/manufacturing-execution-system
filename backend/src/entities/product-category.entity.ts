@@ -35,7 +35,6 @@ export class ProductCategory extends TenantBaseEntity {
   @Column({ type: 'int', default: 0 })
   sortOrder!: number;
 
-
   // Relations
   @ManyToOne(() => ProductCategory, { nullable: true })
   @JoinColumn({ name: 'parent_category_id' })

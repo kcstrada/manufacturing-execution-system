@@ -10,7 +10,10 @@ import {
   Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CustomerOrderStatus, OrderPriority } from '../../../entities/customer-order.entity';
+import {
+  CustomerOrderStatus,
+  OrderPriority,
+} from '../../../entities/customer-order.entity';
 
 export class OrderQueryDto {
   @ApiPropertyOptional({ description: 'Filter by customer ID', format: 'uuid' })
@@ -18,7 +21,7 @@ export class OrderQueryDto {
   @IsOptional()
   customerId?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Filter by order status',
     enum: CustomerOrderStatus,
   })
@@ -26,7 +29,7 @@ export class OrderQueryDto {
   @IsOptional()
   status?: CustomerOrderStatus;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Filter by order priority',
     enum: OrderPriority,
   })
@@ -34,7 +37,10 @@ export class OrderQueryDto {
   @IsOptional()
   priority?: OrderPriority;
 
-  @ApiPropertyOptional({ description: 'Filter by sales representative ID', format: 'uuid' })
+  @ApiPropertyOptional({
+    description: 'Filter by sales representative ID',
+    format: 'uuid',
+  })
   @IsUUID()
   @IsOptional()
   salesRepId?: string;
@@ -76,7 +82,12 @@ export class OrderQueryDto {
   @IsOptional()
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Page size', minimum: 1, maximum: 100, default: 20 })
+  @ApiPropertyOptional({
+    description: 'Page size',
+    minimum: 1,
+    maximum: 100,
+    default: 20,
+  })
   @Type(() => Number)
   @IsNumber()
   @Min(1)
@@ -84,16 +95,23 @@ export class OrderQueryDto {
   @IsOptional()
   limit?: number = 20;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Sort field',
-    enum: ['orderNumber', 'orderDate', 'requiredDate', 'totalAmount', 'status', 'priority'],
+    enum: [
+      'orderNumber',
+      'orderDate',
+      'requiredDate',
+      'totalAmount',
+      'status',
+      'priority',
+    ],
     default: 'orderDate',
   })
   @IsString()
   @IsOptional()
   sortBy?: string = 'orderDate';
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Sort order',
     enum: ['ASC', 'DESC'],
     default: 'DESC',

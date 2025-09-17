@@ -11,7 +11,11 @@ import {
   Min,
   MaxLength,
 } from 'class-validator';
-import { EquipmentType, EquipmentStatus, MaintenanceType } from '../../../entities/equipment.entity';
+import {
+  EquipmentType,
+  EquipmentStatus,
+  MaintenanceType,
+} from '../../../entities/equipment.entity';
 
 export class CreateEquipmentDto {
   @ApiProperty({ description: 'Unique equipment code' })
@@ -123,7 +127,10 @@ export class CreateEquipmentDto {
     [key: string]: any;
   };
 
-  @ApiProperty({ description: 'Maintenance interval in hours', required: false })
+  @ApiProperty({
+    description: 'Maintenance interval in hours',
+    required: false,
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)

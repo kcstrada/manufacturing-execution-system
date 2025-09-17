@@ -199,7 +199,7 @@ export class WasteRecord extends AuditableEntity {
   @BeforeInsert()
   @BeforeUpdate()
   calculateTotalCost() {
-    this.totalCost = 
+    this.totalCost =
       (this.materialCost || 0) +
       (this.laborCost || 0) +
       (this.overheadCost || 0) +

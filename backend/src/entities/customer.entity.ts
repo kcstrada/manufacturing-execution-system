@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  Index,
-  OneToMany,
-  Unique,
-} from 'typeorm';
+import { Entity, Column, Index, OneToMany, Unique } from 'typeorm';
 import { TenantBaseEntity } from './base.entity';
 import { CustomerOrder } from './customer-order.entity';
 

@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
@@ -40,7 +45,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
       // Main client for general operations
       this.client = new Redis(redisConfig);
-      
+
       // Pub/Sub clients
       this.pubClient = new Redis(redisConfig);
       this.subClient = new Redis(redisConfig);
@@ -155,17 +160,19 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       const info = await this.client.info();
       const dbSize = await this.client.dbsize();
-      
+
       // Parse memory usage from info
       const memoryMatch = info.match(/used_memory_human:(.+)/);
       const uptimeMatch = info.match(/uptime_in_seconds:(.+)/);
       const connectedClientsMatch = info.match(/connected_clients:(.+)/);
-      
+
       return {
         dbSize,
         memory: memoryMatch ? memoryMatch[1]!.trim() : 'unknown',
         uptime: uptimeMatch ? parseInt(uptimeMatch[1]!.trim()) : 0,
-        connectedClients: connectedClientsMatch ? parseInt(connectedClientsMatch[1]!.trim()) : 0,
+        connectedClients: connectedClientsMatch
+          ? parseInt(connectedClientsMatch[1]!.trim())
+          : 0,
         status: this.client.status,
       };
     } catch (error) {

@@ -33,7 +33,10 @@ export class InventoryRepository extends TenantAwareRepository<Inventory> {
     });
   }
 
-  async findByLocation(warehouseCode: string, locationCode: string): Promise<Inventory[]> {
+  async findByLocation(
+    warehouseCode: string,
+    locationCode: string,
+  ): Promise<Inventory[]> {
     const tenantId = this.getTenantId();
     return this.repository.find({
       where: { warehouseCode, locationCode, tenantId },
@@ -74,7 +77,7 @@ export class InventoryRepository extends TenantAwareRepository<Inventory> {
     const tenantId = this.getTenantId();
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + daysAhead);
-    
+
     return this.repository.find({
       where: {
         expirationDate: LessThan(futureDate),
@@ -94,7 +97,7 @@ export class InventoryRepository extends TenantAwareRepository<Inventory> {
         tenantId,
       },
     });
-    
+
     return items.reduce((sum, item) => sum + Number(item.quantityAvailable), 0);
   }
 
@@ -103,7 +106,7 @@ export class InventoryRepository extends TenantAwareRepository<Inventory> {
     const items = await this.repository.find({
       where: { productId, tenantId },
     });
-    
+
     return items.reduce((sum, item) => sum + Number(item.quantityOnHand), 0);
   }
 
@@ -130,7 +133,7 @@ export class InventoryRepository extends TenantAwareRepository<Inventory> {
 
     inventory.quantityAvailable -= quantity;
     inventory.quantityReserved += quantity;
-    
+
     return this.repository.save(inventory);
   }
 
@@ -165,17 +168,22 @@ export class InventoryRepository extends TenantAwareRepository<Inventory> {
       .getMany();
   }
 
-  async getInventoryValuation(): Promise<{ productId: string; totalValue: number }[]> {
+  async getInventoryValuation(): Promise<
+    { productId: string; totalValue: number }[]
+  > {
     const tenantId = this.getTenantId();
     const result = await this.repository
       .createQueryBuilder('inventory')
       .select('inventory.productId', 'productId')
-      .addSelect('SUM(inventory.quantityOnHand * inventory.unitCost)', 'totalValue')
+      .addSelect(
+        'SUM(inventory.quantityOnHand * inventory.unitCost)',
+        'totalValue',
+      )
       .where('inventory.tenantId = :tenantId', { tenantId })
       .andWhere('inventory.unitCost IS NOT NULL')
       .groupBy('inventory.productId')
       .getRawMany();
-    
+
     return result;
   }
 }

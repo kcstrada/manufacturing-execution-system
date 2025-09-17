@@ -109,17 +109,17 @@ export class AuthTestHelper {
    */
   createAuthenticatedRequest(token: string) {
     const server = this.app.getHttpServer();
-    
+
     return {
-      get: (url: string) => 
+      get: (url: string) =>
         request(server).get(url).set('Authorization', `Bearer ${token}`),
-      post: (url: string) => 
+      post: (url: string) =>
         request(server).post(url).set('Authorization', `Bearer ${token}`),
-      put: (url: string) => 
+      put: (url: string) =>
         request(server).put(url).set('Authorization', `Bearer ${token}`),
-      patch: (url: string) => 
+      patch: (url: string) =>
         request(server).patch(url).set('Authorization', `Bearer ${token}`),
-      delete: (url: string) => 
+      delete: (url: string) =>
         request(server).delete(url).set('Authorization', `Bearer ${token}`),
     };
   }
@@ -184,7 +184,10 @@ export class AuthTestHelper {
   /**
    * Simulate MFA flow
    */
-  async simulateMFA(user: TestUser, code: string = '123456'): Promise<AuthTokens> {
+  async simulateMFA(
+    user: TestUser,
+    code: string = '123456',
+  ): Promise<AuthTokens> {
     // First login to get MFA challenge
     const loginResponse = await request(this.app.getHttpServer())
       .post('/api/v1/auth/login')
@@ -228,20 +231,22 @@ export class AuthTestHelper {
     token?: string,
   ): Promise<boolean> {
     const requests = [];
-    
+
     for (let i = 0; i < limit + 5; i++) {
-      let req = request(this.app.getHttpServer())[method.toLowerCase()](endpoint);
-      
+      let req = request(this.app.getHttpServer())[method.toLowerCase()](
+        endpoint,
+      );
+
       if (token) {
         req = req.set('Authorization', `Bearer ${token}`);
       }
-      
+
       requests.push(req);
     }
 
     const responses = await Promise.all(requests);
-    const rateLimited = responses.some(r => r.status === 429);
-    
+    const rateLimited = responses.some((r) => r.status === 429);
+
     return rateLimited;
   }
 
@@ -250,7 +255,7 @@ export class AuthTestHelper {
    */
   async createSession(user: TestUser): Promise<string> {
     const token = this.generateToken(user);
-    
+
     // Store session (mock implementation)
     await request(this.app.getHttpServer())
       .post('/api/v1/auth/sessions')
@@ -291,7 +296,10 @@ export class AuthTestHelper {
   /**
    * Complete password reset
    */
-  async completePasswordReset(token: string, newPassword: string): Promise<boolean> {
+  async completePasswordReset(
+    token: string,
+    newPassword: string,
+  ): Promise<boolean> {
     const response = await request(this.app.getHttpServer())
       .post('/api/v1/auth/reset-password')
       .send({
@@ -320,7 +328,7 @@ export class MockAuthService {
 
   validateCredentials(username: string, password: string): TestUser | null {
     const user = Array.from(this.users.values()).find(
-      u => u.username === username || u.email === username
+      (u) => u.username === username || u.email === username,
     );
 
     if (user && user.password === password) {

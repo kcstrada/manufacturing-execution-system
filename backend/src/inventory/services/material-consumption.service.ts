@@ -1,9 +1,20 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { Inventory, InventoryStatus } from '../../entities/inventory.entity';
-import { InventoryTransaction, InventoryTransactionType } from '../../entities/inventory-transaction.entity';
-import { BillOfMaterials, BOMComponent, BOMStatus } from '../../entities/bill-of-materials.entity';
+import {
+  InventoryTransaction,
+  InventoryTransactionType,
+} from '../../entities/inventory-transaction.entity';
+import {
+  BillOfMaterials,
+  BOMComponent,
+  BOMStatus,
+} from '../../entities/bill-of-materials.entity';
 import { Product, ProductType } from '../../entities/product.entity';
 import { CustomerOrderLine } from '../../entities/customer-order.entity';
 
@@ -145,7 +156,8 @@ export class MaterialConsumptionService {
         // Calculate required quantity including scrap
         const scrapMultiplier = 1 + component.scrapPercentage / 100;
         const componentRequiredQty =
-          (component.quantity * quantity * scrapMultiplier) / (bom.yieldQuantity || 1);
+          (component.quantity * quantity * scrapMultiplier) /
+          (bom.yieldQuantity || 1);
 
         // Recursively calculate sub-component requirements
         const componentRequirement = await this.calculateMaterialRequirements(
@@ -206,7 +218,8 @@ export class MaterialConsumptionService {
 
     const totals = inventoryItems.reduce(
       (acc, item) => ({
-        availableQuantity: acc.availableQuantity + Number(item.quantityAvailable),
+        availableQuantity:
+          acc.availableQuantity + Number(item.quantityAvailable),
         reservedQuantity: acc.reservedQuantity + Number(item.quantityReserved),
         onHandQuantity: acc.onHandQuantity + Number(item.quantityOnHand),
       }),
@@ -366,7 +379,10 @@ export class MaterialConsumptionService {
           notes,
         });
 
-        const savedTransaction = await em.save(InventoryTransaction, transaction);
+        const savedTransaction = await em.save(
+          InventoryTransaction,
+          transaction,
+        );
         transactions.push(savedTransaction);
 
         // Track consumption details
@@ -498,9 +514,11 @@ export class MaterialConsumptionService {
         if (inventoryItem) {
           // Release the reservation
           inventoryItem.quantityAvailable =
-            Number(inventoryItem.quantityAvailable) + Number(reservation.quantity);
+            Number(inventoryItem.quantityAvailable) +
+            Number(reservation.quantity);
           inventoryItem.quantityReserved =
-            Number(inventoryItem.quantityReserved) - Number(reservation.quantity);
+            Number(inventoryItem.quantityReserved) -
+            Number(reservation.quantity);
 
           await entityManager.save(Inventory, inventoryItem);
 
@@ -572,7 +590,9 @@ export class MaterialConsumptionService {
       });
 
     if (startDate) {
-      query.andWhere('transaction.transactionDate >= :startDate', { startDate });
+      query.andWhere('transaction.transactionDate >= :startDate', {
+        startDate,
+      });
     }
 
     if (endDate) {

@@ -6,58 +6,58 @@ import { ValidationPipeOptions } from '@nestjs/common';
 export const validationPipeConfig: ValidationPipeOptions = {
   // Automatically transform payloads to DTO instances
   transform: true,
-  
+
   // Enable implicit type conversion
   transformOptions: {
     enableImplicitConversion: true,
     enableCircularCheck: true,
   },
-  
+
   // Strip properties that are not in the DTO
   whitelist: true,
-  
+
   // Throw error if non-whitelisted properties are present
   forbidNonWhitelisted: true,
-  
+
   // Throw error if unknown values are present
   forbidUnknownValues: true,
-  
+
   // Disable detailed error messages in production
   disableErrorMessages: process.env.NODE_ENV === 'production',
-  
+
   // Validate nested objects
   validateCustomDecorators: true,
-  
+
   // Always validate, even if skipMissingProperties is true
   always: true,
-  
+
   // Strict validation groups
   strictGroups: true,
-  
+
   // Dismiss default messages
   dismissDefaultMessages: false,
-  
+
   // Validation error options
   validationError: {
     target: false,
     value: process.env.NODE_ENV !== 'production',
   },
-  
+
   // Stop at first error for each property
   stopAtFirstError: false,
-  
+
   // Skip missing properties (undefined values)
   skipMissingProperties: false,
-  
+
   // Skip null values
   skipNullProperties: false,
-  
+
   // Skip undefined values
   skipUndefinedProperties: false,
-  
+
   // Enable debug mode in development
   enableDebugMessages: process.env.NODE_ENV === 'development',
-  
+
   // Groups to validate
   groups: [],
 };
@@ -75,7 +75,7 @@ export const VALIDATION_CONSTANTS = {
   MAX_CODE_LENGTH: 50,
   MIN_PASSWORD_LENGTH: 8,
   MAX_PASSWORD_LENGTH: 128,
-  
+
   // Numeric ranges
   MIN_QUANTITY: 0,
   MAX_QUANTITY: 999999,
@@ -83,20 +83,20 @@ export const VALIDATION_CONSTANTS = {
   MAX_PRICE: 9999999.99,
   MIN_PERCENTAGE: 0,
   MAX_PERCENTAGE: 100,
-  
+
   // Date ranges
   MIN_DATE_OFFSET_DAYS: -365,
   MAX_DATE_OFFSET_DAYS: 365,
-  
+
   // Array sizes
   MIN_ARRAY_SIZE: 0,
   MAX_ARRAY_SIZE: 1000,
   MAX_BATCH_SIZE: 100,
-  
+
   // File sizes
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
   MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5MB
-  
+
   // Regex patterns
   PATTERNS: {
     EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -112,7 +112,7 @@ export const VALIDATION_CONSTANTS = {
     BARCODE: /^[0-9]+$/,
     COLOR_HEX: /^#[0-9A-F]{6}$/i,
   },
-  
+
   // Error messages
   MESSAGES: {
     REQUIRED: '$property is required',
@@ -137,17 +137,24 @@ export const VALIDATION_CONSTANTS = {
     INVALID_FORMAT: '$property has invalid format',
     CUSTOM: '$property validation failed',
   },
-  
+
   // Allowed mime types
   ALLOWED_MIME_TYPES: {
     IMAGE: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-    DOCUMENT: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-    SPREADSHEET: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    DOCUMENT: [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ],
+    SPREADSHEET: [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ],
     CSV: ['text/csv', 'application/csv'],
     JSON: ['application/json'],
     XML: ['application/xml', 'text/xml'],
   },
-  
+
   // Allowed file extensions
   ALLOWED_EXTENSIONS: {
     IMAGE: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
@@ -162,7 +169,9 @@ export const VALIDATION_CONSTANTS = {
 /**
  * Get validation pipe configuration for specific environment
  */
-export function getValidationPipeConfig(isProduction: boolean): ValidationPipeOptions {
+export function getValidationPipeConfig(
+  isProduction: boolean,
+): ValidationPipeOptions {
   return {
     ...validationPipeConfig,
     disableErrorMessages: isProduction,

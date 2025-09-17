@@ -91,7 +91,7 @@ export class ReportProcessor {
   }
 
   private async simulateProcessing(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private generateMockReportData(criteria: any): any {

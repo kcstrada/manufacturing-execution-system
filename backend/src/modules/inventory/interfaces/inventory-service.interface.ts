@@ -25,36 +25,50 @@ import {
 export interface IInventoryService {
   // CRUD Operations
   create(createInventoryDto: CreateInventoryDto): Promise<Inventory>;
-  findAll(query: InventoryQueryDto): Promise<{ data: Inventory[]; total: number }>;
+  findAll(
+    query: InventoryQueryDto,
+  ): Promise<{ data: Inventory[]; total: number }>;
   findOne(id: string): Promise<Inventory>;
-  update(id: string, updateInventoryDto: UpdateInventoryDto): Promise<Inventory>;
+  update(
+    id: string,
+    updateInventoryDto: UpdateInventoryDto,
+  ): Promise<Inventory>;
   remove(id: string): Promise<void>;
 
   // Stock Tracking Methods
   findByProduct(productId: string): Promise<Inventory[]>;
   findByWarehouse(warehouseCode: string): Promise<Inventory[]>;
-  findByLocation(warehouseCode: string, locationCode: string): Promise<Inventory[]>;
+  findByLocation(
+    warehouseCode: string,
+    locationCode: string,
+  ): Promise<Inventory[]>;
   findByLotNumber(lotNumber: string): Promise<Inventory[]>;
   findByStatus(status: string): Promise<Inventory[]>;
 
   // Quantity Management
-  getAvailableQuantity(productId: string, warehouseCode?: string): Promise<number>;
+  getAvailableQuantity(
+    productId: string,
+    warehouseCode?: string,
+  ): Promise<number>;
   getTotalQuantity(productId: string, warehouseCode?: string): Promise<number>;
-  updateQuantities(id: string, quantities: UpdateInventoryQuantitiesDto): Promise<Inventory>;
-  
+  updateQuantities(
+    id: string,
+    quantities: UpdateInventoryQuantitiesDto,
+  ): Promise<Inventory>;
+
   // Reservation Management
   reserveInventory(
     productId: string,
     warehouseCode: string,
     locationCode: string,
-    reserveDto: ReserveInventoryDto
+    reserveDto: ReserveInventoryDto,
   ): Promise<Inventory>;
-  
+
   releaseInventory(
     productId: string,
     warehouseCode: string,
     locationCode: string,
-    releaseDto: ReleaseInventoryDto
+    releaseDto: ReleaseInventoryDto,
   ): Promise<Inventory>;
 
   // Stock Adjustments
@@ -62,7 +76,7 @@ export interface IInventoryService {
     productId: string,
     warehouseCode: string,
     locationCode: string,
-    adjustDto: AdjustInventoryDto
+    adjustDto: AdjustInventoryDto,
   ): Promise<InventoryTransaction>;
 
   // Stock Transfers
@@ -72,7 +86,10 @@ export interface IInventoryService {
   }>;
 
   // Status Management
-  updateStatus(id: string, statusDto: UpdateInventoryStatusDto): Promise<Inventory>;
+  updateStatus(
+    id: string,
+    statusDto: UpdateInventoryStatusDto,
+  ): Promise<Inventory>;
 
   // Expiration Management
   findExpiredItems(): Promise<Inventory[]>;
@@ -80,16 +97,20 @@ export interface IInventoryService {
 
   // Stock Analysis
   findLowStockItems(threshold: number): Promise<Inventory[]>;
-  getInventoryValuation(query?: InventoryValuationQueryDto): Promise<{
-    productId?: string;
-    warehouseCode?: string;
-    locationCode?: string;
-    totalValue: number;
-    totalQuantity: number;
-  }[]>;
+  getInventoryValuation(query?: InventoryValuationQueryDto): Promise<
+    {
+      productId?: string;
+      warehouseCode?: string;
+      locationCode?: string;
+      totalValue: number;
+      totalQuantity: number;
+    }[]
+  >;
 
   // Transaction Management
-  createTransaction(transactionDto: CreateInventoryTransactionDto): Promise<InventoryTransaction>;
+  createTransaction(
+    transactionDto: CreateInventoryTransactionDto,
+  ): Promise<InventoryTransaction>;
   findTransactions(query: InventoryTransactionQueryDto): Promise<{
     data: InventoryTransaction[];
     total: number;
@@ -97,7 +118,7 @@ export interface IInventoryService {
   getTransactionHistory(
     productId: string,
     warehouseCode?: string,
-    days?: number
+    days?: number,
   ): Promise<InventoryTransaction[]>;
 
   // Cycle Counting
@@ -106,7 +127,7 @@ export interface IInventoryService {
     warehouseCode: string,
     locationCode: string,
     actualQuantity: number,
-    notes?: string
+    notes?: string,
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
@@ -121,7 +142,7 @@ export interface IInventoryService {
     referenceType?: string,
     referenceId?: string,
     lotNumber?: string,
-    unitCost?: number
+    unitCost?: number,
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
@@ -134,7 +155,7 @@ export interface IInventoryService {
     locationCode: string,
     quantity: number,
     referenceType?: string,
-    referenceId?: string
+    referenceId?: string,
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
@@ -143,22 +164,22 @@ export interface IInventoryService {
   // Bulk Operations
   bulkUpdateStatus(
     inventoryIds: string[],
-    statusDto: UpdateInventoryStatusDto
+    statusDto: UpdateInventoryStatusDto,
   ): Promise<Inventory[]>;
-  
+
   bulkAdjust(
     adjustments: Array<{
       productId: string;
       warehouseCode: string;
       locationCode: string;
       adjustment: AdjustInventoryDto;
-    }>
+    }>,
   ): Promise<InventoryTransaction[]>;
 
   // Stock Availability Check
   checkStockAvailability(
     items: Array<{ productId: string; quantity: number }>,
-    warehouseCode?: string
+    warehouseCode?: string,
   ): Promise<{
     available: boolean;
     shortages: Array<{

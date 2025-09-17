@@ -13,7 +13,10 @@ import {
   IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CustomerOrderStatus, OrderPriority } from '../../../entities/customer-order.entity';
+import {
+  CustomerOrderStatus,
+  OrderPriority,
+} from '../../../entities/customer-order.entity';
 
 export class ShippingAddressDto {
   @ApiPropertyOptional({ description: 'Street address line 1' })
@@ -79,7 +82,11 @@ export class CreateOrderLineDto {
   @Min(0)
   unitPrice!: number;
 
-  @ApiPropertyOptional({ description: 'Discount percentage', minimum: 0, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Discount percentage',
+    minimum: 0,
+    maximum: 100,
+  })
   @IsNumber()
   @IsOptional()
   @Min(0)
@@ -156,7 +163,10 @@ export class CreateOrderDto {
   @IsOptional()
   priority?: OrderPriority;
 
-  @ApiPropertyOptional({ description: 'Shipping address', type: ShippingAddressDto })
+  @ApiPropertyOptional({
+    description: 'Shipping address',
+    type: ShippingAddressDto,
+  })
   @ValidateNested()
   @Type(() => ShippingAddressDto)
   @IsOptional()
@@ -174,7 +184,11 @@ export class CreateOrderDto {
   @Min(0)
   shippingCost?: number;
 
-  @ApiPropertyOptional({ description: 'Discount percentage', minimum: 0, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Discount percentage',
+    minimum: 0,
+    maximum: 100,
+  })
   @IsNumber()
   @IsOptional()
   @Min(0)
@@ -193,7 +207,10 @@ export class CreateOrderDto {
   @Min(0)
   taxAmount?: number;
 
-  @ApiPropertyOptional({ description: 'Sales representative ID', format: 'uuid' })
+  @ApiPropertyOptional({
+    description: 'Sales representative ID',
+    format: 'uuid',
+  })
   @IsUUID()
   @IsOptional()
   salesRepId?: string;

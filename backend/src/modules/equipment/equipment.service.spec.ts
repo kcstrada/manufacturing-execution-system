@@ -13,7 +13,11 @@ import {
   MaintenanceType,
   MaintenanceStatus,
 } from '../../entities/equipment.entity';
-import { CreateEquipmentDto, CreateMaintenanceScheduleDto, RecordMaintenanceDto } from './dto/create-equipment.dto';
+import {
+  CreateEquipmentDto,
+  CreateMaintenanceScheduleDto,
+  RecordMaintenanceDto,
+} from './dto/create-equipment.dto';
 import { UpdateEquipmentDto } from './dto/update-equipment.dto';
 import { NotFoundException } from '@nestjs/common';
 
@@ -184,9 +188,15 @@ describe('EquipmentService', () => {
     }).compile();
 
     service = module.get<EquipmentService>(EquipmentService);
-    equipmentRepository = module.get<Repository<Equipment>>(getRepositoryToken(Equipment));
-    scheduleRepository = module.get<Repository<MaintenanceSchedule>>(getRepositoryToken(MaintenanceSchedule));
-    recordRepository = module.get<Repository<MaintenanceRecord>>(getRepositoryToken(MaintenanceRecord));
+    equipmentRepository = module.get<Repository<Equipment>>(
+      getRepositoryToken(Equipment),
+    );
+    scheduleRepository = module.get<Repository<MaintenanceSchedule>>(
+      getRepositoryToken(MaintenanceSchedule),
+    );
+    recordRepository = module.get<Repository<MaintenanceRecord>>(
+      getRepositoryToken(MaintenanceRecord),
+    );
     eventEmitter = module.get<EventEmitter2>(EventEmitter2);
   });
 
@@ -240,7 +250,9 @@ describe('EquipmentService', () => {
 
   describe('findAll', () => {
     it('should return all equipment', async () => {
-      jest.spyOn(equipmentRepository, 'find').mockResolvedValue([mockEquipment]);
+      jest
+        .spyOn(equipmentRepository, 'find')
+        .mockResolvedValue([mockEquipment]);
 
       const result = await service.findAll({});
 
@@ -249,7 +261,9 @@ describe('EquipmentService', () => {
     });
 
     it('should filter equipment by status', async () => {
-      jest.spyOn(equipmentRepository, 'find').mockResolvedValue([mockEquipment]);
+      jest
+        .spyOn(equipmentRepository, 'find')
+        .mockResolvedValue([mockEquipment]);
 
       const result = await service.findAll({ status: EquipmentStatus.IDLE });
 
@@ -264,7 +278,9 @@ describe('EquipmentService', () => {
 
   describe('findOne', () => {
     it('should return equipment by id', async () => {
-      jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(mockEquipment);
+      jest
+        .spyOn(equipmentRepository, 'findOne')
+        .mockResolvedValue(mockEquipment);
 
       const result = await service.findOne('equipment-1');
 
@@ -278,7 +294,9 @@ describe('EquipmentService', () => {
     it('should throw NotFoundException if equipment not found', async () => {
       jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -294,8 +312,12 @@ describe('EquipmentService', () => {
         ...updateDto,
       } as Equipment;
 
-      jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(mockEquipment);
-      jest.spyOn(equipmentRepository, 'save').mockResolvedValue(updatedEquipment);
+      jest
+        .spyOn(equipmentRepository, 'findOne')
+        .mockResolvedValue(mockEquipment);
+      jest
+        .spyOn(equipmentRepository, 'save')
+        .mockResolvedValue(updatedEquipment);
 
       const result = await service.update('equipment-1', updateDto);
 
@@ -313,13 +335,23 @@ describe('EquipmentService', () => {
         status: EquipmentStatus.IN_USE,
       } as Equipment;
 
-      jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(mockEquipment);
-      jest.spyOn(equipmentRepository, 'save').mockResolvedValue(updatedEquipment);
+      jest
+        .spyOn(equipmentRepository, 'findOne')
+        .mockResolvedValue(mockEquipment);
+      jest
+        .spyOn(equipmentRepository, 'save')
+        .mockResolvedValue(updatedEquipment);
 
-      const result = await service.updateStatus('equipment-1', EquipmentStatus.IN_USE);
+      const result = await service.updateStatus(
+        'equipment-1',
+        EquipmentStatus.IN_USE,
+      );
 
       expect(result.status).toEqual(EquipmentStatus.IN_USE);
-      expect(eventEmitter.emit).toHaveBeenCalledWith('equipment.status.changed', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'equipment.status.changed',
+        expect.any(Object),
+      );
     });
   });
 
@@ -330,8 +362,12 @@ describe('EquipmentService', () => {
         totalOperatingHours: 5100,
       } as Equipment;
 
-      jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(mockEquipment);
-      jest.spyOn(equipmentRepository, 'save').mockResolvedValue(updatedEquipment);
+      jest
+        .spyOn(equipmentRepository, 'findOne')
+        .mockResolvedValue(mockEquipment);
+      jest
+        .spyOn(equipmentRepository, 'save')
+        .mockResolvedValue(updatedEquipment);
 
       const result = await service.updateOperatingHours('equipment-1', 100);
 
@@ -350,20 +386,33 @@ describe('EquipmentService', () => {
         nextCalibrationDate: nextCalibrationDate,
       } as Equipment;
 
-      jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(mockEquipment);
-      jest.spyOn(equipmentRepository, 'save').mockResolvedValue(updatedEquipment);
+      jest
+        .spyOn(equipmentRepository, 'findOne')
+        .mockResolvedValue(mockEquipment);
+      jest
+        .spyOn(equipmentRepository, 'save')
+        .mockResolvedValue(updatedEquipment);
 
-      const result = await service.recordCalibration('equipment-1', calibrationDate, nextCalibrationDate);
+      const result = await service.recordCalibration(
+        'equipment-1',
+        calibrationDate,
+        nextCalibrationDate,
+      );
 
       expect(result.lastCalibrationDate).toEqual(calibrationDate);
       expect(result.nextCalibrationDate).toEqual(nextCalibrationDate);
-      expect(eventEmitter.emit).toHaveBeenCalledWith('equipment.calibrated', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'equipment.calibrated',
+        expect.any(Object),
+      );
     });
   });
 
   describe('calculateOEE', () => {
     it('should calculate OEE for equipment', async () => {
-      jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(mockEquipment);
+      jest
+        .spyOn(equipmentRepository, 'findOne')
+        .mockResolvedValue(mockEquipment);
 
       const result = await service.calculateOEE('equipment-1');
 
@@ -379,8 +428,12 @@ describe('EquipmentService', () => {
         oee: 0,
       } as Equipment;
 
-      jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(equipmentWithoutOEE);
-      jest.spyOn(equipmentRepository, 'save').mockResolvedValue(equipmentWithoutOEE);
+      jest
+        .spyOn(equipmentRepository, 'findOne')
+        .mockResolvedValue(equipmentWithoutOEE);
+      jest
+        .spyOn(equipmentRepository, 'save')
+        .mockResolvedValue(equipmentWithoutOEE);
 
       const result = await service.calculateOEE('equipment-1');
 
@@ -390,7 +443,9 @@ describe('EquipmentService', () => {
 
   describe('getEquipmentRequiringCalibration', () => {
     it('should return equipment requiring calibration', async () => {
-      jest.spyOn(equipmentRepository, 'find').mockResolvedValue([mockEquipment]);
+      jest
+        .spyOn(equipmentRepository, 'find')
+        .mockResolvedValue([mockEquipment]);
 
       const result = await service.getEquipmentRequiringCalibration();
 
@@ -409,13 +464,23 @@ describe('EquipmentService', () => {
   describe('getEquipmentMetrics', () => {
     it('should return equipment metrics', async () => {
       const equipmentList = [
-        { ...mockEquipment, status: EquipmentStatus.OPERATIONAL, isCritical: true },
-        { ...mockEquipment, status: EquipmentStatus.MAINTENANCE, isCritical: false },
+        {
+          ...mockEquipment,
+          status: EquipmentStatus.OPERATIONAL,
+          isCritical: true,
+        },
+        {
+          ...mockEquipment,
+          status: EquipmentStatus.MAINTENANCE,
+          isCritical: false,
+        },
         { ...mockEquipment, status: EquipmentStatus.REPAIR, isCritical: true },
       ] as Equipment[];
 
       jest.spyOn(equipmentRepository, 'find').mockResolvedValue(equipmentList);
-      jest.spyOn(service, 'getUpcomingMaintenance').mockResolvedValue([mockSchedule]);
+      jest
+        .spyOn(service, 'getUpcomingMaintenance')
+        .mockResolvedValue([mockSchedule]);
       jest.spyOn(service, 'getOverdueMaintenance').mockResolvedValue([]);
 
       const result = await service.getEquipmentMetrics();
@@ -449,11 +514,14 @@ describe('EquipmentService', () => {
           assignedToId: 'worker-1',
         };
 
-        jest.spyOn(equipmentRepository, 'findOne')
+        jest
+          .spyOn(equipmentRepository, 'findOne')
           .mockResolvedValueOnce(mockEquipment); // For findOne in createMaintenanceSchedule
         jest.spyOn(scheduleRepository, 'create').mockReturnValue(mockSchedule);
         jest.spyOn(scheduleRepository, 'save').mockResolvedValue(mockSchedule);
-        jest.spyOn(equipmentRepository, 'save').mockResolvedValue(mockEquipment);
+        jest
+          .spyOn(equipmentRepository, 'save')
+          .mockResolvedValue(mockEquipment);
 
         const result = await service.createMaintenanceSchedule(createDto);
 
@@ -464,18 +532,23 @@ describe('EquipmentService', () => {
           scheduledDate: new Date(createDto.scheduledDate),
           status: MaintenanceStatus.SCHEDULED,
         });
-        expect(eventEmitter.emit).toHaveBeenCalledWith('maintenance.scheduled', {
-          scheduleId: mockSchedule.id,
-          equipmentId: mockSchedule.equipmentId,
-          scheduledDate: mockSchedule.scheduledDate,
-          type: mockSchedule.type,
-        });
+        expect(eventEmitter.emit).toHaveBeenCalledWith(
+          'maintenance.scheduled',
+          {
+            scheduleId: mockSchedule.id,
+            equipmentId: mockSchedule.equipmentId,
+            scheduledDate: mockSchedule.scheduledDate,
+            type: mockSchedule.type,
+          },
+        );
       });
     });
 
     describe('getUpcomingMaintenance', () => {
       it('should return upcoming maintenance within specified days', async () => {
-        jest.spyOn(scheduleRepository, 'find').mockResolvedValue([mockSchedule]);
+        jest
+          .spyOn(scheduleRepository, 'find')
+          .mockResolvedValue([mockSchedule]);
 
         const result = await service.getUpcomingMaintenance(7);
 
@@ -494,7 +567,9 @@ describe('EquipmentService', () => {
 
     describe('getOverdueMaintenance', () => {
       it('should return overdue maintenance', async () => {
-        jest.spyOn(scheduleRepository, 'find').mockResolvedValue([mockSchedule]);
+        jest
+          .spyOn(scheduleRepository, 'find')
+          .mockResolvedValue([mockSchedule]);
 
         const result = await service.getOverdueMaintenance();
 
@@ -518,12 +593,20 @@ describe('EquipmentService', () => {
           status: MaintenanceStatus.IN_PROGRESS,
         } as MaintenanceSchedule;
 
-        jest.spyOn(scheduleRepository, 'findOne').mockResolvedValue(mockSchedule);
+        jest
+          .spyOn(scheduleRepository, 'findOne')
+          .mockResolvedValue(mockSchedule);
         jest.spyOn(scheduleRepository, 'count').mockResolvedValue(0);
-        jest.spyOn(scheduleRepository, 'save').mockResolvedValue(updatedSchedule);
-        jest.spyOn(equipmentRepository, 'findOne')
+        jest
+          .spyOn(scheduleRepository, 'save')
+          .mockResolvedValue(updatedSchedule);
+        jest
+          .spyOn(equipmentRepository, 'findOne')
           .mockResolvedValueOnce(mockEquipment); // For findOne in startMaintenance->updateStatus
-        jest.spyOn(equipmentRepository, 'save').mockResolvedValue({ ...mockEquipment, status: EquipmentStatus.MAINTENANCE } as Equipment);
+        jest.spyOn(equipmentRepository, 'save').mockResolvedValue({
+          ...mockEquipment,
+          status: EquipmentStatus.MAINTENANCE,
+        } as Equipment);
 
         const result = await service.startMaintenance('schedule-1');
 
@@ -560,31 +643,49 @@ describe('EquipmentService', () => {
           findings: 'All checks passed',
         };
 
-        jest.spyOn(scheduleRepository, 'findOne').mockResolvedValue(inProgressSchedule);
-      jest.spyOn(recordRepository, 'count').mockResolvedValue(0);
-        jest.spyOn(scheduleRepository, 'save').mockResolvedValue(completedSchedule);
-        jest.spyOn(recordRepository, 'create').mockReturnValue(mockMaintenanceRecord);
-        jest.spyOn(recordRepository, 'save').mockResolvedValue(mockMaintenanceRecord);
-        jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(mockEquipment);
+        jest
+          .spyOn(scheduleRepository, 'findOne')
+          .mockResolvedValue(inProgressSchedule);
+        jest.spyOn(recordRepository, 'count').mockResolvedValue(0);
+        jest
+          .spyOn(scheduleRepository, 'save')
+          .mockResolvedValue(completedSchedule);
+        jest
+          .spyOn(recordRepository, 'create')
+          .mockReturnValue(mockMaintenanceRecord);
+        jest
+          .spyOn(recordRepository, 'save')
+          .mockResolvedValue(mockMaintenanceRecord);
+        jest
+          .spyOn(equipmentRepository, 'findOne')
+          .mockResolvedValue(mockEquipment);
         jest.spyOn(equipmentRepository, 'save').mockResolvedValue({
           ...mockEquipment,
           status: EquipmentStatus.IDLE,
           lastMaintenanceDate: new Date(),
         } as Equipment);
 
-        const result = await service.completeMaintenance('schedule-1', recordDto);
+        const result = await service.completeMaintenance(
+          'schedule-1',
+          recordDto,
+        );
 
         expect(result).toEqual(mockMaintenanceRecord);
         expect(scheduleRepository.save).toHaveBeenCalled();
         expect(recordRepository.create).toHaveBeenCalled();
         expect(equipmentRepository.save).toHaveBeenCalled();
-        expect(eventEmitter.emit).toHaveBeenCalledWith('maintenance.completed', expect.any(Object));
+        expect(eventEmitter.emit).toHaveBeenCalledWith(
+          'maintenance.completed',
+          expect.any(Object),
+        );
       });
     });
 
     describe('getMaintenanceHistory', () => {
       it('should return maintenance history for equipment', async () => {
-        jest.spyOn(recordRepository, 'find').mockResolvedValue([mockMaintenanceRecord]);
+        jest
+          .spyOn(recordRepository, 'find')
+          .mockResolvedValue([mockMaintenanceRecord]);
 
         const result = await service.getMaintenanceHistory('equipment-1', 10);
 
@@ -603,19 +704,35 @@ describe('EquipmentService', () => {
         const endDate = new Date('2024-12-31');
 
         const mockSchedules = [
-          { ...mockSchedule, status: MaintenanceStatus.COMPLETED } as MaintenanceSchedule,
-          { ...mockSchedule, status: MaintenanceStatus.SCHEDULED } as MaintenanceSchedule,
-          { ...mockSchedule, status: MaintenanceStatus.OVERDUE } as MaintenanceSchedule,
+          {
+            ...mockSchedule,
+            status: MaintenanceStatus.COMPLETED,
+          } as MaintenanceSchedule,
+          {
+            ...mockSchedule,
+            status: MaintenanceStatus.SCHEDULED,
+          } as MaintenanceSchedule,
+          {
+            ...mockSchedule,
+            status: MaintenanceStatus.OVERDUE,
+          } as MaintenanceSchedule,
         ];
 
         const mockRecords = [
           mockMaintenanceRecord,
-          { ...mockMaintenanceRecord, wasBreakdown: true, duration: 3, totalCost: 500 } as MaintenanceRecord,
+          {
+            ...mockMaintenanceRecord,
+            wasBreakdown: true,
+            duration: 3,
+            totalCost: 500,
+          } as MaintenanceRecord,
         ];
 
         jest.spyOn(scheduleRepository, 'find').mockResolvedValue(mockSchedules);
         jest.spyOn(recordRepository, 'find').mockResolvedValue(mockRecords);
-        jest.spyOn(equipmentRepository, 'find').mockResolvedValue([mockEquipment]);
+        jest
+          .spyOn(equipmentRepository, 'find')
+          .mockResolvedValue([mockEquipment]);
 
         const result = await service.getMaintenanceMetrics(startDate, endDate);
 
@@ -635,13 +752,19 @@ describe('EquipmentService', () => {
 
   describe('remove', () => {
     it('should remove equipment', async () => {
-      jest.spyOn(equipmentRepository, 'findOne').mockResolvedValue(mockEquipment);
+      jest
+        .spyOn(equipmentRepository, 'findOne')
+        .mockResolvedValue(mockEquipment);
       jest.spyOn(scheduleRepository, 'count').mockResolvedValue(0);
-      jest.spyOn(equipmentRepository, 'softDelete').mockResolvedValue({ affected: 1 } as any);
+      jest
+        .spyOn(equipmentRepository, 'softDelete')
+        .mockResolvedValue({ affected: 1 } as any);
 
       await service.remove('equipment-1');
 
-      expect(equipmentRepository.softDelete).toHaveBeenCalledWith('equipment-1');
+      expect(equipmentRepository.softDelete).toHaveBeenCalledWith(
+        'equipment-1',
+      );
       expect(eventEmitter.emit).toHaveBeenCalledWith('equipment.deleted', {
         equipmentId: 'equipment-1',
         equipmentCode: mockEquipment.equipmentCode,

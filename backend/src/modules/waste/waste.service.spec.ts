@@ -2,7 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WasteService } from './waste.service';
-import { WasteRecord, WasteType, WasteCategory, DisposalMethod } from '../../entities/waste-record.entity';
+import {
+  WasteRecord,
+  WasteType,
+  WasteCategory,
+  DisposalMethod,
+} from '../../entities/waste-record.entity';
 import { ClsService } from 'nestjs-cls';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateWasteRecordDto } from './dto/create-waste-record.dto';
@@ -52,9 +57,9 @@ describe('WasteService', () => {
     }).compile();
 
     service = module.get<WasteService>(WasteService);
-    wasteRepository = module.get(getRepositoryToken(WasteRecord)) as jest.Mocked<Repository<WasteRecord>>;
-    clsService = module.get(ClsService) as jest.Mocked<ClsService>;
-    eventEmitter = module.get(EventEmitter2) as jest.Mocked<EventEmitter2>;
+    wasteRepository = module.get(getRepositoryToken(WasteRecord));
+    clsService = module.get(ClsService);
+    eventEmitter = module.get(EventEmitter2);
 
     clsService.get.mockImplementation((key: string | symbol | undefined) => {
       if (key === 'tenantId') return mockTenantId;
@@ -146,13 +151,18 @@ describe('WasteService', () => {
         getMany: jest.fn().mockResolvedValue(mockRecords),
       };
 
-      wasteRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+      wasteRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder as any,
+      );
 
       const result = await service.findAll();
 
       expect(result).toEqual(mockRecords);
       expect(wasteRepository.createQueryBuilder).toHaveBeenCalledWith('waste');
-      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('waste.product', 'product');
+      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'waste.product',
+        'product',
+      );
     });
   });
 
@@ -178,7 +188,9 @@ describe('WasteService', () => {
     it('should throw NotFoundException when record not found', async () => {
       wasteRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -217,7 +229,9 @@ describe('WasteService', () => {
     it('should throw NotFoundException when updating non-existent record', async () => {
       wasteRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.update('non-existent', {})).rejects.toThrow(NotFoundException);
+      await expect(service.update('non-existent', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -242,7 +256,6 @@ describe('WasteService', () => {
       expect((wasteRepository as any).remove).toHaveBeenCalledWith(mockRecord);
     });
   });
-
 
   describe('getWasteSummary', () => {
     it('should calculate waste summary with analytics', async () => {
@@ -284,14 +297,22 @@ describe('WasteService', () => {
         getMany: jest.fn().mockResolvedValue(mockRecords),
       };
 
-      wasteRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+      wasteRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder as any,
+      );
 
       const result = await service.getWasteSummary(startDate, endDate);
 
       expect(result.totalQuantity).toBe(150);
       expect(result.totalCost).toBe(700);
-      expect(result.byType[WasteType.SCRAP]).toEqual({ quantity: 100, cost: 500 });
-      expect(result.byType[WasteType.REWORK]).toEqual({ quantity: 50, cost: 200 });
+      expect(result.byType[WasteType.SCRAP]).toEqual({
+        quantity: 100,
+        cost: 500,
+      });
+      expect(result.byType[WasteType.REWORK]).toEqual({
+        quantity: 50,
+        cost: 200,
+      });
       expect(result.recyclingRate).toBeGreaterThan(0);
     });
   });

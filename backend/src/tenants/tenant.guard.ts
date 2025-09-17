@@ -19,7 +19,7 @@ export class TenantGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<RequestWithTenant>();
-    
+
     // Check if tenant is required for this route
     const requireTenant = this.reflector.getAllAndOverride<boolean>(
       REQUIRE_TENANT_KEY,
@@ -46,12 +46,14 @@ export class TenantGuard implements CanActivate {
 
     // Validate user has access to the tenant
     if (request.user && request.tenantId) {
-      const userTenantId = (request.user as any).tenant_id || (request.user as any).tenantId;
-      
+      const userTenantId =
+        (request.user as any).tenant_id || (request.user as any).tenantId;
+
       // Admin users can access any tenant
-      const isAdmin = (request.user as any).roles?.includes('admin') || 
-                      (request.user as any).realm_access?.roles?.includes('admin');
-      
+      const isAdmin =
+        (request.user as any).roles?.includes('admin') ||
+        (request.user as any).realm_access?.roles?.includes('admin');
+
       if (!isAdmin && userTenantId && userTenantId !== request.tenantId) {
         throw new ForbiddenException(
           `User does not have access to tenant: ${request.tenantId}`,

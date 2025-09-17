@@ -4,7 +4,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ClsModule } from 'nestjs-cls';
 import { AuthModule } from '../../auth/auth.module';
 import { TaskController } from './task.controller';
-import { TaskDependencyController, WorkOrderDependencyController } from './controllers/task-dependency.controller';
+import {
+  TaskDependencyController,
+  WorkOrderDependencyController,
+} from './controllers/task-dependency.controller';
 import { TaskSplitReassignController } from './controllers/task-split-reassign.controller';
 import { TaskService } from './services/task.service';
 import { TaskAssignmentService } from './services/task-assignment.service';

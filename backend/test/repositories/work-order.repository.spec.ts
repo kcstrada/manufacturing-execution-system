@@ -3,31 +3,39 @@ import { Repository, Between, LessThan, In } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
 import { WorkOrderRepository } from '../../src/repositories/work-order.repository';
-import { WorkOrder, WorkOrderStatus } from '../../src/entities/work-order.entity';
-import { mockRepository, mockClsService, createTestEntity } from './repository-test.helper';
+import {
+  WorkOrder,
+  WorkOrderStatus,
+} from '../../src/entities/work-order.entity';
+import {
+  mockRepository,
+  mockClsService,
+  createTestEntity,
+} from './repository-test.helper';
 
 describe('WorkOrderRepository', () => {
   let repository: WorkOrderRepository;
   let typeOrmRepository: jest.Mocked<Repository<WorkOrder>>;
   let clsService: jest.Mocked<ClsService>;
 
-  const createWorkOrder = (overrides = {}): WorkOrder => createTestEntity({
-    workOrderNumber: 'WO-001',
-    sequence: 1,
-    operationDescription: 'Test Operation',
-    quantityOrdered: 100,
-    quantityCompleted: 0,
-    quantityRejected: 0,
-    setupTimeMinutes: 30,
-    runTimePerUnitMinutes: 5,
-    status: WorkOrderStatus.PENDING,
-    productionOrderId: 'prod-order-id',
-    workCenterId: 'work-center-id',
-    productId: 'product-id',
-    scheduledStartDate: new Date('2024-01-01'),
-    scheduledEndDate: new Date('2024-01-02'),
-    ...overrides,
-  }) as WorkOrder;
+  const createWorkOrder = (overrides = {}): WorkOrder =>
+    createTestEntity({
+      workOrderNumber: 'WO-001',
+      sequence: 1,
+      operationDescription: 'Test Operation',
+      quantityOrdered: 100,
+      quantityCompleted: 0,
+      quantityRejected: 0,
+      setupTimeMinutes: 30,
+      runTimePerUnitMinutes: 5,
+      status: WorkOrderStatus.PENDING,
+      productionOrderId: 'prod-order-id',
+      workCenterId: 'work-center-id',
+      productId: 'product-id',
+      scheduledStartDate: new Date('2024-01-01'),
+      scheduledEndDate: new Date('2024-01-02'),
+      ...overrides,
+    }) as WorkOrder;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -70,14 +78,19 @@ describe('WorkOrderRepository', () => {
 
   describe('findByStatus', () => {
     it('should find work orders by status', async () => {
-      const workOrders = [createWorkOrder({ status: WorkOrderStatus.IN_PROGRESS })];
+      const workOrders = [
+        createWorkOrder({ status: WorkOrderStatus.IN_PROGRESS }),
+      ];
       typeOrmRepository.find.mockResolvedValue(workOrders);
 
       const result = await repository.findByStatus(WorkOrderStatus.IN_PROGRESS);
 
       expect(result).toEqual(workOrders);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
-        where: { status: WorkOrderStatus.IN_PROGRESS, tenantId: 'test-tenant-id' },
+        where: {
+          status: WorkOrderStatus.IN_PROGRESS,
+          tenantId: 'test-tenant-id',
+        },
         relations: ['productionOrder', 'workCenter', 'product'],
         order: { scheduledStartDate: 'ASC' },
       });
@@ -109,7 +122,10 @@ describe('WorkOrderRepository', () => {
 
       expect(result).toEqual(workOrders);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
-        where: { productionOrderId: 'prod-order-id', tenantId: 'test-tenant-id' },
+        where: {
+          productionOrderId: 'prod-order-id',
+          tenantId: 'test-tenant-id',
+        },
         relations: ['workCenter', 'product'],
         order: { sequence: 'ASC' },
       });
@@ -123,7 +139,10 @@ describe('WorkOrderRepository', () => {
       const workOrders = [createWorkOrder()];
       typeOrmRepository.find.mockResolvedValue(workOrders);
 
-      const result = await repository.findScheduledInDateRange(startDate, endDate);
+      const result = await repository.findScheduledInDateRange(
+        startDate,
+        endDate,
+      );
 
       expect(result).toEqual(workOrders);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
@@ -154,7 +173,7 @@ describe('WorkOrderRepository', () => {
               WorkOrderStatus.SCHEDULED,
               WorkOrderStatus.RELEASED,
               WorkOrderStatus.IN_PROGRESS,
-            ]
+            ],
           }),
           tenantId: 'test-tenant-id',
         },
@@ -166,7 +185,10 @@ describe('WorkOrderRepository', () => {
 
   describe('updateProgress', () => {
     it('should update work order progress', async () => {
-      const workOrder = createWorkOrder({ quantityCompleted: 50, quantityRejected: 5 });
+      const workOrder = createWorkOrder({
+        quantityCompleted: 50,
+        quantityRejected: 5,
+      });
       typeOrmRepository.update.mockResolvedValue({ affected: 1 } as any);
       typeOrmRepository.findOne.mockResolvedValue(workOrder);
 
@@ -175,14 +197,16 @@ describe('WorkOrderRepository', () => {
       expect(result).toEqual(workOrder);
       expect(typeOrmRepository.update).toHaveBeenCalledWith(
         { id: 'wo-id', tenantId: 'test-tenant-id' },
-        { quantityCompleted: 50, quantityRejected: 5 }
+        { quantityCompleted: 50, quantityRejected: 5 },
       );
     });
   });
 
   describe('startWorkOrder', () => {
     it('should start a work order', async () => {
-      const workOrder = createWorkOrder({ status: WorkOrderStatus.IN_PROGRESS });
+      const workOrder = createWorkOrder({
+        status: WorkOrderStatus.IN_PROGRESS,
+      });
       typeOrmRepository.update.mockResolvedValue({ affected: 1 } as any);
       typeOrmRepository.findOne.mockResolvedValue(workOrder);
 
@@ -195,22 +219,27 @@ describe('WorkOrderRepository', () => {
           status: WorkOrderStatus.IN_PROGRESS,
           actualStartDate: expect.any(Date),
           assignedToId: 'user-id',
-        }
+        },
       );
     });
   });
 
   describe('completeWorkOrder', () => {
     it('should complete a work order', async () => {
-      const workOrder = createWorkOrder({ 
+      const workOrder = createWorkOrder({
         status: WorkOrderStatus.COMPLETED,
         quantityCompleted: 95,
-        quantityRejected: 5 
+        quantityRejected: 5,
       });
       typeOrmRepository.update.mockResolvedValue({ affected: 1 } as any);
       typeOrmRepository.findOne.mockResolvedValue(workOrder);
 
-      const result = await repository.completeWorkOrder('wo-id', 'user-id', 95, 5);
+      const result = await repository.completeWorkOrder(
+        'wo-id',
+        'user-id',
+        95,
+        5,
+      );
 
       expect(result).toEqual(workOrder);
       expect(typeOrmRepository.update).toHaveBeenCalledWith(
@@ -221,7 +250,7 @@ describe('WorkOrderRepository', () => {
           completedById: 'user-id',
           quantityCompleted: 95,
           quantityRejected: 5,
-        }
+        },
       );
     });
   });
@@ -244,7 +273,10 @@ describe('WorkOrderRepository', () => {
 
   describe('calculateCompletionPercentage', () => {
     it('should calculate completion percentage', async () => {
-      const workOrder = createWorkOrder({ quantityOrdered: 100, quantityCompleted: 75 });
+      const workOrder = createWorkOrder({
+        quantityOrdered: 100,
+        quantityCompleted: 75,
+      });
       typeOrmRepository.findOne.mockResolvedValue(workOrder);
 
       const result = await repository.calculateCompletionPercentage('wo-id');
@@ -261,7 +293,10 @@ describe('WorkOrderRepository', () => {
     });
 
     it('should return 0 if quantity ordered is 0', async () => {
-      const workOrder = createWorkOrder({ quantityOrdered: 0, quantityCompleted: 0 });
+      const workOrder = createWorkOrder({
+        quantityOrdered: 0,
+        quantityCompleted: 0,
+      });
       typeOrmRepository.findOne.mockResolvedValue(workOrder);
 
       const result = await repository.calculateCompletionPercentage('wo-id');

@@ -6,8 +6,15 @@ import { ClsService } from 'nestjs-cls';
 import { OrderService } from './order.service';
 import { OrderStateMachineService } from './services/order-state-machine.service';
 import { OrderToTaskConverterService } from './services/order-to-task-converter.service';
-import { OrderRepository, OrderLineRepository } from '../../repositories/order.repository';
-import { CustomerOrder, CustomerOrderLine, CustomerOrderStatus } from '../../entities/customer-order.entity';
+import {
+  OrderRepository,
+  OrderLineRepository,
+} from '../../repositories/order.repository';
+import {
+  CustomerOrder,
+  CustomerOrderLine,
+  CustomerOrderStatus,
+} from '../../entities/customer-order.entity';
 import { GenerateTasksDto } from './dto/generate-tasks.dto';
 import { TaskPriority } from '../../entities/task.entity';
 
@@ -111,9 +118,9 @@ describe('OrderService - Task Generation', () => {
     }).compile();
 
     service = module.get<OrderService>(OrderService);
-    orderRepo = module.get(getRepositoryToken(CustomerOrder)) as jest.Mocked<Repository<CustomerOrder>>;
-    clsService = module.get(ClsService) as jest.Mocked<ClsService>;
-    orderToTaskConverter = module.get(OrderToTaskConverterService) as jest.Mocked<OrderToTaskConverterService>;
+    orderRepo = module.get(getRepositoryToken(CustomerOrder));
+    clsService = module.get(ClsService);
+    orderToTaskConverter = module.get(OrderToTaskConverterService);
 
     // Setup default cls service behavior
     clsService.get.mockImplementation((key?: string | symbol) => {
@@ -146,12 +153,19 @@ describe('OrderService - Task Generation', () => {
       const conversionResult: any = {
         productionOrders: [{ id: 'po-1' }, { id: 'po-2' }],
         workOrders: [{ id: 'wo-1' }, { id: 'wo-2' }, { id: 'wo-3' }],
-        tasks: [{ id: 'task-1' }, { id: 'task-2' }, { id: 'task-3' }, { id: 'task-4' }],
+        tasks: [
+          { id: 'task-1' },
+          { id: 'task-2' },
+          { id: 'task-3' },
+          { id: 'task-4' },
+        ],
         warnings: ['Some warning'],
       };
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
-      orderToTaskConverter.convertOrderToTasks.mockResolvedValue(conversionResult);
+      orderToTaskConverter.convertOrderToTasks.mockResolvedValue(
+        conversionResult,
+      );
 
       const result = await service.generateTasks(mockOrderId, generateTasksDto);
 
@@ -168,7 +182,7 @@ describe('OrderService - Task Generation', () => {
       expect(orderToTaskConverter.convertOrderToTasks).toHaveBeenCalledWith(
         mockOrderId,
         generateTasksDto,
-        queryRunner.manager
+        queryRunner.manager,
       );
 
       expect(queryRunner.startTransaction).toHaveBeenCalled();
@@ -186,7 +200,7 @@ describe('OrderService - Task Generation', () => {
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
       await expect(service.generateTasks(mockOrderId, {})).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
 
       expect(orderToTaskConverter.convertOrderToTasks).not.toHaveBeenCalled();
@@ -201,11 +215,11 @@ describe('OrderService - Task Generation', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
       orderToTaskConverter.convertOrderToTasks.mockRejectedValue(
-        new Error('Conversion failed')
+        new Error('Conversion failed'),
       );
 
       await expect(service.generateTasks(mockOrderId, {})).rejects.toThrow(
-        'Conversion failed'
+        'Conversion failed',
       );
 
       expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
@@ -220,7 +234,6 @@ describe('OrderService - Task Generation', () => {
         orderNumber: 'ORD-001',
         status: CustomerOrderStatus.CONFIRMED,
       } as CustomerOrder;
-
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
       jest.spyOn(service, 'generateTasks').mockResolvedValue({
@@ -281,9 +294,9 @@ describe('OrderService - Task Generation', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
-      await expect(service.generateProductionOrders(mockOrderId)).rejects.toThrow(
-        BadRequestException
-      );
+      await expect(
+        service.generateProductionOrders(mockOrderId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

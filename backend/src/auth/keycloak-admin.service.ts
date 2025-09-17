@@ -12,7 +12,10 @@ export class KeycloakAdminService {
   constructor(private configService: ConfigService) {
     this.realm = this.configService.get<string>('KEYCLOAK_REALM', 'mes');
     this.kcAdminClient = new KcAdminClient({
-      baseUrl: this.configService.get<string>('KEYCLOAK_AUTH_SERVER_URL', 'http://localhost:8080'),
+      baseUrl: this.configService.get<string>(
+        'KEYCLOAK_AUTH_SERVER_URL',
+        'http://localhost:8080',
+      ),
       realmName: 'master',
     });
     this.initializeClient();
@@ -21,8 +24,14 @@ export class KeycloakAdminService {
   private async initializeClient() {
     try {
       await this.kcAdminClient.auth({
-        username: this.configService.get<string>('KEYCLOAK_ADMIN_USERNAME', 'admin'),
-        password: this.configService.get<string>('KEYCLOAK_ADMIN_PASSWORD', 'admin'),
+        username: this.configService.get<string>(
+          'KEYCLOAK_ADMIN_USERNAME',
+          'admin',
+        ),
+        password: this.configService.get<string>(
+          'KEYCLOAK_ADMIN_PASSWORD',
+          'admin',
+        ),
         grantType: 'password',
         clientId: 'admin-cli',
       });
@@ -57,7 +66,9 @@ export class KeycloakAdminService {
       });
 
       if (existingUsers.length > 0) {
-        throw new BadRequestException(`User ${userData.username} already exists`);
+        throw new BadRequestException(
+          `User ${userData.username} already exists`,
+        );
       }
 
       // Create user
@@ -140,23 +151,30 @@ export class KeycloakAdminService {
     }
   }
 
-  async createAdminUser(tenantId: string, userData?: Partial<{
-    username: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    password: string;
-    role?: 'super_admin' | 'executive' | 'admin' | 'worker' | 'sales';
-  }>) {
+  async createAdminUser(
+    tenantId: string,
+    userData?: Partial<{
+      username: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      password: string;
+      role?: 'super_admin' | 'executive' | 'admin' | 'worker' | 'sales';
+    }>,
+  ) {
     const role = userData?.role || 'admin';
-    const rolePrefix = role === 'executive' ? 'exec' : role === 'super_admin' ? 'super' : role;
+    const rolePrefix =
+      role === 'executive' ? 'exec' : role === 'super_admin' ? 'super' : role;
 
     const defaultData = {
       username: `${rolePrefix}_${tenantId}`,
       email: `${rolePrefix}@${tenantId}.local`,
       firstName: role.charAt(0).toUpperCase() + role.slice(1),
       lastName: tenantId.toUpperCase(),
-      password: role === 'super_admin' || role === 'admin' || role === 'executive' ? 'Admin@123' : 'User@123',
+      password:
+        role === 'super_admin' || role === 'admin' || role === 'executive'
+          ? 'Admin@123'
+          : 'User@123',
     };
 
     const adminData = {
@@ -164,20 +182,24 @@ export class KeycloakAdminService {
       ...userData,
       tenantId,
       role: userData?.role || 'admin',
-      isAdmin: role === 'super_admin' || role === 'admin' || role === 'executive',
+      isAdmin:
+        role === 'super_admin' || role === 'admin' || role === 'executive',
     };
 
     return this.createUser(adminData);
   }
 
-  async createRegularUser(tenantId: string, userData?: Partial<{
-    username: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    password: string;
-    role?: 'super_admin' | 'executive' | 'admin' | 'worker' | 'sales';
-  }>) {
+  async createRegularUser(
+    tenantId: string,
+    userData?: Partial<{
+      username: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      password: string;
+      role?: 'super_admin' | 'executive' | 'admin' | 'worker' | 'sales';
+    }>,
+  ) {
     const role = userData?.role || 'worker';
     const rolePrefix = role === 'executive' ? 'exec' : role;
 
@@ -186,7 +208,8 @@ export class KeycloakAdminService {
       email: `${rolePrefix}@${tenantId}.local`,
       firstName: role.charAt(0).toUpperCase() + role.slice(1),
       lastName: tenantId.toUpperCase(),
-      password: role === 'admin' || role === 'executive' ? 'Admin@123' : 'User@123',
+      password:
+        role === 'admin' || role === 'executive' ? 'Admin@123' : 'User@123',
     };
 
     const userDataFinal = {
@@ -209,8 +232,8 @@ export class KeycloakAdminService {
       });
 
       if (tenantId) {
-        return users.filter(user =>
-          user.attributes?.tenant_id?.includes(tenantId)
+        return users.filter((user) =>
+          user.attributes?.tenant_id?.includes(tenantId),
         );
       }
 
@@ -232,7 +255,7 @@ export class KeycloakAdminService {
       });
 
       // Filter users by tenant_id attribute
-      const tenantUsers = users.filter(user => {
+      const tenantUsers = users.filter((user) => {
         const userTenantId = user.attributes?.tenant_id;
         if (Array.isArray(userTenantId)) {
           return userTenantId.includes(tenantId);
@@ -240,7 +263,9 @@ export class KeycloakAdminService {
         return userTenantId === tenantId;
       });
 
-      this.logger.log(`Found ${tenantUsers.length} users for tenant ${tenantId}`);
+      this.logger.log(
+        `Found ${tenantUsers.length} users for tenant ${tenantId}`,
+      );
       return tenantUsers.length;
     } catch (error) {
       this.logger.error(`Failed to count users for tenant ${tenantId}:`, error);

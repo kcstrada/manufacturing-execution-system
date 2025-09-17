@@ -28,7 +28,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Determine status code
     const status = this.getStatus(exception);
-    
+
     // Extract error details
     const errorResponse = this.getErrorResponse(exception, status, request);
 
@@ -46,32 +46,32 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       return exception.getStatus();
     }
-    
+
     // Handle specific error types
     if (this.isValidationError(exception)) {
       return HttpStatus.BAD_REQUEST;
     }
-    
+
     if (this.isAuthenticationError(exception)) {
       return HttpStatus.UNAUTHORIZED;
     }
-    
+
     if (this.isAuthorizationError(exception)) {
       return HttpStatus.FORBIDDEN;
     }
-    
+
     if (this.isNotFoundError(exception)) {
       return HttpStatus.NOT_FOUND;
     }
-    
+
     if (this.isConflictError(exception)) {
       return HttpStatus.CONFLICT;
     }
-    
+
     if (this.isTimeoutError(exception)) {
       return HttpStatus.REQUEST_TIMEOUT;
     }
-    
+
     return HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
@@ -100,18 +100,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // Add error details based on exception type
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
-      
+
       if (typeof response === 'object') {
         Object.assign(errorResponse, response);
       } else {
         errorResponse.message = response;
       }
-      
+
       errorResponse.error = exception.name;
     } else if (exception instanceof Error) {
       errorResponse.message = exception.message;
       errorResponse.error = exception.name;
-      
+
       // Include stack trace in development
       if (this.isDevelopment) {
         errorResponse.stack = exception.stack;
@@ -152,7 +152,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     if (status >= 500) {
-      this.logger.error(message, exception instanceof Error ? exception.stack : '', context);
+      this.logger.error(
+        message,
+        exception instanceof Error ? exception.stack : '',
+        context,
+      );
     } else if (status >= 400) {
       this.logger.warn(message, context);
     } else {
@@ -173,11 +177,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
       return exception.message;
     }
-    
+
     if (exception instanceof Error) {
       return exception.message;
     }
-    
+
     return 'Unknown error occurred';
   }
 

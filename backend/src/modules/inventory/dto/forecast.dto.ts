@@ -1,4 +1,13 @@
-import { IsString, IsNumber, IsArray, IsOptional, IsEnum, IsBoolean, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  IsEnum,
+  IsBoolean,
+  Min,
+  Max,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum ForecastMethod {
@@ -18,38 +27,56 @@ export class ForecastDto {
   @IsString()
   warehouseCode?: string;
 
-  @ApiPropertyOptional({ description: 'Number of days to forecast ahead', default: 30 })
+  @ApiPropertyOptional({
+    description: 'Number of days to forecast ahead',
+    default: 30,
+  })
   @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(365)
   forecastDays?: number = 30;
 
-  @ApiPropertyOptional({ description: 'Number of historical days to analyze', default: 90 })
+  @ApiPropertyOptional({
+    description: 'Number of historical days to analyze',
+    default: 90,
+  })
   @IsOptional()
   @IsNumber()
   @Min(7)
   @Max(730)
   historicalDays?: number = 90;
 
-  @ApiPropertyOptional({ enum: ForecastMethod, default: ForecastMethod.MOVING_AVERAGE })
+  @ApiPropertyOptional({
+    enum: ForecastMethod,
+    default: ForecastMethod.MOVING_AVERAGE,
+  })
   @IsOptional()
   @IsEnum(ForecastMethod)
   method?: ForecastMethod = ForecastMethod.MOVING_AVERAGE;
 
-  @ApiPropertyOptional({ description: 'Include seasonal adjustments', default: false })
+  @ApiPropertyOptional({
+    description: 'Include seasonal adjustments',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   includeSeasonality?: boolean = false;
 
-  @ApiPropertyOptional({ description: 'Confidence level for predictions', default: 0.95 })
+  @ApiPropertyOptional({
+    description: 'Confidence level for predictions',
+    default: 0.95,
+  })
   @IsOptional()
   @IsNumber()
   @Min(0.5)
   @Max(0.99)
   confidenceLevel?: number = 0.95;
 
-  @ApiPropertyOptional({ description: 'Lead time in days for reorder calculation', default: 7 })
+  @ApiPropertyOptional({
+    description: 'Lead time in days for reorder calculation',
+    default: 7,
+  })
   @IsOptional()
   @IsNumber()
   @Min(1)
@@ -230,7 +257,10 @@ export class StockoutPredictionDto {
 }
 
 export class CalculateReorderPointsDto {
-  @ApiProperty({ description: 'Product IDs to calculate reorder points for', type: [String] })
+  @ApiProperty({
+    description: 'Product IDs to calculate reorder points for',
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
   productIds!: string[];
@@ -242,7 +272,10 @@ export class CalculateReorderPointsDto {
   @Max(90)
   leadTimeDays?: number = 7;
 
-  @ApiPropertyOptional({ description: 'Service level (0.9 = 90%)', default: 0.95 })
+  @ApiPropertyOptional({
+    description: 'Service level (0.9 = 90%)',
+    default: 0.95,
+  })
   @IsOptional()
   @IsNumber()
   @Min(0.5)

@@ -8,9 +8,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 export class QualityProcessor {
   private readonly logger = new Logger(QualityProcessor.name);
 
-  constructor(
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   @Process(JOB_NAMES.PROCESS_INSPECTION)
   async processInspection(job: Job) {
@@ -30,7 +28,9 @@ export class QualityProcessor {
         completedAt: new Date(),
       };
 
-      this.logger.log(`Inspection ${inspectionId} completed: ${inspectionResult.passed ? 'PASSED' : 'FAILED'}`);
+      this.logger.log(
+        `Inspection ${inspectionId} completed: ${inspectionResult.passed ? 'PASSED' : 'FAILED'}`,
+      );
 
       // Emit inspection result
       if (!inspectionResult.passed) {
@@ -50,7 +50,11 @@ export class QualityProcessor {
   @Process(JOB_NAMES.CALCULATE_QUALITY_METRICS)
   async calculateQualityMetrics(job: Job) {
     this.logger.log(`Calculating quality metrics - Job ${job.id}`);
-    const { productId = 'PROD-DEMO', period = 'daily', data = {} } = job.data || {};
+    const {
+      productId = 'PROD-DEMO',
+      period = 'daily',
+      data = {},
+    } = job.data || {};
 
     try {
       await this.simulateProcessing(2000);
@@ -78,7 +82,9 @@ export class QualityProcessor {
 
       return metrics;
     } catch (error) {
-      this.logger.error(`Failed to calculate quality metrics: ${error.message}`);
+      this.logger.error(
+        `Failed to calculate quality metrics: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -114,9 +120,9 @@ export class QualityProcessor {
 
       if (alerts.length > 0) {
         this.logger.warn(`Found ${alerts.length} quality alerts`);
-        
+
         // Emit quality alerts
-        alerts.forEach(alert => {
+        alerts.forEach((alert) => {
           this.eventEmitter.emit('quality.alert', {
             tenantId,
             alert,
@@ -139,11 +145,17 @@ export class QualityProcessor {
   }
 
   private async simulateProcessing(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private generateDefects(): any[] {
-    const defectTypes = ['dimensional', 'surface', 'functional', 'cosmetic', 'packaging'];
+    const defectTypes = [
+      'dimensional',
+      'surface',
+      'functional',
+      'cosmetic',
+      'packaging',
+    ];
     const defectCount = Math.floor(Math.random() * 3);
     const defects = [];
 

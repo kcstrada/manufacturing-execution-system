@@ -8,9 +8,15 @@ import { OrderController } from './order.controller';
 import { OrderStateMachineService } from './services/order-state-machine.service';
 import { OrderToTaskConverterService } from './services/order-to-task-converter.service';
 import { OrderWorkflowListener } from './listeners/order-workflow.listener';
-import { CustomerOrder, CustomerOrderLine } from '../../entities/customer-order.entity';
+import {
+  CustomerOrder,
+  CustomerOrderLine,
+} from '../../entities/customer-order.entity';
 import { OrderStateTransition } from '../../entities/order-state-transition.entity';
-import { OrderRepository, OrderLineRepository } from '../../repositories/order.repository';
+import {
+  OrderRepository,
+  OrderLineRepository,
+} from '../../repositories/order.repository';
 import { Product } from '../../entities/product.entity';
 import { Customer } from '../../entities/customer.entity';
 import { User } from '../../entities/user.entity';
@@ -52,6 +58,10 @@ import { WorkCenter } from '../../entities/work-center.entity';
     OrderToTaskConverterService,
     OrderWorkflowListener,
   ],
-  exports: [OrderService, OrderStateMachineService, OrderToTaskConverterService],
+  exports: [
+    OrderService,
+    OrderStateMachineService,
+    OrderToTaskConverterService,
+  ],
 })
 export class OrderModule {}

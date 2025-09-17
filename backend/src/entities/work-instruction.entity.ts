@@ -1,11 +1,4 @@
-import {
-  Entity,
-  Column,
-  Index,
-  ManyToOne,
-  JoinColumn,
-  Unique,
-} from 'typeorm';
+import { Entity, Column, Index, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { TenantBaseEntity } from './base.entity';
 import { ProductionStep } from './production-step.entity';
 import { Product } from './product.entity';
@@ -261,12 +254,15 @@ export class WorkInstruction extends TenantBaseEntity {
   language!: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  translations?: Record<string, {
-    title: string;
-    summary?: string;
-    content?: string;
-    steps?: any[];
-  }>;
+  translations?: Record<
+    string,
+    {
+      title: string;
+      summary?: string;
+      content?: string;
+      steps?: any[];
+    }
+  >;
 
   // Warnings and alerts
   @Column({ type: 'jsonb', nullable: true })
@@ -494,7 +490,8 @@ export class WorkInstruction extends TenantBaseEntity {
   requiresUpdate(): boolean {
     if (!this.expiryDate) return false;
     const daysUntilExpiry = Math.ceil(
-      (this.expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      (this.expiryDate.getTime() - new Date().getTime()) /
+        (1000 * 60 * 60 * 24),
     );
     return daysUntilExpiry <= 30; // Alert 30 days before expiry
   }

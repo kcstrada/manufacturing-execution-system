@@ -9,7 +9,12 @@ import {
   Index,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { NotificationType, NotificationChannel, NotificationPriority, NotificationStatus } from '../types/notification.types';
+import {
+  NotificationType,
+  NotificationChannel,
+  NotificationPriority,
+  NotificationStatus,
+} from '../types/notification.types';
 
 @Entity('notifications')
 @Index(['userId', 'tenantId', 'status'])

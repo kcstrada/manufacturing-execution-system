@@ -1,13 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository, DataSource, QueryRunner } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { OrderService } from './order.service';
 import { OrderStateMachineService } from './services/order-state-machine.service';
 import { OrderToTaskConverterService } from './services/order-to-task-converter.service';
-import { OrderRepository, OrderLineRepository } from '../../repositories/order.repository';
-import { CustomerOrder, CustomerOrderLine, CustomerOrderStatus, OrderPriority } from '../../entities/customer-order.entity';
+import {
+  OrderRepository,
+  OrderLineRepository,
+} from '../../repositories/order.repository';
+import {
+  CustomerOrder,
+  CustomerOrderLine,
+  CustomerOrderStatus,
+  OrderPriority,
+} from '../../entities/customer-order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto, UpdateOrderStatusDto } from './dto/update-order.dto';
 import { OrderQueryDto } from './dto/order-query.dto';
@@ -117,13 +129,13 @@ describe('OrderService', () => {
     }).compile();
 
     service = module.get<OrderService>(OrderService);
-    orderRepository = module.get(OrderRepository) as jest.Mocked<OrderRepository>;
-    orderLineRepository = module.get(OrderLineRepository) as jest.Mocked<OrderLineRepository>;
-    orderRepo = module.get(getRepositoryToken(CustomerOrder)) as jest.Mocked<Repository<CustomerOrder>>;
-    orderLineRepo = module.get(getRepositoryToken(CustomerOrderLine)) as jest.Mocked<Repository<CustomerOrderLine>>;
-    clsService = module.get(ClsService) as jest.Mocked<ClsService>;
-    stateMachine = module.get(OrderStateMachineService) as jest.Mocked<OrderStateMachineService>;
-    
+    orderRepository = module.get(OrderRepository);
+    orderLineRepository = module.get(OrderLineRepository);
+    orderRepo = module.get(getRepositoryToken(CustomerOrder));
+    orderLineRepo = module.get(getRepositoryToken(CustomerOrderLine));
+    clsService = module.get(ClsService);
+    stateMachine = module.get(OrderStateMachineService);
+
     // Use stateMachine to avoid unused variable warning
     stateMachine;
 
@@ -167,13 +179,15 @@ describe('OrderService', () => {
       orderRepo.create.mockReturnValue(mockOrder);
       (queryRunner.manager.save as jest.Mock).mockResolvedValue(mockOrder);
       orderLineRepo.create.mockReturnValue({} as CustomerOrderLine);
-      
+
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
       const result = await service.create(createOrderDto);
 
       expect(result).toBe(mockOrder);
-      expect(orderRepository.findByOrderNumber).toHaveBeenCalledWith(createOrderDto.orderNumber);
+      expect(orderRepository.findByOrderNumber).toHaveBeenCalledWith(
+        createOrderDto.orderNumber,
+      );
       expect(queryRunner.startTransaction).toHaveBeenCalled();
       expect(queryRunner.commitTransaction).toHaveBeenCalled();
     });
@@ -181,8 +195,12 @@ describe('OrderService', () => {
     it('should throw ConflictException if order number already exists', async () => {
       orderRepository.findByOrderNumber.mockResolvedValue({} as CustomerOrder);
 
-      await expect(service.create(createOrderDto)).rejects.toThrow(ConflictException);
-      expect(orderRepository.findByOrderNumber).toHaveBeenCalledWith(createOrderDto.orderNumber);
+      await expect(service.create(createOrderDto)).rejects.toThrow(
+        ConflictException,
+      );
+      expect(orderRepository.findByOrderNumber).toHaveBeenCalledWith(
+        createOrderDto.orderNumber,
+      );
     });
 
     it('should rollback transaction on error', async () => {
@@ -195,9 +213,13 @@ describe('OrderService', () => {
 
       orderRepository.findByOrderNumber.mockResolvedValue(null);
       orderRepo.create.mockReturnValue(mockOrder);
-      (queryRunner.manager.save as jest.Mock).mockRejectedValue(new Error('Database error'));
+      (queryRunner.manager.save as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      );
 
-      await expect(service.create(createOrderDto)).rejects.toThrow('Database error');
+      await expect(service.create(createOrderDto)).rejects.toThrow(
+        'Database error',
+      );
       expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(queryRunner.release).toHaveBeenCalled();
     });
@@ -207,7 +229,7 @@ describe('OrderService', () => {
     it('should return paginated orders', async () => {
       const query: OrderQueryDto = { page: 1, limit: 20 };
       const mockOrders = [{ id: mockOrderId }] as CustomerOrder[];
-      
+
       orderRepository.findWithFilters.mockResolvedValue({
         data: mockOrders,
         total: 1,
@@ -233,13 +255,17 @@ describe('OrderService', () => {
       const result = await service.findOne(mockOrderId);
 
       expect(result).toBe(mockOrder);
-      expect(orderRepository.findOneWithRelations).toHaveBeenCalledWith(mockOrderId);
+      expect(orderRepository.findOneWithRelations).toHaveBeenCalledWith(
+        mockOrderId,
+      );
     });
 
     it('should throw NotFoundException if order not found', async () => {
       orderRepository.findOneWithRelations.mockResolvedValue(null);
 
-      await expect(service.findOne(mockOrderId)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(mockOrderId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -255,10 +281,11 @@ describe('OrderService', () => {
         status: CustomerOrderStatus.DRAFT,
       } as CustomerOrder;
 
-      jest.spyOn(service, 'findOne')
+      jest
+        .spyOn(service, 'findOne')
         .mockResolvedValueOnce(mockOrder)
         .mockResolvedValueOnce(mockOrder);
-      
+
       orderRepo.save.mockResolvedValue(mockOrder);
 
       const result = await service.update(mockOrderId, updateOrderDto);
@@ -275,7 +302,9 @@ describe('OrderService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
-      await expect(service.update(mockOrderId, updateOrderDto)).rejects.toThrow(BadRequestException);
+      await expect(service.update(mockOrderId, updateOrderDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -291,10 +320,14 @@ describe('OrderService', () => {
         status: CustomerOrderStatus.CONFIRMED,
       };
 
-      jest.spyOn(service, 'findOne')
+      jest
+        .spyOn(service, 'findOne')
         .mockResolvedValueOnce(mockOrder)
-        .mockResolvedValueOnce({ ...mockOrder, status: statusDto.status } as CustomerOrder);
-      
+        .mockResolvedValueOnce({
+          ...mockOrder,
+          status: statusDto.status,
+        } as CustomerOrder);
+
       orderRepo.save.mockResolvedValue(mockOrder);
 
       const result = await service.updateStatus(mockOrderId, statusDto);
@@ -315,7 +348,9 @@ describe('OrderService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
-      await expect(service.updateStatus(mockOrderId, statusDto)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.updateStatus(mockOrderId, statusDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -342,7 +377,9 @@ describe('OrderService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
-      await expect(service.remove(mockOrderId)).rejects.toThrow(BadRequestException);
+      await expect(service.remove(mockOrderId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -393,7 +430,9 @@ describe('OrderService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
-      await expect(service.cancel(mockOrderId)).rejects.toThrow(BadRequestException);
+      await expect(service.cancel(mockOrderId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -412,14 +451,16 @@ describe('OrderService', () => {
       const result = await service.getOrderStats(mockCustomerId);
 
       expect(result).toBe(mockStats);
-      expect(orderRepository.getOrderStats).toHaveBeenCalledWith(mockCustomerId);
+      expect(orderRepository.getOrderStats).toHaveBeenCalledWith(
+        mockCustomerId,
+      );
     });
   });
 
   describe('getOrdersRequiringAttention', () => {
     it('should return orders requiring attention', async () => {
       const mockOrders = [{ id: mockOrderId }] as CustomerOrder[];
-      
+
       orderRepository.getOrdersRequiringAttention.mockResolvedValue(mockOrders);
 
       const result = await service.getOrdersRequiringAttention();
@@ -547,10 +588,11 @@ describe('OrderService', () => {
         orderLines: [newOrderLine],
       } as CustomerOrder;
 
-      jest.spyOn(service, 'findOne')
+      jest
+        .spyOn(service, 'findOne')
         .mockResolvedValueOnce(mockOrder)
         .mockResolvedValueOnce(updatedOrder);
-      
+
       orderLineRepo.create.mockReturnValue(newOrderLine as CustomerOrderLine);
       orderLineRepo.save.mockResolvedValue(newOrderLine as CustomerOrderLine);
       jest.spyOn(service, 'calculateTotals').mockResolvedValue(updatedOrder);
@@ -558,11 +600,13 @@ describe('OrderService', () => {
       const result = await service.addOrderLine(mockOrderId, newOrderLine);
 
       expect(result).toBe(updatedOrder);
-      expect(orderLineRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-        ...newOrderLine,
-        customerOrderId: mockOrderId,
-        tenantId: mockTenantId,
-      }));
+      expect(orderLineRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...newOrderLine,
+          customerOrderId: mockOrderId,
+          tenantId: mockTenantId,
+        }),
+      );
     });
 
     it('should throw BadRequestException for non-draft orders', async () => {
@@ -573,7 +617,9 @@ describe('OrderService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
-      await expect(service.addOrderLine(mockOrderId, {})).rejects.toThrow(BadRequestException);
+      await expect(service.addOrderLine(mockOrderId, {})).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -595,16 +641,21 @@ describe('OrderService', () => {
 
       const updateData = { quantity: 15 };
 
-      jest.spyOn(service, 'findOne')
-        .mockResolvedValueOnce(mockOrder)  // First call in updateOrderLine
-        .mockResolvedValueOnce(mockOrder)  // Second call for line check
+      jest
+        .spyOn(service, 'findOne')
+        .mockResolvedValueOnce(mockOrder) // First call in updateOrderLine
+        .mockResolvedValueOnce(mockOrder) // Second call for line check
         .mockResolvedValueOnce(mockOrder); // Third call at the end
-      
+
       orderLineRepo.update.mockResolvedValue({ affected: 1 } as any);
       orderRepo.save.mockResolvedValue(mockOrder);
       jest.spyOn(service, 'calculateTotals').mockResolvedValue(mockOrder);
 
-      const result = await service.updateOrderLine(mockOrderId, lineId, updateData);
+      const result = await service.updateOrderLine(
+        mockOrderId,
+        lineId,
+        updateData,
+      );
 
       expect(result).toBe(mockOrder);
       expect(orderLineRepo.update).toHaveBeenCalledWith(lineId, updateData);
@@ -617,14 +668,15 @@ describe('OrderService', () => {
         status: CustomerOrderStatus.DRAFT,
       } as unknown as CustomerOrder;
 
-      jest.spyOn(service, 'findOne')
+      jest
+        .spyOn(service, 'findOne')
         .mockResolvedValueOnce(mockOrder)
         .mockResolvedValueOnce(mockOrder);
-      
+
       orderLineRepository.findByOrderId.mockResolvedValue([]);
 
       await expect(
-        service.updateOrderLine(mockOrderId, 'non-existent-line', {})
+        service.updateOrderLine(mockOrderId, 'non-existent-line', {}),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -645,13 +697,14 @@ describe('OrderService', () => {
         status: CustomerOrderStatus.DRAFT,
       } as CustomerOrder;
 
-      jest.spyOn(service, 'findOne')
+      jest
+        .spyOn(service, 'findOne')
         .mockResolvedValueOnce(mockOrder)
         .mockResolvedValueOnce({
           ...mockOrder,
           orderLines: [],
         } as unknown as CustomerOrder);
-      
+
       orderLineRepo.delete.mockResolvedValue({ affected: 1 } as any);
       jest.spyOn(service, 'calculateTotals').mockResolvedValue(mockOrder);
 
@@ -754,7 +807,9 @@ describe('OrderService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
-      await expect(service.generateProductionOrders(mockOrderId)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.generateProductionOrders(mockOrderId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -798,7 +853,9 @@ describe('OrderService', () => {
       const result = await service.findByCustomer(mockCustomerId);
 
       expect(result).toEqual(mockOrders);
-      expect(orderRepository.findByCustomer).toHaveBeenCalledWith(mockCustomerId);
+      expect(orderRepository.findByCustomer).toHaveBeenCalledWith(
+        mockCustomerId,
+      );
     });
   });
 

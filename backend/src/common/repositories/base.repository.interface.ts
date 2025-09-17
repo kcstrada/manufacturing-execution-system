@@ -32,14 +32,21 @@ export interface IPaginatedResult<T> {
 }
 
 export interface ITenantAwareRepository<T> extends IBaseRepository<T> {
-  findAllForTenant(tenantId: string, options?: FindManyOptions<T>): Promise<T[]>;
+  findAllForTenant(
+    tenantId: string,
+    options?: FindManyOptions<T>,
+  ): Promise<T[]>;
   findOneForTenant(tenantId: string, id: string): Promise<T | null>;
   createForTenant(tenantId: string, data: DeepPartial<T>): Promise<T>;
-  updateForTenant(tenantId: string, id: string, data: DeepPartial<T>): Promise<T>;
+  updateForTenant(
+    tenantId: string,
+    id: string,
+    data: DeepPartial<T>,
+  ): Promise<T>;
   deleteForTenant(tenantId: string, id: string): Promise<boolean>;
   findPaginatedForTenant(
     tenantId: string,
     options: IPaginationOptions,
-    filter?: FindManyOptions<T>
+    filter?: FindManyOptions<T>,
   ): Promise<IPaginatedResult<T>>;
 }

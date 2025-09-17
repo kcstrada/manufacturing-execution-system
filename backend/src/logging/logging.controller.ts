@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpException,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoggingService } from './logging.service';
 
@@ -15,13 +23,16 @@ export class LoggingController {
   @ApiResponse({ status: 200, description: 'Logging test completed' })
   testLogging() {
     this.loggingService.setContext('LoggingController');
-    
+
     this.loggingService.log('This is an info log');
     this.loggingService.warn('This is a warning log');
     this.loggingService.debug('This is a debug log');
     this.loggingService.verbose('This is a verbose log');
-    this.loggingService.http('This is an HTTP log', { method: 'GET', path: '/test' });
-    
+    this.loggingService.http('This is an HTTP log', {
+      method: 'GET',
+      path: '/test',
+    });
+
     return {
       message: 'Logging test completed',
       timestamp: new Date().toISOString(),
@@ -33,16 +44,16 @@ export class LoggingController {
   @ApiResponse({ status: 200, description: 'Performance test completed' })
   async testPerformance() {
     const startTime = Date.now();
-    
+
     // Simulate some work
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     const duration = Date.now() - startTime;
     this.loggingService.performance('Test operation', duration, {
       threshold: 50,
       exceeded: duration > 50,
     });
-    
+
     return {
       message: 'Performance test completed',
       duration,
@@ -59,7 +70,7 @@ export class LoggingController {
       body.resource || 'test-resource',
       { additional: 'metadata' },
     );
-    
+
     return {
       message: 'Audit log created',
       action: body.action,
@@ -71,15 +82,11 @@ export class LoggingController {
   @ApiOperation({ summary: 'Test security logging' })
   @ApiResponse({ status: 200, description: 'Security log created' })
   testSecurity() {
-    this.loggingService.security(
-      'Suspicious login attempt',
-      'medium',
-      {
-        ip: '192.168.1.1',
-        attempts: 3,
-      },
-    );
-    
+    this.loggingService.security('Suspicious login attempt', 'medium', {
+      ip: '192.168.1.1',
+      attempts: 3,
+    });
+
     return {
       message: 'Security log created',
     };
@@ -89,8 +96,15 @@ export class LoggingController {
   @ApiOperation({ summary: 'Test error logging' })
   @ApiResponse({ status: 500, description: 'Error thrown for testing' })
   testError() {
-    this.loggingService.error('This is a test error', 'Stack trace here', 'TEST_ERROR');
-    throw new HttpException('Test error for logging', HttpStatus.INTERNAL_SERVER_ERROR);
+    this.loggingService.error(
+      'This is a test error',
+      'Stack trace here',
+      'TEST_ERROR',
+    );
+    throw new HttpException(
+      'Test error for logging',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
   @Get('validation-error')
@@ -114,7 +128,7 @@ export class LoggingController {
     this.loggingService.cache('miss', 'user:456');
     this.loggingService.cache('set', 'user:789', { value: 'cached data' });
     this.loggingService.cache('delete', 'user:000');
-    
+
     return {
       message: 'Cache logs created',
     };
@@ -126,8 +140,10 @@ export class LoggingController {
   testQueue() {
     this.loggingService.queue('email', 'job.created', 'job-123');
     this.loggingService.queue('email', 'job.processing', 'job-123');
-    this.loggingService.queue('email', 'job.completed', 'job-123', { duration: 250 });
-    
+    this.loggingService.queue('email', 'job.completed', 'job-123', {
+      duration: 250,
+    });
+
     return {
       message: 'Queue logs created',
     };
@@ -138,11 +154,11 @@ export class LoggingController {
   @ApiResponse({ status: 200, description: 'Child logger test completed' })
   testChildLogger() {
     const childLogger = this.loggingService.child('ChildContext');
-    
+
     childLogger.log('Log from child logger');
     childLogger.warn('Warning from child logger');
     childLogger.debug('Debug from child logger');
-    
+
     return {
       message: 'Child logger test completed',
     };

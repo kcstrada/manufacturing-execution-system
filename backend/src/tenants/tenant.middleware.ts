@@ -91,10 +91,10 @@ export class TenantMiddleware implements NestMiddleware {
     // Remove port if present
     const hostname = host.split(':')[0];
     if (!hostname) return null;
-    
+
     // Split by dots
     const parts = hostname.split('.');
-    
+
     // If we have at least 3 parts (subdomain.domain.tld), extract subdomain
     if (parts.length >= 3) {
       return parts[0] ?? null;
@@ -115,9 +115,11 @@ export class TenantMiddleware implements NestMiddleware {
     if (!hostname) return null;
 
     // Check if this is a custom domain (not localhost or standard domains)
-    if (!hostname.includes('localhost') && 
-        !hostname.includes('127.0.0.1') &&
-        !hostname.endsWith('.local')) {
+    if (
+      !hostname.includes('localhost') &&
+      !hostname.includes('127.0.0.1') &&
+      !hostname.endsWith('.local')
+    ) {
       return hostname;
     }
 
@@ -131,9 +133,9 @@ export class TenantMiddleware implements NestMiddleware {
   private mapSubdomainToTenantId(subdomain: string): string {
     // Example mapping - in production, this would be from database
     const subdomainMap: Record<string, string> = {
-      'acme': 'tenant-acme',
-      'globex': 'tenant-globex',
-      'initech': 'tenant-initech',
+      acme: 'tenant-acme',
+      globex: 'tenant-globex',
+      initech: 'tenant-initech',
     };
 
     return subdomainMap[subdomain] || subdomain;
@@ -161,7 +163,7 @@ export class TenantMiddleware implements NestMiddleware {
   private getTenantName(tenantId: string): string {
     // Example mapping - in production, this would be from database
     const tenantNames: Record<string, string> = {
-      'default': 'Default Tenant',
+      default: 'Default Tenant',
       'tenant-acme': 'ACME Corporation',
       'tenant-globex': 'Globex Corporation',
       'tenant-initech': 'Initech Solutions',

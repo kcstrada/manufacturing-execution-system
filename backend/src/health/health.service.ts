@@ -23,7 +23,7 @@ export class HealthService {
     this.readinessChecks.set('database', false);
     this.readinessChecks.set('redis', false);
     this.readinessChecks.set('configuration', true); // Config is ready immediately
-    
+
     // Simulate gradual readiness
     setTimeout(() => this.markReady('database'), 2000);
     setTimeout(() => this.markReady('redis'), 1500);
@@ -49,7 +49,9 @@ export class HealthService {
    * Check if all required services are ready
    */
   private checkOverallReadiness() {
-    this.isReady = Array.from(this.readinessChecks.values()).every(ready => ready);
+    this.isReady = Array.from(this.readinessChecks.values()).every(
+      (ready) => ready,
+    );
   }
 
   /**

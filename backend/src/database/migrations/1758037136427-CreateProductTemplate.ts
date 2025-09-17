@@ -1,15 +1,19 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateProductTemplate1758037136427 implements MigrationInterface {
-    name = 'CreateProductTemplate1758037136427'
+  name = 'CreateProductTemplate1758037136427';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // Create enum types for ProductTemplate
-        await queryRunner.query(`CREATE TYPE "public"."product_templates_product_type_enum" AS ENUM('raw_material', 'component', 'finished_good', 'consumable')`);
-        await queryRunner.query(`CREATE TYPE "public"."product_templates_status_enum" AS ENUM('active', 'inactive', 'draft')`);
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Create enum types for ProductTemplate
+    await queryRunner.query(
+      `CREATE TYPE "public"."product_templates_product_type_enum" AS ENUM('raw_material', 'component', 'finished_good', 'consumable')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."product_templates_status_enum" AS ENUM('active', 'inactive', 'draft')`,
+    );
 
-        // Create product_templates table
-        await queryRunner.query(`CREATE TABLE "product_templates" (
+    // Create product_templates table
+    await queryRunner.query(`CREATE TABLE "product_templates" (
             "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
             "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -54,37 +58,73 @@ export class CreateProductTemplate1758037136427 implements MigrationInterface {
             CONSTRAINT "pk_product_templates_id" PRIMARY KEY ("id")
         )`);
 
-        // Create indexes for performance
-        await queryRunner.query(`CREATE INDEX "idx_product_templates_tenant_id" ON "product_templates" ("tenant_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_product_templates_tenant_id_product_type" ON "product_templates" ("tenant_id", "product_type")`);
-        await queryRunner.query(`CREATE INDEX "idx_product_templates_tenant_id_is_active" ON "product_templates" ("tenant_id", "is_active")`);
-        await queryRunner.query(`CREATE INDEX "idx_product_templates_tenant_id_template_name" ON "product_templates" ("tenant_id", "template_name")`);
-        await queryRunner.query(`CREATE INDEX "idx_product_templates_tenant_id_template_code" ON "product_templates" ("tenant_id", "template_code")`);
+    // Create indexes for performance
+    await queryRunner.query(
+      `CREATE INDEX "idx_product_templates_tenant_id" ON "product_templates" ("tenant_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_product_templates_tenant_id_product_type" ON "product_templates" ("tenant_id", "product_type")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_product_templates_tenant_id_is_active" ON "product_templates" ("tenant_id", "is_active")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_product_templates_tenant_id_template_name" ON "product_templates" ("tenant_id", "template_name")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_product_templates_tenant_id_template_code" ON "product_templates" ("tenant_id", "template_code")`,
+    );
 
-        // Add foreign key constraints
-        await queryRunner.query(`ALTER TABLE "product_templates" ADD CONSTRAINT "fk_product_templates_tenant_id" FOREIGN KEY ("tenant_id") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "product_templates" ADD CONSTRAINT "fk_product_templates_default_category_id" FOREIGN KEY ("default_category_id") REFERENCES "product_categories"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "product_templates" ADD CONSTRAINT "fk_product_templates_default_unit_of_measure_id" FOREIGN KEY ("default_unit_of_measure_id") REFERENCES "units_of_measure"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-    }
+    // Add foreign key constraints
+    await queryRunner.query(
+      `ALTER TABLE "product_templates" ADD CONSTRAINT "fk_product_templates_tenant_id" FOREIGN KEY ("tenant_id") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "product_templates" ADD CONSTRAINT "fk_product_templates_default_category_id" FOREIGN KEY ("default_category_id") REFERENCES "product_categories"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "product_templates" ADD CONSTRAINT "fk_product_templates_default_unit_of_measure_id" FOREIGN KEY ("default_unit_of_measure_id") REFERENCES "units_of_measure"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop foreign key constraints
-        await queryRunner.query(`ALTER TABLE "product_templates" DROP CONSTRAINT "fk_product_templates_default_unit_of_measure_id"`);
-        await queryRunner.query(`ALTER TABLE "product_templates" DROP CONSTRAINT "fk_product_templates_default_category_id"`);
-        await queryRunner.query(`ALTER TABLE "product_templates" DROP CONSTRAINT "fk_product_templates_tenant_id"`);
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop foreign key constraints
+    await queryRunner.query(
+      `ALTER TABLE "product_templates" DROP CONSTRAINT "fk_product_templates_default_unit_of_measure_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "product_templates" DROP CONSTRAINT "fk_product_templates_default_category_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "product_templates" DROP CONSTRAINT "fk_product_templates_tenant_id"`,
+    );
 
-        // Drop indexes
-        await queryRunner.query(`DROP INDEX "public"."idx_product_templates_tenant_id_template_code"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_product_templates_tenant_id_template_name"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_product_templates_tenant_id_is_active"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_product_templates_tenant_id_product_type"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_product_templates_tenant_id"`);
+    // Drop indexes
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_product_templates_tenant_id_template_code"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_product_templates_tenant_id_template_name"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_product_templates_tenant_id_is_active"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_product_templates_tenant_id_product_type"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_product_templates_tenant_id"`,
+    );
 
-        // Drop table
-        await queryRunner.query(`DROP TABLE "product_templates"`);
+    // Drop table
+    await queryRunner.query(`DROP TABLE "product_templates"`);
 
-        // Drop enum types
-        await queryRunner.query(`DROP TYPE "public"."product_templates_status_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."product_templates_product_type_enum"`);
-    }
+    // Drop enum types
+    await queryRunner.query(
+      `DROP TYPE "public"."product_templates_status_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."product_templates_product_type_enum"`,
+    );
+  }
 }

@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  Index,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { TenantBaseEntity } from './base.entity';
 import { User } from './user.entity';
 
@@ -190,7 +184,10 @@ export class ActivityLog extends TenantBaseEntity {
 
   // Helper methods
   isError(): boolean {
-    return this.severity === ActivitySeverity.ERROR || this.severity === ActivitySeverity.CRITICAL;
+    return (
+      this.severity === ActivitySeverity.ERROR ||
+      this.severity === ActivitySeverity.CRITICAL
+    );
   }
 
   isUserAction(): boolean {

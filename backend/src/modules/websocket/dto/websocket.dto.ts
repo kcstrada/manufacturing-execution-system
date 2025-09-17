@@ -1,6 +1,18 @@
-import { IsString, IsEnum, IsOptional, IsArray, IsObject, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsObject,
+  IsUUID,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { WebSocketEvent, RoomType, NotificationType, NotificationSeverity } from '../interfaces/websocket.interface';
+import {
+  WebSocketEvent,
+  RoomType,
+  NotificationType,
+  NotificationSeverity,
+} from '../interfaces/websocket.interface';
 
 export class SubscribeEventsDto {
   @ApiProperty({

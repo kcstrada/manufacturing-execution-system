@@ -29,7 +29,7 @@ describe('NotificationService', () => {
   let eventEmitter: EventEmitter2;
 
   let mockQueryBuilder: any;
-  
+
   const mockNotificationRepository = {
     create: jest.fn(),
     save: jest.fn(),
@@ -106,14 +106,24 @@ describe('NotificationService', () => {
     }).compile();
 
     service = module.get<NotificationService>(NotificationService);
-    notificationRepository = module.get<Repository<Notification>>(getRepositoryToken(Notification));
-    preferenceRepository = module.get<Repository<NotificationPreference>>(getRepositoryToken(NotificationPreference));
+    notificationRepository = module.get<Repository<Notification>>(
+      getRepositoryToken(Notification),
+    );
+    preferenceRepository = module.get<Repository<NotificationPreference>>(
+      getRepositoryToken(NotificationPreference),
+    );
     emailService = module.get<EmailService>(EmailService);
-    inAppService = module.get<InAppNotificationService>(InAppNotificationService);
-    templateService = module.get<NotificationTemplateService>(NotificationTemplateService);
-    preferenceService = module.get<NotificationPreferenceService>(NotificationPreferenceService);
+    inAppService = module.get<InAppNotificationService>(
+      InAppNotificationService,
+    );
+    templateService = module.get<NotificationTemplateService>(
+      NotificationTemplateService,
+    );
+    preferenceService = module.get<NotificationPreferenceService>(
+      NotificationPreferenceService,
+    );
     eventEmitter = module.get<EventEmitter2>(EventEmitter2);
-    
+
     // Setup mock query builder
     mockQueryBuilder = {
       where: jest.fn().mockReturnThis(),
@@ -121,7 +131,9 @@ describe('NotificationService', () => {
       orderBy: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([]),
     };
-    mockNotificationRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+    mockNotificationRepository.createQueryBuilder.mockReturnValue(
+      mockQueryBuilder,
+    );
   });
 
   afterEach(() => {
@@ -220,7 +232,9 @@ describe('NotificationService', () => {
         subject: 'Order ORD-001',
         body: 'Order ORD-001 created',
       });
-      mockPreferenceService.getUserPreference.mockResolvedValue({ enabled: true });
+      mockPreferenceService.getUserPreference.mockResolvedValue({
+        enabled: true,
+      });
       mockNotificationRepository.create.mockReturnValue({ id: 'notif-1' });
       mockNotificationRepository.save.mockResolvedValue({ id: 'notif-1' });
       mockEmailService.send.mockResolvedValue({ success: true });
@@ -228,7 +242,10 @@ describe('NotificationService', () => {
       await service.send(payload);
 
       expect(templateService.getTemplate).toHaveBeenCalledWith('template-1');
-      expect(templateService.renderTemplate).toHaveBeenCalledWith(mockTemplate, { orderNumber: 'ORD-001' });
+      expect(templateService.renderTemplate).toHaveBeenCalledWith(
+        mockTemplate,
+        { orderNumber: 'ORD-001' },
+      );
     });
 
     it('should handle multiple recipients', async () => {
@@ -241,7 +258,9 @@ describe('NotificationService', () => {
         message: 'System maintenance scheduled',
       };
 
-      mockPreferenceService.getUserPreference.mockResolvedValue({ enabled: true });
+      mockPreferenceService.getUserPreference.mockResolvedValue({
+        enabled: true,
+      });
       mockNotificationRepository.create.mockReturnValue({ id: 'notif-1' });
       mockNotificationRepository.save.mockResolvedValue({ id: 'notif-1' });
       mockInAppService.send.mockResolvedValue({ success: true });
@@ -259,7 +278,7 @@ describe('NotificationService', () => {
 
       expect(notificationRepository.update).toHaveBeenCalledWith(
         { id: 'notif-1', userId: 'user-1' },
-        { status: NotificationStatus.READ, readAt: expect.any(Date) }
+        { status: NotificationStatus.READ, readAt: expect.any(Date) },
       );
       expect(eventEmitter.emit).toHaveBeenCalledWith('notification.read', {
         notificationId: 'notif-1',
@@ -274,12 +293,18 @@ describe('NotificationService', () => {
 
       expect(notificationRepository.update).toHaveBeenCalledWith(
         { id: 'notif-1', userId: 'user-1' },
-        { status: NotificationStatus.ACKNOWLEDGED, acknowledgedAt: expect.any(Date) }
+        {
+          status: NotificationStatus.ACKNOWLEDGED,
+          acknowledgedAt: expect.any(Date),
+        },
       );
-      expect(eventEmitter.emit).toHaveBeenCalledWith('notification.acknowledged', {
-        notificationId: 'notif-1',
-        userId: 'user-1',
-      });
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'notification.acknowledged',
+        {
+          notificationId: 'notif-1',
+          userId: 'user-1',
+        },
+      );
     });
   });
 
@@ -299,7 +324,9 @@ describe('NotificationService', () => {
       ];
 
       mockQueryBuilder.getMany.mockResolvedValue(mockNotifications);
-      mockNotificationRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+      mockNotificationRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder,
+      );
 
       const result = await service.getNotifications({
         tenantId: 'tenant-1',
@@ -307,8 +334,14 @@ describe('NotificationService', () => {
         type: NotificationType.ORDER_CREATED,
       });
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('notification.tenantId = :tenantId', { tenantId: 'tenant-1' });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('notification.userId = :userId', { userId: 'user-1' });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'notification.tenantId = :tenantId',
+        { tenantId: 'tenant-1' },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'notification.userId = :userId',
+        { userId: 'user-1' },
+      );
       expect(result).toEqual(mockNotifications);
     });
 
@@ -326,11 +359,11 @@ describe('NotificationService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'notification.createdAt >= :startDate',
-        { startDate }
+        { startDate },
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'notification.createdAt <= :endDate',
-        { endDate }
+        { endDate },
       );
     });
 
@@ -344,7 +377,7 @@ describe('NotificationService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         '(notification.title ILIKE :search OR notification.message ILIKE :search)',
-        { search: '%order%' }
+        { search: '%order%' },
       );
     });
   });
@@ -352,11 +385,36 @@ describe('NotificationService', () => {
   describe('getStats', () => {
     it('should calculate notification statistics', async () => {
       const mockNotifications = [
-        { status: NotificationStatus.PENDING, type: NotificationType.ORDER_CREATED, channel: [NotificationChannel.EMAIL], priority: NotificationPriority.HIGH },
-        { status: NotificationStatus.SENT, type: NotificationType.ORDER_CREATED, channel: [NotificationChannel.EMAIL], priority: NotificationPriority.HIGH },
-        { status: NotificationStatus.DELIVERED, type: NotificationType.INVENTORY_LOW_STOCK, channel: [NotificationChannel.IN_APP], priority: NotificationPriority.MEDIUM },
-        { status: NotificationStatus.READ, type: NotificationType.INVENTORY_LOW_STOCK, channel: [NotificationChannel.IN_APP], priority: NotificationPriority.MEDIUM },
-        { status: NotificationStatus.FAILED, type: NotificationType.TASK_ASSIGNED, channel: [NotificationChannel.EMAIL], priority: NotificationPriority.LOW },
+        {
+          status: NotificationStatus.PENDING,
+          type: NotificationType.ORDER_CREATED,
+          channel: [NotificationChannel.EMAIL],
+          priority: NotificationPriority.HIGH,
+        },
+        {
+          status: NotificationStatus.SENT,
+          type: NotificationType.ORDER_CREATED,
+          channel: [NotificationChannel.EMAIL],
+          priority: NotificationPriority.HIGH,
+        },
+        {
+          status: NotificationStatus.DELIVERED,
+          type: NotificationType.INVENTORY_LOW_STOCK,
+          channel: [NotificationChannel.IN_APP],
+          priority: NotificationPriority.MEDIUM,
+        },
+        {
+          status: NotificationStatus.READ,
+          type: NotificationType.INVENTORY_LOW_STOCK,
+          channel: [NotificationChannel.IN_APP],
+          priority: NotificationPriority.MEDIUM,
+        },
+        {
+          status: NotificationStatus.FAILED,
+          type: NotificationType.TASK_ASSIGNED,
+          channel: [NotificationChannel.EMAIL],
+          priority: NotificationPriority.LOW,
+        },
       ] as any[];
 
       // Mock the query builder for getStats method
@@ -365,7 +423,9 @@ describe('NotificationService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockNotifications),
       };
-      mockNotificationRepository.createQueryBuilder.mockReturnValue(mockStatsQueryBuilder);
+      mockNotificationRepository.createQueryBuilder.mockReturnValue(
+        mockStatsQueryBuilder,
+      );
 
       const result = await service.getStats('tenant-1', 'user-1');
 
@@ -412,7 +472,9 @@ describe('NotificationService', () => {
       ];
 
       mockNotificationRepository.find.mockResolvedValue(failedNotifications);
-      mockNotificationRepository.save.mockImplementation(notif => Promise.resolve(notif));
+      mockNotificationRepository.save.mockImplementation((notif) =>
+        Promise.resolve(notif),
+      );
       mockEmailService.send.mockResolvedValue({
         success: true,
         status: NotificationStatus.SENT,
@@ -458,14 +520,16 @@ describe('NotificationService', () => {
       ];
 
       mockNotificationRepository.find.mockResolvedValue(expiredNotifications);
-      mockNotificationRepository.save.mockImplementation(notif => Promise.resolve(notif));
+      mockNotificationRepository.save.mockImplementation((notif) =>
+        Promise.resolve(notif),
+      );
 
       await service.cleanupExpired('tenant-1');
 
       expect(notificationRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           status: NotificationStatus.EXPIRED,
-        })
+        }),
       );
     });
   });

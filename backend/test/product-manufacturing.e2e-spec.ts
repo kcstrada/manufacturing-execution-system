@@ -99,7 +99,8 @@ describe('Product Manufacturing Fields (e2e)', () => {
       };
 
       // Insert directly via SQL to test database constraints
-      const insertResult = await dataSource.query(`
+      const insertResult = await dataSource.query(
+        `
         INSERT INTO products (
           tenant_id, sku, name, type,
           is_manufacturable, is_purchasable, barcode,
@@ -110,15 +111,17 @@ describe('Product Manufacturing Fields (e2e)', () => {
           (SELECT id FROM unit_of_measures LIMIT 1),
           'test-user', 'test-user'
         ) RETURNING id, is_manufacturable, is_purchasable, barcode;
-      `, [
-        testProduct.tenantId,
-        testProduct.sku,
-        testProduct.name,
-        testProduct.type,
-        testProduct.isManufacturable,
-        testProduct.isPurchasable,
-        testProduct.barcode,
-      ]);
+      `,
+        [
+          testProduct.tenantId,
+          testProduct.sku,
+          testProduct.name,
+          testProduct.type,
+          testProduct.isManufacturable,
+          testProduct.isPurchasable,
+          testProduct.barcode,
+        ],
+      );
 
       expect(insertResult).toHaveLength(1);
       expect(insertResult[0].is_manufacturable).toBe(true);
@@ -126,14 +129,14 @@ describe('Product Manufacturing Fields (e2e)', () => {
       expect(insertResult[0].barcode).toBe('1234567890123');
 
       // Clean up
-      await dataSource.query(
-        'DELETE FROM products WHERE id = $1',
-        [insertResult[0].id]
-      );
+      await dataSource.query('DELETE FROM products WHERE id = $1', [
+        insertResult[0].id,
+      ]);
     });
 
     it('should apply default values when not specified', async () => {
-      const insertResult = await dataSource.query(`
+      const insertResult = await dataSource.query(
+        `
         INSERT INTO products (
           tenant_id, sku, name, type,
           unit_of_measure_id, created_by, updated_by
@@ -142,26 +145,28 @@ describe('Product Manufacturing Fields (e2e)', () => {
           (SELECT id FROM unit_of_measures LIMIT 1),
           'test-user', 'test-user'
         ) RETURNING id, is_manufacturable, is_purchasable;
-      `, [
-        'test-tenant-default',
-        'DEFAULT-TEST-001',
-        'Default Test Product',
-        'component',
-      ]);
+      `,
+        [
+          'test-tenant-default',
+          'DEFAULT-TEST-001',
+          'Default Test Product',
+          'component',
+        ],
+      );
 
       expect(insertResult).toHaveLength(1);
       expect(insertResult[0].is_manufacturable).toBe(true); // Default value
-      expect(insertResult[0].is_purchasable).toBe(false);    // Default value
+      expect(insertResult[0].is_purchasable).toBe(false); // Default value
 
       // Clean up
-      await dataSource.query(
-        'DELETE FROM products WHERE id = $1',
-        [insertResult[0].id]
-      );
+      await dataSource.query('DELETE FROM products WHERE id = $1', [
+        insertResult[0].id,
+      ]);
     });
 
     it('should handle purchasable raw materials', async () => {
-      const insertResult = await dataSource.query(`
+      const insertResult = await dataSource.query(
+        `
         INSERT INTO products (
           tenant_id, sku, name, type,
           is_manufacturable, is_purchasable,
@@ -172,14 +177,16 @@ describe('Product Manufacturing Fields (e2e)', () => {
           (SELECT id FROM unit_of_measures LIMIT 1),
           'test-user', 'test-user'
         ) RETURNING id, type, is_manufacturable, is_purchasable;
-      `, [
-        'test-tenant-raw',
-        'RAW-TEST-001',
-        'Raw Material Test',
-        'raw_material',
-        false,
-        true,
-      ]);
+      `,
+        [
+          'test-tenant-raw',
+          'RAW-TEST-001',
+          'Raw Material Test',
+          'raw_material',
+          false,
+          true,
+        ],
+      );
 
       expect(insertResult).toHaveLength(1);
       expect(insertResult[0].type).toBe('raw_material');
@@ -187,10 +194,9 @@ describe('Product Manufacturing Fields (e2e)', () => {
       expect(insertResult[0].is_purchasable).toBe(true);
 
       // Clean up
-      await dataSource.query(
-        'DELETE FROM products WHERE id = $1',
-        [insertResult[0].id]
-      );
+      await dataSource.query('DELETE FROM products WHERE id = $1', [
+        insertResult[0].id,
+      ]);
     });
   });
 });

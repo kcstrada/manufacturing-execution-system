@@ -19,11 +19,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AuthGuard, RoleGuard, Roles } from 'nest-keycloak-connect';
-import {
-  WasteService,
-  WasteMetrics,
-  WasteTrend,
-} from './waste.service';
+import { WasteService, WasteMetrics, WasteTrend } from './waste.service';
 import {
   CreateWasteRecordDto,
   RecordDisposalDto,
@@ -127,7 +123,11 @@ export class WasteController {
   @Get('trends')
   @Roles({ roles: ['admin', 'production_manager'] })
   @ApiOperation({ summary: 'Get waste trends' })
-  @ApiQuery({ name: 'period', enum: ['daily', 'weekly', 'monthly'], default: 'daily' })
+  @ApiQuery({
+    name: 'period',
+    enum: ['daily', 'weekly', 'monthly'],
+    default: 'daily',
+  })
   @ApiQuery({ name: 'days', type: Number, default: 30 })
   @ApiResponse({ status: HttpStatus.OK })
   async getTrends(
@@ -165,7 +165,9 @@ export class WasteController {
   @Roles({ roles: ['admin', 'production_manager'] })
   @ApiOperation({ summary: 'Get waste alerts and warnings' })
   @ApiResponse({ status: HttpStatus.OK })
-  async getAlerts(): Promise<Array<{ type: string; message: string; severity: string }>> {
+  async getAlerts(): Promise<
+    Array<{ type: string; message: string; severity: string }>
+  > {
     return this.wasteService.checkWasteAlerts();
   }
 
@@ -173,7 +175,9 @@ export class WasteController {
   @Roles({ roles: ['admin', 'user'] })
   @ApiOperation({ summary: 'Get waste record by record number' })
   @ApiResponse({ status: HttpStatus.OK, type: WasteRecord })
-  async findByRecordNumber(@Param('recordNumber') recordNumber: string): Promise<WasteRecord> {
+  async findByRecordNumber(
+    @Param('recordNumber') recordNumber: string,
+  ): Promise<WasteRecord> {
     return this.wasteService.findByRecordNumber(recordNumber);
   }
 

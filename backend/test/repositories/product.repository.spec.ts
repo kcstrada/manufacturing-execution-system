@@ -4,27 +4,33 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
 import { ProductRepository } from '../../src/repositories/product.repository';
 import { Product, ProductType } from '../../src/entities/product.entity';
-import { mockRepository, mockClsService, createMockQueryBuilder, createTestEntity } from './repository-test.helper';
+import {
+  mockRepository,
+  mockClsService,
+  createMockQueryBuilder,
+  createTestEntity,
+} from './repository-test.helper';
 
 describe('ProductRepository', () => {
   let repository: ProductRepository;
   let typeOrmRepository: jest.Mocked<Repository<Product>>;
   let clsService: jest.Mocked<ClsService>;
 
-  const createProduct = (overrides = {}): Product => createTestEntity({
-    sku: 'TEST-SKU-001',
-    name: 'Test Product',
-    description: 'Test Description',
-    type: ProductType.FINISHED_GOOD,
-    cost: 100,
-    price: 150,
-    minStockLevel: 10,
-    maxStockLevel: 100,
-    reorderPoint: 20,
-    categoryId: 'category-id',
-    unitOfMeasureId: 'uom-id',
-    ...overrides,
-  }) as Product;
+  const createProduct = (overrides = {}): Product =>
+    createTestEntity({
+      sku: 'TEST-SKU-001',
+      name: 'Test Product',
+      description: 'Test Description',
+      type: ProductType.FINISHED_GOOD,
+      cost: 100,
+      price: 150,
+      minStockLevel: 10,
+      maxStockLevel: 100,
+      reorderPoint: 20,
+      categoryId: 'category-id',
+      unitOfMeasureId: 'uom-id',
+      ...overrides,
+    }) as Product;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -75,7 +81,10 @@ describe('ProductRepository', () => {
 
   describe('findByCategory', () => {
     it('should find products by category', async () => {
-      const products = [createProduct(), createProduct({ sku: 'TEST-SKU-002' })];
+      const products = [
+        createProduct(),
+        createProduct({ sku: 'TEST-SKU-002' }),
+      ];
       typeOrmRepository.find.mockResolvedValue(products);
 
       const result = await repository.findByCategory('category-id');
@@ -113,8 +122,14 @@ describe('ProductRepository', () => {
       expect(result).toEqual(products);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
         where: [
-          { name: expect.objectContaining({ _value: '%TEST%' }), tenantId: 'test-tenant-id' },
-          { sku: expect.objectContaining({ _value: '%TEST%' }), tenantId: 'test-tenant-id' },
+          {
+            name: expect.objectContaining({ _value: '%TEST%' }),
+            tenantId: 'test-tenant-id',
+          },
+          {
+            sku: expect.objectContaining({ _value: '%TEST%' }),
+            tenantId: 'test-tenant-id',
+          },
         ],
         relations: ['category', 'unitOfMeasure'],
       });
@@ -147,7 +162,7 @@ describe('ProductRepository', () => {
       expect(result).toEqual(product);
       expect(typeOrmRepository.update).toHaveBeenCalledWith(
         { id: 'product-id', tenantId: 'test-tenant-id' },
-        { minStockLevel: 10, maxStockLevel: 100, reorderPoint: 20 }
+        { minStockLevel: 10, maxStockLevel: 100, reorderPoint: 20 },
       );
     });
 
@@ -155,8 +170,9 @@ describe('ProductRepository', () => {
       typeOrmRepository.update.mockResolvedValue({ affected: 1 } as any);
       typeOrmRepository.findOne.mockResolvedValue(null);
 
-      await expect(repository.updateStock('product-id', 10, 100, 20))
-        .rejects.toThrow('Product not found');
+      await expect(
+        repository.updateStock('product-id', 10, 100, 20),
+      ).rejects.toThrow('Product not found');
     });
   });
 
@@ -177,16 +193,19 @@ describe('ProductRepository', () => {
 
   describe('findByIds', () => {
     it('should find products by multiple IDs', async () => {
-      const products = [createProduct({ id: 'id1' }), createProduct({ id: 'id2' })];
+      const products = [
+        createProduct({ id: 'id1' }),
+        createProduct({ id: 'id2' }),
+      ];
       typeOrmRepository.find.mockResolvedValue(products);
 
       const result = await repository.findByIds(['id1', 'id2']);
 
       expect(result).toEqual(products);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
-        where: { 
-          id: expect.objectContaining({ _value: ['id1', 'id2'] }), 
-          tenantId: 'test-tenant-id' 
+        where: {
+          id: expect.objectContaining({ _value: ['id1', 'id2'] }),
+          tenantId: 'test-tenant-id',
         },
         relations: ['category', 'unitOfMeasure'],
       });
@@ -204,7 +223,7 @@ describe('ProductRepository', () => {
       expect(result).toEqual(product);
       expect(typeOrmRepository.update).toHaveBeenCalledWith(
         { id: 'product-id', tenantId: 'test-tenant-id' },
-        { cost: 120, price: 180 }
+        { cost: 120, price: 180 },
       );
     });
   });
@@ -219,11 +238,21 @@ describe('ProductRepository', () => {
       const result = await repository.findBelowReorderPoint();
 
       expect(result).toEqual(products);
-      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('product.inventoryItems', 'inventory');
-      expect(queryBuilder.where).toHaveBeenCalledWith('product.tenantId = :tenantId', { tenantId: 'test-tenant-id' });
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith('product.reorderPoint IS NOT NULL');
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'product.inventoryItems',
+        'inventory',
+      );
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'product.tenantId = :tenantId',
+        { tenantId: 'test-tenant-id' },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'product.reorderPoint IS NOT NULL',
+      );
       expect(queryBuilder.groupBy).toHaveBeenCalledWith('product.id');
-      expect(queryBuilder.having).toHaveBeenCalledWith('SUM(inventory.quantityAvailable) < product.reorderPoint');
+      expect(queryBuilder.having).toHaveBeenCalledWith(
+        'SUM(inventory.quantityAvailable) < product.reorderPoint',
+      );
     });
   });
 
@@ -236,7 +265,9 @@ describe('ProductRepository', () => {
 
     it('should throw error if tenant ID not found', async () => {
       clsService.get.mockReturnValue(undefined);
-      expect(() => (repository as any).getTenantId()).toThrow('Tenant context not found');
+      expect(() => (repository as any).getTenantId()).toThrow(
+        'Tenant context not found',
+      );
     });
   });
 });

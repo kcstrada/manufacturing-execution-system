@@ -50,7 +50,11 @@ export class ErrorLoggingFilter implements ExceptionFilter {
       );
 
       // Log additional context
-      this.loggingService.error('Server Error Details', undefined, 'HTTP_ERROR');
+      this.loggingService.error(
+        'Server Error Details',
+        undefined,
+        'HTTP_ERROR',
+      );
       this.loggingService.logWithLevel('error', 'Error Context', {
         ...requestContext,
         status,
@@ -68,8 +72,11 @@ export class ErrorLoggingFilter implements ExceptionFilter {
       }
     } else if (isClientError) {
       // Log client errors at warn level
-      this.loggingService.warn(`Client Error: ${errorResponse.message}`, 'HTTP_ERROR');
-      
+      this.loggingService.warn(
+        `Client Error: ${errorResponse.message}`,
+        'HTTP_ERROR',
+      );
+
       // Log validation errors with details
       if (status === HttpStatus.BAD_REQUEST && errorResponse.errors) {
         this.loggingService.debug('Validation Error Details', 'VALIDATION');
@@ -80,7 +87,10 @@ export class ErrorLoggingFilter implements ExceptionFilter {
       }
 
       // Log authentication/authorization failures
-      if (status === HttpStatus.UNAUTHORIZED || status === HttpStatus.FORBIDDEN) {
+      if (
+        status === HttpStatus.UNAUTHORIZED ||
+        status === HttpStatus.FORBIDDEN
+      ) {
         this.loggingService.security(
           `Auth Failed: ${errorResponse.message}`,
           'medium',
@@ -121,7 +131,10 @@ export class ErrorLoggingFilter implements ExceptionFilter {
         return {
           message: 'Database operation failed',
           error: 'Database Error',
-          details: process.env.NODE_ENV === 'development' ? exception.message : undefined,
+          details:
+            process.env.NODE_ENV === 'development'
+              ? exception.message
+              : undefined,
         };
       }
 
@@ -160,23 +173,31 @@ export class ErrorLoggingFilter implements ExceptionFilter {
     if (exception instanceof Error) {
       if (this.isDatabaseError(exception)) {
         // Unique constraint violation
-        if (exception.message.includes('duplicate key') || 
-            exception.message.includes('UNIQUE constraint')) {
+        if (
+          exception.message.includes('duplicate key') ||
+          exception.message.includes('UNIQUE constraint')
+        ) {
           return HttpStatus.CONFLICT;
         }
         // Foreign key violation
-        if (exception.message.includes('foreign key') ||
-            exception.message.includes('FOREIGN KEY constraint')) {
+        if (
+          exception.message.includes('foreign key') ||
+          exception.message.includes('FOREIGN KEY constraint')
+        ) {
           return HttpStatus.BAD_REQUEST;
         }
         // Not found
-        if (exception.message.includes('not found') ||
-            exception.message.includes('does not exist')) {
+        if (
+          exception.message.includes('not found') ||
+          exception.message.includes('does not exist')
+        ) {
           return HttpStatus.NOT_FOUND;
         }
         // Connection error
-        if (exception.message.includes('connect') ||
-            exception.message.includes('ECONNREFUSED')) {
+        if (
+          exception.message.includes('connect') ||
+          exception.message.includes('ECONNREFUSED')
+        ) {
           return HttpStatus.SERVICE_UNAVAILABLE;
         }
       }
@@ -187,8 +208,10 @@ export class ErrorLoggingFilter implements ExceptionFilter {
       }
 
       // JWT errors
-      if (exception.name === 'JsonWebTokenError' ||
-          exception.name === 'TokenExpiredError') {
+      if (
+        exception.name === 'JsonWebTokenError' ||
+        exception.name === 'TokenExpiredError'
+      ) {
         return HttpStatus.UNAUTHORIZED;
       }
     }
@@ -207,7 +230,7 @@ export class ErrorLoggingFilter implements ExceptionFilter {
       'DuplicateError',
       'ER_',
       'SQLITE_',
-      'PG::', 
+      'PG::',
       'duplicate key',
       'foreign key',
       'constraint',
@@ -216,9 +239,9 @@ export class ErrorLoggingFilter implements ExceptionFilter {
       'table',
     ];
 
-    return dbErrorPatterns.some(pattern => 
-      error.name.includes(pattern) || 
-      error.message.includes(pattern)
+    return dbErrorPatterns.some(
+      (pattern) =>
+        error.name.includes(pattern) || error.message.includes(pattern),
     );
   }
 
@@ -233,9 +256,11 @@ export class ErrorLoggingFilter implements ExceptionFilter {
       'BadRequestException',
     ];
 
-    return validationErrorNames.includes(error.name) ||
-           !!(error as any).errors ||
-           !!(error as any).validationErrors;
+    return (
+      validationErrorNames.includes(error.name) ||
+      !!(error as any).errors ||
+      !!(error as any).validationErrors
+    );
   }
 
   /**
@@ -259,6 +284,6 @@ export class ErrorLoggingFilter implements ExceptionFilter {
     ];
 
     const message = exception.message.toLowerCase();
-    return securityPatterns.some(pattern => message.includes(pattern));
+    return securityPatterns.some((pattern) => message.includes(pattern));
   }
 }

@@ -23,7 +23,7 @@ export class IsLotNumberConstraint implements ValidatorConstraintInterface {
  * Validates that a string is a valid lot number
  */
 export function IsLotNumber(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isLotNumber',
       target: object.constructor,

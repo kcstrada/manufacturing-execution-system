@@ -1,4 +1,9 @@
-import { ApiProperty, ApiPropertyOptional, PartialType, OmitType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  PartialType,
+  OmitType,
+} from '@nestjs/swagger';
 import { CreateOrderDto, CreateOrderLineDto } from './create-order.dto';
 import {
   IsEnum,
@@ -13,21 +18,31 @@ import { Type } from 'class-transformer';
 import { CustomerOrderStatus } from '../../../entities/customer-order.entity';
 
 export class UpdateOrderLineDto extends PartialType(CreateOrderLineDto) {
-  @ApiPropertyOptional({ description: 'Order line ID for existing lines', format: 'uuid' })
+  @ApiPropertyOptional({
+    description: 'Order line ID for existing lines',
+    format: 'uuid',
+  })
   @IsUUID()
   @IsOptional()
   id?: string;
 }
 
 export class UpdateOrderDto extends PartialType(
-  OmitType(CreateOrderDto, ['orderNumber', 'customerId', 'orderLines'] as const)
+  OmitType(CreateOrderDto, [
+    'orderNumber',
+    'customerId',
+    'orderLines',
+  ] as const),
 ) {
   @ApiPropertyOptional({ description: 'Shipped date' })
   @IsDateString()
   @IsOptional()
   shippedDate?: Date;
 
-  @ApiPropertyOptional({ description: 'Updated order lines', type: [UpdateOrderLineDto] })
+  @ApiPropertyOptional({
+    description: 'Updated order lines',
+    type: [UpdateOrderLineDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => UpdateOrderLineDto)
@@ -36,7 +51,7 @@ export class UpdateOrderDto extends PartialType(
 }
 
 export class UpdateOrderStatusDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'New order status',
     enum: CustomerOrderStatus,
   })

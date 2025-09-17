@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
+import {
+  HealthIndicator,
+  HealthIndicatorResult,
+  HealthCheckError,
+} from '@nestjs/terminus';
 import * as os from 'os';
 import * as fs from 'fs';
 
@@ -15,24 +19,24 @@ export class SystemHealthIndicator extends HealthIndicator {
     try {
       const cpus = os.cpus();
       const loadAverage = os.loadavg();
-      
+
       // Calculate CPU usage percentage
       let totalIdle = 0;
       let totalTick = 0;
-      
-      cpus.forEach(cpu => {
+
+      cpus.forEach((cpu) => {
         for (const type in cpu.times) {
           totalTick += cpu.times[type as keyof typeof cpu.times];
         }
         totalIdle += cpu.times.idle;
       });
-      
+
       const idle = totalIdle / cpus.length;
       const total = totalTick / cpus.length;
-      const usage = 100 - ~~(100 * idle / total);
-      
+      const usage = 100 - ~~((100 * idle) / total);
+
       const isHealthy = usage < 80; // Consider unhealthy if CPU usage > 80%
-      
+
       const result = this.getStatus(key, isHealthy, {
         cores: cpus.length,
         model: cpus[0]?.model,
@@ -64,10 +68,10 @@ export class SystemHealthIndicator extends HealthIndicator {
   async checkUptime(key: string): Promise<HealthIndicatorResult> {
     const uptime = os.uptime();
     const processUptime = process.uptime();
-    
+
     // Consider healthy if system has been up for more than 5 minutes
     const isHealthy = uptime > 300;
-    
+
     return this.getStatus(key, isHealthy, {
       system: {
         uptime: uptime,
@@ -95,10 +99,10 @@ export class SystemHealthIndicator extends HealthIndicator {
       const softLimit = await this.getFileDescriptorLimit('soft');
       const hardLimit = await this.getFileDescriptorLimit('hard');
       const currentUsage = await this.getCurrentFileDescriptors();
-      
+
       const usagePercent = (currentUsage / softLimit) * 100;
       const isHealthy = usagePercent < 80; // Consider unhealthy if > 80% of limit
-      
+
       const result = this.getStatus(key, isHealthy, {
         current: currentUsage,
         softLimit,
@@ -125,10 +129,10 @@ export class SystemHealthIndicator extends HealthIndicator {
   async checkLoadAverage(key: string): Promise<HealthIndicatorResult> {
     const loadAverage = os.loadavg();
     const cpuCount = os.cpus().length;
-    
+
     // Consider unhealthy if 5-minute load average > number of CPUs
     const isHealthy = (loadAverage[1] || 0) < cpuCount;
-    
+
     const result = this.getStatus(key, isHealthy, {
       loadAverage: {
         '1min': loadAverage[0]?.toFixed(2) || '0.00',
@@ -151,7 +155,7 @@ export class SystemHealthIndicator extends HealthIndicator {
   async checkNetwork(key: string): Promise<HealthIndicatorResult> {
     const interfaces = os.networkInterfaces();
     const activeInterfaces: any[] = [];
-    
+
     for (const [name, addrs] of Object.entries(interfaces)) {
       if (addrs) {
         for (const addr of addrs) {
@@ -166,9 +170,9 @@ export class SystemHealthIndicator extends HealthIndicator {
         }
       }
     }
-    
+
     const isHealthy = activeInterfaces.length > 0;
-    
+
     const result = this.getStatus(key, isHealthy, {
       interfaces: activeInterfaces,
       count: activeInterfaces.length,
@@ -228,7 +232,7 @@ export class SystemHealthIndicator extends HealthIndicator {
       const { exec } = require('child_process');
       const { promisify } = require('util');
       const execAsync = promisify(exec);
-      
+
       const flag = type === 'soft' ? '-Sn' : '-Hn';
       const { stdout } = await execAsync(`ulimit ${flag}`);
       return parseInt(stdout.trim(), 10);
@@ -244,7 +248,7 @@ export class SystemHealthIndicator extends HealthIndicator {
     try {
       const pid = process.pid;
       const fdPath = `/proc/${pid}/fd`;
-      
+
       return new Promise((resolve) => {
         fs.readdir(fdPath, (err, files) => {
           if (err) {

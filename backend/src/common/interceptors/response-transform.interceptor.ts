@@ -41,7 +41,7 @@ export class ResponseTransformInterceptor<T>
     return next.handle().pipe(
       map((data) => {
         const duration = Date.now() - startTime;
-        
+
         // Skip transformation for certain endpoints
         if (this.shouldSkipTransformation(request.url)) {
           return data;
@@ -94,8 +94,8 @@ export class ResponseTransformInterceptor<T>
       '/api/docs-json',
       '/favicon.ico',
     ];
-    
-    return skipPaths.some(path => url.includes(path));
+
+    return skipPaths.some((path) => url.includes(path));
   }
 
   /**

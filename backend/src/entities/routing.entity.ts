@@ -26,7 +26,6 @@ export enum RoutingStatus {
 @Index(['tenantId', 'status'])
 @Index(['tenantId', 'effectiveDate'])
 export class Routing extends TenantBaseEntity {
-
   @Column({ type: 'varchar', length: 255, nullable: true })
   name?: string;
 
@@ -39,7 +38,6 @@ export class Routing extends TenantBaseEntity {
     default: RoutingStatus.DRAFT,
   })
   status!: RoutingStatus;
-
 
   @Column({ type: 'date' })
   effectiveDate!: Date;
@@ -134,7 +132,7 @@ export class Routing extends TenantBaseEntity {
   getActiveAlternates(): any[] {
     if (!this.alternateRoutes) return [];
     return this.alternateRoutes
-      .filter(route => route.isActive)
+      .filter((route) => route.isActive)
       .sort((a, b) => a.preferenceOrder - b.preferenceOrder);
   }
 
@@ -144,11 +142,12 @@ export class Routing extends TenantBaseEntity {
 
     if (conditions && conditions.length > 0) {
       // Find alternates matching any of the conditions
-      const matchingAlternates = activeAlternates.filter(route =>
-        conditions.some(condition =>
-          route.reason?.toLowerCase().includes(condition.toLowerCase()) ||
-          route.conditions?.toLowerCase().includes(condition.toLowerCase())
-        )
+      const matchingAlternates = activeAlternates.filter((route) =>
+        conditions.some(
+          (condition) =>
+            route.reason?.toLowerCase().includes(condition.toLowerCase()) ||
+            route.conditions?.toLowerCase().includes(condition.toLowerCase()),
+        ),
       );
       if (matchingAlternates.length > 0) {
         return matchingAlternates[0];
@@ -170,11 +169,13 @@ export class Routing extends TenantBaseEntity {
   updatePerformanceMetrics(alternateRoutingId: string, metrics: any): void {
     if (!this.alternateRoutes) return;
 
-    const alternate = this.alternateRoutes.find(r => r.alternateRoutingId === alternateRoutingId);
+    const alternate = this.alternateRoutes.find(
+      (r) => r.alternateRoutingId === alternateRoutingId,
+    );
     if (alternate) {
       alternate.performanceMetrics = {
         ...alternate.performanceMetrics,
-        ...metrics
+        ...metrics,
       };
       alternate.lastUsedDate = new Date();
       alternate.usageCount = (alternate.usageCount || 0) + 1;

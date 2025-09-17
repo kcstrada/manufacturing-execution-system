@@ -29,14 +29,14 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
 import { QueuesModule } from './modules/queues/queues.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
-import { 
+import {
   AllExceptionsFilter,
   HttpExceptionFilter,
-  ValidationExceptionFilter 
+  ValidationExceptionFilter,
 } from './common/filters';
 import {
   ResponseTransformInterceptor,
-  TimeoutInterceptor
+  TimeoutInterceptor,
 } from './common/interceptors';
 
 @Module({
@@ -107,13 +107,13 @@ import {
   controllers: [AppController],
   providers: [
     AppService,
-    
+
     // Global Guards
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    
+
     // Global Interceptors (order matters - executed in registration order)
     {
       provide: APP_INTERCEPTOR,
@@ -129,7 +129,7 @@ import {
     },
     // Note: CacheInterceptor should be registered per-module or per-controller
     // to avoid caching all endpoints globally
-    
+
     // Global Exception Filters (order matters - executed in reverse registration order)
     {
       provide: APP_FILTER,

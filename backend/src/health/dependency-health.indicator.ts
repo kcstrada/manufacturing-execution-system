@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
+import {
+  HealthIndicator,
+  HealthIndicatorResult,
+  HealthCheckError,
+} from '@nestjs/terminus';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
@@ -21,7 +25,7 @@ export class DependencyHealthIndicator extends HealthIndicator {
    */
   async checkOpenFGA(key: string): Promise<HealthIndicatorResult> {
     const fgaUrl = this.configService.get('FGA_API_URL');
-    
+
     if (!fgaUrl) {
       return this.getStatus(key, true, {
         status: 'not_configured',
@@ -67,7 +71,7 @@ export class DependencyHealthIndicator extends HealthIndicator {
    */
   async checkKeycloak(key: string): Promise<HealthIndicatorResult> {
     const keycloakUrl = this.configService.get('KEYCLOAK_URL');
-    
+
     if (!keycloakUrl) {
       return this.getStatus(key, true, {
         status: 'not_configured',

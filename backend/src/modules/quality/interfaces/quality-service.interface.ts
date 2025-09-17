@@ -8,7 +8,8 @@ import {
 /**
  * Quality service interface
  */
-export interface IQualityService extends ITenantAwareService<QualityInspection> {
+export interface IQualityService
+  extends ITenantAwareService<QualityInspection> {
   /**
    * Create inspection from work order completion
    */
@@ -149,9 +150,7 @@ export interface IQualityService extends ITenantAwareService<QualityInspection> 
   /**
    * Generate quality certificate
    */
-  generateCertificate(
-    inspectionIds: string[],
-  ): Promise<{
+  generateCertificate(inspectionIds: string[]): Promise<{
     certificateNumber: string;
     generatedAt: Date;
     documentUrl: string;

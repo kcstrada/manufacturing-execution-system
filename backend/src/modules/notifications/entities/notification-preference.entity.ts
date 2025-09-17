@@ -8,7 +8,10 @@ import {
   Unique,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { NotificationType, NotificationChannel } from '../types/notification.types';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../types/notification.types';
 
 @Entity('notification_preferences')
 @Unique(['userId', 'tenantId', 'type', 'channel'])
@@ -55,8 +58,8 @@ export class NotificationPreference {
     quietHours?: {
       enabled: boolean;
       startTime: string; // "22:00"
-      endTime: string;   // "08:00"
-      timezone: string;  // "America/New_York"
+      endTime: string; // "08:00"
+      timezone: string; // "America/New_York"
     };
     frequency?: {
       immediate: boolean;

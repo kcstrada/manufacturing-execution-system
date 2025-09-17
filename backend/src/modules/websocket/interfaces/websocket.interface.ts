@@ -3,56 +3,56 @@ export enum WebSocketEvent {
   CONNECTION = 'connection',
   DISCONNECT = 'disconnect',
   ERROR = 'error',
-  
+
   // Order events
   ORDER_CREATED = 'order.created',
   ORDER_UPDATED = 'order.updated',
   ORDER_STATUS_CHANGED = 'order.status.changed',
   ORDER_COMPLETED = 'order.completed',
-  
+
   // Task events
   TASK_CREATED = 'task.created',
   TASK_ASSIGNED = 'task.assigned',
   TASK_STARTED = 'task.started',
   TASK_COMPLETED = 'task.completed',
   TASK_UPDATED = 'task.updated',
-  
+
   // Inventory events
   INVENTORY_LOW_STOCK = 'inventory.low_stock',
   INVENTORY_OUT_OF_STOCK = 'inventory.out_of_stock',
   INVENTORY_RECEIVED = 'inventory.received',
   INVENTORY_CONSUMED = 'inventory.consumed',
   INVENTORY_ADJUSTED = 'inventory.adjusted',
-  
+
   // Production events
   PRODUCTION_STARTED = 'production.started',
   PRODUCTION_COMPLETED = 'production.completed',
   PRODUCTION_DELAYED = 'production.delayed',
   PRODUCTION_ALERT = 'production.alert',
-  
+
   // Quality events
   QUALITY_INSPECTION_CREATED = 'quality.inspection.created',
   QUALITY_INSPECTION_COMPLETED = 'quality.inspection.completed',
   QUALITY_NCR_CREATED = 'quality.ncr.created',
   QUALITY_ALERT = 'quality.alert',
-  
+
   // Equipment events
   EQUIPMENT_STATUS_CHANGED = 'equipment.status.changed',
   EQUIPMENT_MAINTENANCE_DUE = 'equipment.maintenance.due',
   EQUIPMENT_BREAKDOWN = 'equipment.breakdown',
   EQUIPMENT_ALERT = 'equipment.alert',
-  
+
   // Worker events
   WORKER_CLOCKED_IN = 'worker.clocked_in',
   WORKER_CLOCKED_OUT = 'worker.clocked_out',
   WORKER_TASK_ASSIGNED = 'worker.task_assigned',
   WORKER_SHIFT_CHANGED = 'worker.shift_changed',
-  
+
   // System events
   SYSTEM_NOTIFICATION = 'system.notification',
   SYSTEM_ALERT = 'system.alert',
   SYSTEM_BROADCAST = 'system.broadcast',
-  
+
   // Metrics events
   METRICS_UPDATE = 'metrics.update',
   KPI_UPDATE = 'kpi.update',

@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { ClsService } from 'nestjs-cls';
 import { Inventory, InventoryStatus } from '../../entities/inventory.entity';
-import { InventoryTransaction, InventoryTransactionType } from '../../entities/inventory-transaction.entity';
+import {
+  InventoryTransaction,
+  InventoryTransactionType,
+} from '../../entities/inventory-transaction.entity';
 import { InventoryRepository } from '../../repositories/inventory.repository';
 import { InventoryTransactionRepository } from '../../repositories/inventory-transaction.repository';
 import { IInventoryService } from './interfaces/inventory-service.interface';
@@ -54,11 +61,13 @@ export class InventoryService implements IInventoryService {
   // CRUD Operations
   async create(createInventoryDto: CreateInventoryDto): Promise<Inventory> {
     const tenantId = this.getTenantId();
-    
+
     const inventory = this.inventoryRepository.create({
       ...createInventoryDto,
       tenantId,
-      quantityAvailable: createInventoryDto.quantityAvailable ?? createInventoryDto.quantityOnHand,
+      quantityAvailable:
+        createInventoryDto.quantityAvailable ??
+        createInventoryDto.quantityOnHand,
       quantityReserved: createInventoryDto.quantityReserved ?? 0,
       quantityInTransit: createInventoryDto.quantityInTransit ?? 0,
       status: createInventoryDto.status ?? InventoryStatus.AVAILABLE,
@@ -81,7 +90,9 @@ export class InventoryService implements IInventoryService {
     return savedInventory;
   }
 
-  async findAll(query: InventoryQueryDto): Promise<{ data: Inventory[]; total: number }> {
+  async findAll(
+    query: InventoryQueryDto,
+  ): Promise<{ data: Inventory[]; total: number }> {
     const tenantId = this.getTenantId();
     const {
       page = 1,
@@ -98,36 +109,57 @@ export class InventoryService implements IInventoryService {
 
     // Apply filters
     if (filters.productId) {
-      queryBuilder.andWhere('inventory.productId = :productId', { productId: filters.productId });
+      queryBuilder.andWhere('inventory.productId = :productId', {
+        productId: filters.productId,
+      });
     }
     if (filters.warehouseCode) {
-      queryBuilder.andWhere('inventory.warehouseCode = :warehouseCode', { warehouseCode: filters.warehouseCode });
+      queryBuilder.andWhere('inventory.warehouseCode = :warehouseCode', {
+        warehouseCode: filters.warehouseCode,
+      });
     }
     if (filters.locationCode) {
-      queryBuilder.andWhere('inventory.locationCode = :locationCode', { locationCode: filters.locationCode });
+      queryBuilder.andWhere('inventory.locationCode = :locationCode', {
+        locationCode: filters.locationCode,
+      });
     }
     if (filters.lotNumber) {
-      queryBuilder.andWhere('inventory.lotNumber = :lotNumber', { lotNumber: filters.lotNumber });
+      queryBuilder.andWhere('inventory.lotNumber = :lotNumber', {
+        lotNumber: filters.lotNumber,
+      });
     }
     if (filters.status) {
-      queryBuilder.andWhere('inventory.status = :status', { status: filters.status });
+      queryBuilder.andWhere('inventory.status = :status', {
+        status: filters.status,
+      });
     }
     if (filters.minQuantity !== undefined) {
-      queryBuilder.andWhere('inventory.quantityOnHand >= :minQuantity', { minQuantity: filters.minQuantity });
+      queryBuilder.andWhere('inventory.quantityOnHand >= :minQuantity', {
+        minQuantity: filters.minQuantity,
+      });
     }
     if (filters.maxQuantity !== undefined) {
-      queryBuilder.andWhere('inventory.quantityOnHand <= :maxQuantity', { maxQuantity: filters.maxQuantity });
+      queryBuilder.andWhere('inventory.quantityOnHand <= :maxQuantity', {
+        maxQuantity: filters.maxQuantity,
+      });
     }
     if (filters.lowStockThreshold !== undefined) {
-      queryBuilder.andWhere('inventory.quantityOnHand < :threshold', { threshold: filters.lowStockThreshold });
+      queryBuilder.andWhere('inventory.quantityOnHand < :threshold', {
+        threshold: filters.lowStockThreshold,
+      });
     }
     if (filters.expiringInDays !== undefined) {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + filters.expiringInDays);
-      queryBuilder.andWhere('inventory.expirationDate <= :futureDate', { futureDate });
+      queryBuilder.andWhere('inventory.expirationDate <= :futureDate', {
+        futureDate,
+      });
     }
     if (!filters.includeExpired) {
-      queryBuilder.andWhere('(inventory.expirationDate IS NULL OR inventory.expirationDate > :now)', { now: new Date() });
+      queryBuilder.andWhere(
+        '(inventory.expirationDate IS NULL OR inventory.expirationDate > :now)',
+        { now: new Date() },
+      );
     }
 
     // Apply sorting and pagination
@@ -154,11 +186,14 @@ export class InventoryService implements IInventoryService {
     return inventory;
   }
 
-  async update(id: string, updateInventoryDto: UpdateInventoryDto): Promise<Inventory> {
+  async update(
+    id: string,
+    updateInventoryDto: UpdateInventoryDto,
+  ): Promise<Inventory> {
     const inventory = await this.findOne(id);
-    
+
     Object.assign(inventory, updateInventoryDto);
-    
+
     return this.inventoryRepository.save(inventory);
   }
 
@@ -176,7 +211,10 @@ export class InventoryService implements IInventoryService {
     return this.inventoryRepo.findByWarehouse(warehouseCode);
   }
 
-  async findByLocation(warehouseCode: string, locationCode: string): Promise<Inventory[]> {
+  async findByLocation(
+    warehouseCode: string,
+    locationCode: string,
+  ): Promise<Inventory[]> {
     return this.inventoryRepo.findByLocation(warehouseCode, locationCode);
   }
 
@@ -189,27 +227,46 @@ export class InventoryService implements IInventoryService {
   }
 
   // Quantity Management
-  async getAvailableQuantity(productId: string, warehouseCode?: string): Promise<number> {
+  async getAvailableQuantity(
+    productId: string,
+    warehouseCode?: string,
+  ): Promise<number> {
     if (warehouseCode) {
       const items = await this.inventoryRepo.findByProduct(productId);
-      const warehouseItems = items.filter(item => item.warehouseCode === warehouseCode);
-      return warehouseItems.reduce((sum, item) => sum + Number(item.quantityAvailable), 0);
+      const warehouseItems = items.filter(
+        (item) => item.warehouseCode === warehouseCode,
+      );
+      return warehouseItems.reduce(
+        (sum, item) => sum + Number(item.quantityAvailable),
+        0,
+      );
     }
     return this.inventoryRepo.getAvailableQuantity(productId);
   }
 
-  async getTotalQuantity(productId: string, warehouseCode?: string): Promise<number> {
+  async getTotalQuantity(
+    productId: string,
+    warehouseCode?: string,
+  ): Promise<number> {
     if (warehouseCode) {
       const items = await this.inventoryRepo.findByProduct(productId);
-      const warehouseItems = items.filter(item => item.warehouseCode === warehouseCode);
-      return warehouseItems.reduce((sum, item) => sum + Number(item.quantityOnHand), 0);
+      const warehouseItems = items.filter(
+        (item) => item.warehouseCode === warehouseCode,
+      );
+      return warehouseItems.reduce(
+        (sum, item) => sum + Number(item.quantityOnHand),
+        0,
+      );
     }
     return this.inventoryRepo.getTotalQuantity(productId);
   }
 
-  async updateQuantities(id: string, quantities: UpdateInventoryQuantitiesDto): Promise<Inventory> {
+  async updateQuantities(
+    id: string,
+    quantities: UpdateInventoryQuantitiesDto,
+  ): Promise<Inventory> {
     const inventory = await this.findOne(id);
-    
+
     if (quantities.quantityOnHand !== undefined) {
       inventory.quantityOnHand = quantities.quantityOnHand;
     }
@@ -222,7 +279,7 @@ export class InventoryService implements IInventoryService {
     if (quantities.quantityInTransit !== undefined) {
       inventory.quantityInTransit = quantities.quantityInTransit;
     }
-    
+
     return this.inventoryRepository.save(inventory);
   }
 
@@ -231,7 +288,7 @@ export class InventoryService implements IInventoryService {
     productId: string,
     warehouseCode: string,
     locationCode: string,
-    reserveDto: ReserveInventoryDto
+    reserveDto: ReserveInventoryDto,
   ): Promise<Inventory> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -242,11 +299,13 @@ export class InventoryService implements IInventoryService {
         productId,
         warehouseCode,
         locationCode,
-        reserveDto.quantity
+        reserveDto.quantity,
       );
 
       if (!inventory) {
-        throw new BadRequestException('Insufficient inventory available for reservation');
+        throw new BadRequestException(
+          'Insufficient inventory available for reservation',
+        );
       }
 
       // Create reservation transaction
@@ -275,7 +334,7 @@ export class InventoryService implements IInventoryService {
     productId: string,
     warehouseCode: string,
     locationCode: string,
-    releaseDto: ReleaseInventoryDto
+    releaseDto: ReleaseInventoryDto,
   ): Promise<Inventory> {
     const tenantId = this.getTenantId();
     const inventory = await this.inventoryRepository.findOne({
@@ -287,7 +346,9 @@ export class InventoryService implements IInventoryService {
     }
 
     if (inventory.quantityReserved < releaseDto.quantity) {
-      throw new BadRequestException('Cannot release more than reserved quantity');
+      throw new BadRequestException(
+        'Cannot release more than reserved quantity',
+      );
     }
 
     inventory.quantityReserved -= releaseDto.quantity;
@@ -315,7 +376,7 @@ export class InventoryService implements IInventoryService {
     productId: string,
     warehouseCode: string,
     locationCode: string,
-    adjustDto: AdjustInventoryDto
+    adjustDto: AdjustInventoryDto,
   ): Promise<InventoryTransaction> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -324,12 +385,12 @@ export class InventoryService implements IInventoryService {
     try {
       const tenantId = this.getTenantId();
       const inventory = await this.inventoryRepository.findOne({
-        where: { 
-          productId, 
-          warehouseCode, 
-          locationCode, 
+        where: {
+          productId,
+          warehouseCode,
+          locationCode,
           tenantId,
-          ...(adjustDto.lotNumber && { lotNumber: adjustDto.lotNumber })
+          ...(adjustDto.lotNumber && { lotNumber: adjustDto.lotNumber }),
         },
       });
 
@@ -337,14 +398,18 @@ export class InventoryService implements IInventoryService {
         throw new NotFoundException('Inventory not found');
       }
 
-      const newQuantity = Number(inventory.quantityOnHand) + adjustDto.adjustmentQuantity;
+      const newQuantity =
+        Number(inventory.quantityOnHand) + adjustDto.adjustmentQuantity;
       if (newQuantity < 0) {
-        throw new BadRequestException('Adjustment would result in negative inventory');
+        throw new BadRequestException(
+          'Adjustment would result in negative inventory',
+        );
       }
 
       inventory.quantityOnHand = newQuantity;
-      inventory.quantityAvailable = newQuantity - Number(inventory.quantityReserved);
-      
+      inventory.quantityAvailable =
+        newQuantity - Number(inventory.quantityReserved);
+
       await queryRunner.manager.save(inventory);
 
       // Create adjustment transaction
@@ -353,7 +418,8 @@ export class InventoryService implements IInventoryService {
         warehouseCode,
         transactionType: InventoryTransactionType.ADJUSTMENT,
         quantity: Math.abs(adjustDto.adjustmentQuantity),
-        fromLocation: adjustDto.adjustmentQuantity < 0 ? locationCode : undefined,
+        fromLocation:
+          adjustDto.adjustmentQuantity < 0 ? locationCode : undefined,
         toLocation: adjustDto.adjustmentQuantity > 0 ? locationCode : undefined,
         lotNumber: adjustDto.lotNumber,
         notes: `${adjustDto.reason}${adjustDto.notes ? ` - ${adjustDto.notes}` : ''}`,
@@ -380,7 +446,7 @@ export class InventoryService implements IInventoryService {
 
     try {
       const tenantId = this.getTenantId();
-      
+
       // Find source inventory
       const sourceInventory = await this.inventoryRepository.findOne({
         where: {
@@ -388,7 +454,7 @@ export class InventoryService implements IInventoryService {
           warehouseCode: transferDto.fromWarehouseCode,
           locationCode: transferDto.fromLocation || '',
           tenantId,
-          ...(transferDto.lotNumber && { lotNumber: transferDto.lotNumber })
+          ...(transferDto.lotNumber && { lotNumber: transferDto.lotNumber }),
         },
       });
 
@@ -397,7 +463,9 @@ export class InventoryService implements IInventoryService {
       }
 
       if (sourceInventory.quantityAvailable < transferDto.quantity) {
-        throw new BadRequestException('Insufficient inventory available for transfer');
+        throw new BadRequestException(
+          'Insufficient inventory available for transfer',
+        );
       }
 
       // Update source inventory
@@ -412,7 +480,7 @@ export class InventoryService implements IInventoryService {
           warehouseCode: transferDto.toWarehouseCode,
           locationCode: transferDto.toLocation || '',
           tenantId,
-          ...(transferDto.lotNumber && { lotNumber: transferDto.lotNumber })
+          ...(transferDto.lotNumber && { lotNumber: transferDto.lotNumber }),
         },
       });
 
@@ -437,8 +505,9 @@ export class InventoryService implements IInventoryService {
       await queryRunner.manager.save(destinationInventory);
 
       // Create transfer transactions
-      const transactionNumber = await this.transactionRepo.getNextTransactionNumber();
-      
+      const transactionNumber =
+        await this.transactionRepo.getNextTransactionNumber();
+
       const sourceTransaction = await this.createTransaction({
         productId: transferDto.productId,
         warehouseCode: transferDto.fromWarehouseCode,
@@ -472,11 +541,14 @@ export class InventoryService implements IInventoryService {
   }
 
   // Status Management
-  async updateStatus(id: string, statusDto: UpdateInventoryStatusDto): Promise<Inventory> {
+  async updateStatus(
+    id: string,
+    statusDto: UpdateInventoryStatusDto,
+  ): Promise<Inventory> {
     const inventory = await this.findOne(id);
-    
+
     inventory.status = statusDto.status;
-    
+
     const updatedInventory = await this.inventoryRepository.save(inventory);
 
     // Create status change transaction
@@ -506,13 +578,15 @@ export class InventoryService implements IInventoryService {
     return this.inventoryRepo.findLowStockItems(threshold);
   }
 
-  async getInventoryValuation(query?: InventoryValuationQueryDto): Promise<{
-    productId?: string;
-    warehouseCode?: string;
-    locationCode?: string;
-    totalValue: number;
-    totalQuantity: number;
-  }[]> {
+  async getInventoryValuation(query?: InventoryValuationQueryDto): Promise<
+    {
+      productId?: string;
+      warehouseCode?: string;
+      locationCode?: string;
+      totalValue: number;
+      totalQuantity: number;
+    }[]
+  > {
     const tenantId = this.getTenantId();
     const queryBuilder = this.inventoryRepository
       .createQueryBuilder('inventory')
@@ -520,10 +594,14 @@ export class InventoryService implements IInventoryService {
       .andWhere('inventory.unitCost IS NOT NULL');
 
     if (query?.productId) {
-      queryBuilder.andWhere('inventory.productId = :productId', { productId: query.productId });
+      queryBuilder.andWhere('inventory.productId = :productId', {
+        productId: query.productId,
+      });
     }
     if (query?.warehouseCode) {
-      queryBuilder.andWhere('inventory.warehouseCode = :warehouseCode', { warehouseCode: query.warehouseCode });
+      queryBuilder.andWhere('inventory.warehouseCode = :warehouseCode', {
+        warehouseCode: query.warehouseCode,
+      });
     }
 
     // Apply grouping
@@ -531,32 +609,44 @@ export class InventoryService implements IInventoryService {
       queryBuilder
         .select('inventory.productId', 'productId')
         .addSelect('SUM(inventory.quantityOnHand)', 'totalQuantity')
-        .addSelect('SUM(inventory.quantityOnHand * inventory.unitCost)', 'totalValue')
+        .addSelect(
+          'SUM(inventory.quantityOnHand * inventory.unitCost)',
+          'totalValue',
+        )
         .groupBy('inventory.productId');
     } else if (query?.groupBy === 'warehouse') {
       queryBuilder
         .select('inventory.warehouseCode', 'warehouseCode')
         .addSelect('SUM(inventory.quantityOnHand)', 'totalQuantity')
-        .addSelect('SUM(inventory.quantityOnHand * inventory.unitCost)', 'totalValue')
+        .addSelect(
+          'SUM(inventory.quantityOnHand * inventory.unitCost)',
+          'totalValue',
+        )
         .groupBy('inventory.warehouseCode');
     } else if (query?.groupBy === 'location') {
       queryBuilder
         .select('inventory.warehouseCode', 'warehouseCode')
         .addSelect('inventory.locationCode', 'locationCode')
         .addSelect('SUM(inventory.quantityOnHand)', 'totalQuantity')
-        .addSelect('SUM(inventory.quantityOnHand * inventory.unitCost)', 'totalValue')
+        .addSelect(
+          'SUM(inventory.quantityOnHand * inventory.unitCost)',
+          'totalValue',
+        )
         .groupBy('inventory.warehouseCode, inventory.locationCode');
     } else {
       queryBuilder
         .select('inventory.productId', 'productId')
         .addSelect('SUM(inventory.quantityOnHand)', 'totalQuantity')
-        .addSelect('SUM(inventory.quantityOnHand * inventory.unitCost)', 'totalValue')
+        .addSelect(
+          'SUM(inventory.quantityOnHand * inventory.unitCost)',
+          'totalValue',
+        )
         .groupBy('inventory.productId');
     }
 
     const results = await queryBuilder.getRawMany();
-    
-    return results.map(r => ({
+
+    return results.map((r) => ({
       ...(r.productId && { productId: r.productId }),
       ...(r.warehouseCode && { warehouseCode: r.warehouseCode }),
       ...(r.locationCode && { locationCode: r.locationCode }),
@@ -566,11 +656,14 @@ export class InventoryService implements IInventoryService {
   }
 
   // Transaction Management
-  async createTransaction(transactionDto: CreateInventoryTransactionDto): Promise<InventoryTransaction> {
+  async createTransaction(
+    transactionDto: CreateInventoryTransactionDto,
+  ): Promise<InventoryTransaction> {
     const tenantId = this.getTenantId();
     const userId = this.getUserId();
-    const transactionNumber = await this.transactionRepo.getNextTransactionNumber();
-    
+    const transactionNumber =
+      await this.transactionRepo.getNextTransactionNumber();
+
     const unitCost = transactionDto.unitCost || 0;
     const totalCost = transactionDto.quantity * unitCost;
 
@@ -602,25 +695,38 @@ export class InventoryService implements IInventoryService {
 
     // Apply filters
     if (filters.productId) {
-      queryBuilder.andWhere('transaction.productId = :productId', { productId: filters.productId });
+      queryBuilder.andWhere('transaction.productId = :productId', {
+        productId: filters.productId,
+      });
     }
     if (filters.warehouseCode) {
-      queryBuilder.andWhere('transaction.warehouseCode = :warehouseCode', { warehouseCode: filters.warehouseCode });
+      queryBuilder.andWhere('transaction.warehouseCode = :warehouseCode', {
+        warehouseCode: filters.warehouseCode,
+      });
     }
     if (filters.transactionType) {
-      queryBuilder.andWhere('transaction.transactionType = :transactionType', { transactionType: filters.transactionType });
+      queryBuilder.andWhere('transaction.transactionType = :transactionType', {
+        transactionType: filters.transactionType,
+      });
     }
     if (filters.referenceType) {
-      queryBuilder.andWhere('transaction.referenceType = :referenceType', { referenceType: filters.referenceType });
+      queryBuilder.andWhere('transaction.referenceType = :referenceType', {
+        referenceType: filters.referenceType,
+      });
     }
     if (filters.referenceId) {
-      queryBuilder.andWhere('transaction.referenceId = :referenceId', { referenceId: filters.referenceId });
+      queryBuilder.andWhere('transaction.referenceId = :referenceId', {
+        referenceId: filters.referenceId,
+      });
     }
     if (filters.startDate && filters.endDate) {
-      queryBuilder.andWhere('transaction.transactionDate BETWEEN :startDate AND :endDate', {
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-      });
+      queryBuilder.andWhere(
+        'transaction.transactionDate BETWEEN :startDate AND :endDate',
+        {
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+        },
+      );
     }
 
     // Apply sorting and pagination
@@ -636,18 +742,25 @@ export class InventoryService implements IInventoryService {
   async getTransactionHistory(
     productId: string,
     warehouseCode?: string,
-    days?: number
+    days?: number,
   ): Promise<InventoryTransaction[]> {
-    const startDate = days ? new Date(Date.now() - days * 24 * 60 * 60 * 1000) : undefined;
+    const startDate = days
+      ? new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+      : undefined;
     const endDate = new Date();
 
     if (startDate) {
-      return this.transactionRepo.findByDateRange(startDate, endDate, productId, warehouseCode);
+      return this.transactionRepo.findByDateRange(
+        startDate,
+        endDate,
+        productId,
+        warehouseCode,
+      );
     }
 
     if (warehouseCode) {
       const transactions = await this.transactionRepo.findByProduct(productId);
-      return transactions.filter(t => t.warehouseCode === warehouseCode);
+      return transactions.filter((t) => t.warehouseCode === warehouseCode);
     }
 
     return this.transactionRepo.findByProduct(productId);
@@ -659,7 +772,7 @@ export class InventoryService implements IInventoryService {
     warehouseCode: string,
     locationCode: string,
     actualQuantity: number,
-    notes?: string
+    notes?: string,
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
@@ -674,10 +787,11 @@ export class InventoryService implements IInventoryService {
     }
 
     const variance = actualQuantity - Number(inventory.quantityOnHand);
-    
+
     if (variance !== 0) {
       inventory.quantityOnHand = actualQuantity;
-      inventory.quantityAvailable = actualQuantity - Number(inventory.quantityReserved);
+      inventory.quantityAvailable =
+        actualQuantity - Number(inventory.quantityReserved);
       await this.inventoryRepository.save(inventory);
     }
 
@@ -703,20 +817,20 @@ export class InventoryService implements IInventoryService {
     referenceType?: string,
     referenceId?: string,
     lotNumber?: string,
-    unitCost?: number
+    unitCost?: number,
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
   }> {
     const tenantId = this.getTenantId();
-    
+
     let inventory = await this.inventoryRepository.findOne({
-      where: { 
-        productId, 
-        warehouseCode, 
-        locationCode, 
+      where: {
+        productId,
+        warehouseCode,
+        locationCode,
         tenantId,
-        ...(lotNumber && { lotNumber })
+        ...(lotNumber && { lotNumber }),
       },
     });
 
@@ -768,7 +882,7 @@ export class InventoryService implements IInventoryService {
     locationCode: string,
     quantity: number,
     referenceType?: string,
-    referenceId?: string
+    referenceId?: string,
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
@@ -809,7 +923,7 @@ export class InventoryService implements IInventoryService {
   // Bulk Operations
   async bulkUpdateStatus(
     inventoryIds: string[],
-    statusDto: UpdateInventoryStatusDto
+    statusDto: UpdateInventoryStatusDto,
   ): Promise<Inventory[]> {
     const tenantId = this.getTenantId();
     const inventories = await this.inventoryRepository.find({
@@ -833,16 +947,21 @@ export class InventoryService implements IInventoryService {
       warehouseCode: string;
       locationCode: string;
       adjustment: AdjustInventoryDto;
-    }>
+    }>,
   ): Promise<InventoryTransaction[]> {
     const transactions: InventoryTransaction[] = [];
 
-    for (const { productId, warehouseCode, locationCode, adjustment } of adjustments) {
+    for (const {
+      productId,
+      warehouseCode,
+      locationCode,
+      adjustment,
+    } of adjustments) {
       const transaction = await this.adjustInventory(
         productId,
         warehouseCode,
         locationCode,
-        adjustment
+        adjustment,
       );
       transactions.push(transaction);
     }
@@ -853,7 +972,7 @@ export class InventoryService implements IInventoryService {
   // Stock Availability Check
   async checkStockAvailability(
     items: Array<{ productId: string; quantity: number }>,
-    warehouseCode?: string
+    warehouseCode?: string,
   ): Promise<{
     available: boolean;
     shortages: Array<{
@@ -871,8 +990,11 @@ export class InventoryService implements IInventoryService {
     }> = [];
 
     for (const item of items) {
-      const available = await this.getAvailableQuantity(item.productId, warehouseCode);
-      
+      const available = await this.getAvailableQuantity(
+        item.productId,
+        warehouseCode,
+      );
+
       if (available < item.quantity) {
         shortages.push({
           productId: item.productId,

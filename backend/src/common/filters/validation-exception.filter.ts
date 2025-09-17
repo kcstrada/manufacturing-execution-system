@@ -49,8 +49,12 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     if (exceptionResponse.message) {
       if (Array.isArray(exceptionResponse.message)) {
         // Parse validation messages
-        errorResponse.validationErrors = this.formatValidationErrors(exceptionResponse.message);
-        errorResponse.message = this.generateSummaryMessage(errorResponse.validationErrors);
+        errorResponse.validationErrors = this.formatValidationErrors(
+          exceptionResponse.message,
+        );
+        errorResponse.message = this.generateSummaryMessage(
+          errorResponse.validationErrors,
+        );
       } else {
         errorResponse.message = exceptionResponse.message;
       }
@@ -90,7 +94,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
       if (typeof error === 'string') {
         // Simple string error
         const match = error.match(/^([a-zA-Z0-9_.]+)\s+(.+)$/);
-        
+
         if (match) {
           const [, field, message] = match;
           if (field) {
@@ -110,16 +114,21 @@ export class ValidationExceptionFilter implements ExceptionFilter {
       } else if (error.constraints) {
         // Validation error object
         const property = error.property;
-        const messages = Object.values(error.constraints) as string[];
-        
+        const messages = Object.values(error.constraints).filter(
+          (msg): msg is string => typeof msg === 'string',
+        );
+
         if (!formatted[property]) {
           formatted[property] = [];
         }
         formatted[property].push(...messages);
-        
+
         // Handle nested validation errors
         if (error.children && error.children.length > 0) {
-          const nestedErrors = this.formatNestedValidationErrors(error.children, property);
+          const nestedErrors = this.formatNestedValidationErrors(
+            error.children,
+            property,
+          );
           Object.assign(formatted, nestedErrors);
         }
       }
@@ -136,26 +145,29 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     parentProperty: string,
   ): Record<string, string[]> {
     const formatted: Record<string, string[]> = {};
-    
+
     for (const error of errors) {
       const property = `${parentProperty}.${error.property}`;
-      
+
       if (error.constraints) {
-        const messages = Object.values(error.constraints) as string[];
-        
+        const messages = Object.values(error.constraints);
+
         if (!formatted[property]) {
           formatted[property] = [];
         }
         formatted[property].push(...messages);
       }
-      
+
       // Recursively handle deeper nested errors
       if (error.children && error.children.length > 0) {
-        const nestedErrors = this.formatNestedValidationErrors(error.children, property);
+        const nestedErrors = this.formatNestedValidationErrors(
+          error.children,
+          property,
+        );
         Object.assign(formatted, nestedErrors);
       }
     }
-    
+
     return formatted;
   }
 
@@ -164,8 +176,11 @@ export class ValidationExceptionFilter implements ExceptionFilter {
    */
   private generateSummaryMessage(errors: Record<string, string[]>): string {
     const errorCount = Object.keys(errors).length;
-    const totalErrors = Object.values(errors).reduce((sum, arr) => sum + arr.length, 0);
-    
+    const totalErrors = Object.values(errors).reduce(
+      (sum, arr) => sum + arr.length,
+      0,
+    );
+
     if (errorCount === 1) {
       const field = Object.keys(errors)[0];
       if (field) {
@@ -175,7 +190,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
         }
       }
     }
-    
+
     return `Validation failed with ${totalErrors} error(s) in ${errorCount} field(s)`;
   }
 
@@ -185,13 +200,13 @@ export class ValidationExceptionFilter implements ExceptionFilter {
   private sanitizeHeaders(headers: any): any {
     const sanitized = { ...headers };
     const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
-    
+
     for (const header of sensitiveHeaders) {
       if (sanitized[header]) {
         sanitized[header] = '[REDACTED]';
       }
     }
-    
+
     return sanitized;
   }
 }

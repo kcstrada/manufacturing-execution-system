@@ -42,16 +42,22 @@ export interface WasteMetrics {
     totalCost: number;
     percentage: number;
   }>;
-  wasteByType: Record<WasteType, {
-    quantity: number;
-    cost: number;
-    percentage: number;
-  }>;
-  wasteByCategory: Record<WasteCategory, {
-    quantity: number;
-    cost: number;
-    percentage: number;
-  }>;
+  wasteByType: Record<
+    WasteType,
+    {
+      quantity: number;
+      cost: number;
+      percentage: number;
+    }
+  >;
+  wasteByCategory: Record<
+    WasteCategory,
+    {
+      quantity: number;
+      cost: number;
+      percentage: number;
+    }
+  >;
   environmentalImpact: {
     totalCO2Equivalent: number;
     hazardousWasteQuantity: number;
@@ -127,7 +133,8 @@ export class WasteService {
     isRecurring?: boolean;
     disposalMethod?: DisposalMethod;
   }): Promise<WasteRecord[]> {
-    const query = this.wasteRepository.createQueryBuilder('waste')
+    const query = this.wasteRepository
+      .createQueryBuilder('waste')
       .leftJoinAndSelect('waste.product', 'product')
       .leftJoinAndSelect('waste.workOrder', 'workOrder')
       .leftJoinAndSelect('waste.equipment', 'equipment')
@@ -138,19 +145,27 @@ export class WasteService {
     }
 
     if (filters?.category) {
-      query.andWhere('waste.category = :category', { category: filters.category });
+      query.andWhere('waste.category = :category', {
+        category: filters.category,
+      });
     }
 
     if (filters?.productId) {
-      query.andWhere('waste.productId = :productId', { productId: filters.productId });
+      query.andWhere('waste.productId = :productId', {
+        productId: filters.productId,
+      });
     }
 
     if (filters?.workOrderId) {
-      query.andWhere('waste.workOrderId = :workOrderId', { workOrderId: filters.workOrderId });
+      query.andWhere('waste.workOrderId = :workOrderId', {
+        workOrderId: filters.workOrderId,
+      });
     }
 
     if (filters?.equipmentId) {
-      query.andWhere('waste.equipmentId = :equipmentId', { equipmentId: filters.equipmentId });
+      query.andWhere('waste.equipmentId = :equipmentId', {
+        equipmentId: filters.equipmentId,
+      });
     }
 
     if (filters?.startDate && filters?.endDate) {
@@ -161,11 +176,15 @@ export class WasteService {
     }
 
     if (filters?.isRecurring !== undefined) {
-      query.andWhere('waste.isRecurring = :isRecurring', { isRecurring: filters.isRecurring });
+      query.andWhere('waste.isRecurring = :isRecurring', {
+        isRecurring: filters.isRecurring,
+      });
     }
 
     if (filters?.disposalMethod) {
-      query.andWhere('waste.disposalMethod = :disposalMethod', { disposalMethod: filters.disposalMethod });
+      query.andWhere('waste.disposalMethod = :disposalMethod', {
+        disposalMethod: filters.disposalMethod,
+      });
     }
 
     query.orderBy('waste.recordDate', 'DESC');
@@ -204,21 +223,30 @@ export class WasteService {
 
     Object.assign(wasteRecord, {
       ...dto,
-      recordDate: dto.recordDate ? new Date(dto.recordDate) : wasteRecord.recordDate,
-      disposalDate: dto.disposalDate ? new Date(dto.disposalDate) : wasteRecord.disposalDate,
+      recordDate: dto.recordDate
+        ? new Date(dto.recordDate)
+        : wasteRecord.recordDate,
+      disposalDate: dto.disposalDate
+        ? new Date(dto.disposalDate)
+        : wasteRecord.disposalDate,
     });
 
     const updated = await this.wasteRepository.save(wasteRecord);
-    
+
     this.logger.log(`Waste record updated: ${updated.recordNumber}`);
     return updated;
   }
 
-  async recordDisposal(id: string, dto: RecordDisposalDto): Promise<WasteRecord> {
+  async recordDisposal(
+    id: string,
+    dto: RecordDisposalDto,
+  ): Promise<WasteRecord> {
     const wasteRecord = await this.findOne(id);
 
     if (wasteRecord.disposalDate) {
-      throw new BadRequestException('Waste record already has disposal information');
+      throw new BadRequestException(
+        'Waste record already has disposal information',
+      );
     }
 
     wasteRecord.disposalMethod = dto.disposalMethod;
@@ -251,7 +279,8 @@ export class WasteService {
     const start = startDate || subDays(new Date(), 30);
     const end = endDate || new Date();
 
-    const query = this.wasteRepository.createQueryBuilder('waste')
+    const query = this.wasteRepository
+      .createQueryBuilder('waste')
       .leftJoinAndSelect('waste.product', 'product')
       .where('waste.recordDate BETWEEN :start AND :end', {
         start: startOfDay(start),
@@ -265,37 +294,49 @@ export class WasteService {
     const records = await query.getMany();
 
     // Calculate basic metrics
-    const totalWasteQuantity = records.reduce((sum, r) => sum + Number(r.quantity), 0);
-    const totalWasteCost = records.reduce((sum, r) => sum + Number(r.totalCost), 0);
+    const totalWasteQuantity = records.reduce(
+      (sum, r) => sum + Number(r.quantity),
+      0,
+    );
+    const totalWasteCost = records.reduce(
+      (sum, r) => sum + Number(r.totalCost),
+      0,
+    );
 
     // Calculate recycling rate
-    const recycledRecords = records.filter(r => r.disposalMethod === DisposalMethod.RECYCLE);
-    const recyclingRate = records.length > 0 
-      ? (recycledRecords.length / records.length) * 100 
-      : 0;
+    const recycledRecords = records.filter(
+      (r) => r.disposalMethod === DisposalMethod.RECYCLE,
+    );
+    const recyclingRate =
+      records.length > 0 ? (recycledRecords.length / records.length) * 100 : 0;
 
     // Calculate scrap and rework rates
-    const scrapRecords = records.filter(r => r.type === WasteType.SCRAP);
-    const reworkRecords = records.filter(r => r.type === WasteType.REWORK);
-    const scrapRate = records.length > 0 
-      ? (scrapRecords.length / records.length) * 100 
-      : 0;
-    const reworkRate = records.length > 0 
-      ? (reworkRecords.length / records.length) * 100 
-      : 0;
+    const scrapRecords = records.filter((r) => r.type === WasteType.SCRAP);
+    const reworkRecords = records.filter((r) => r.type === WasteType.REWORK);
+    const scrapRate =
+      records.length > 0 ? (scrapRecords.length / records.length) * 100 : 0;
+    const reworkRate =
+      records.length > 0 ? (reworkRecords.length / records.length) * 100 : 0;
 
     // Calculate averages
-    const daysDiff = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+    const daysDiff = Math.max(
+      1,
+      Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)),
+    );
     const averageWastePerDay = totalWasteQuantity / daysDiff;
 
-    const uniqueOrders = new Set(records.map(r => r.workOrderId).filter(Boolean));
-    const averageWastePerOrder = uniqueOrders.size > 0 
-      ? totalWasteQuantity / uniqueOrders.size 
-      : 0;
+    const uniqueOrders = new Set(
+      records.map((r) => r.workOrderId).filter(Boolean),
+    );
+    const averageWastePerOrder =
+      uniqueOrders.size > 0 ? totalWasteQuantity / uniqueOrders.size : 0;
 
     // Find most wasted product
-    const productWaste = new Map<string, { name: string; quantity: number; cost: number }>();
-    records.forEach(record => {
+    const productWaste = new Map<
+      string,
+      { name: string; quantity: number; cost: number }
+    >();
+    records.forEach((record) => {
       if (record.productId && record.product) {
         const existing = productWaste.get(record.productId) || {
           name: record.product.name,
@@ -310,8 +351,13 @@ export class WasteService {
 
     let mostWastedProduct = null;
     if (productWaste.size > 0) {
-      const sorted = Array.from(productWaste.entries()).sort((a, b) => b[1].cost - a[1].cost);
-      const [productId, data] = sorted[0] || ['', { name: '', quantity: 0, cost: 0 }];
+      const sorted = Array.from(productWaste.entries()).sort(
+        (a, b) => b[1].cost - a[1].cost,
+      );
+      const [productId, data] = sorted[0] || [
+        '',
+        { name: '', quantity: 0, cost: 0 },
+      ];
       mostWastedProduct = {
         productId,
         productName: data.name,
@@ -322,9 +368,12 @@ export class WasteService {
 
     // Calculate top waste causes
     const causesMap = new Map<string, { count: number; cost: number }>();
-    records.forEach(record => {
+    records.forEach((record) => {
       if (record.rootCause) {
-        const existing = causesMap.get(record.rootCause) || { count: 0, cost: 0 };
+        const existing = causesMap.get(record.rootCause) || {
+          count: 0,
+          cost: 0,
+        };
         existing.count++;
         existing.cost += Number(record.totalCost);
         causesMap.set(record.rootCause, existing);
@@ -342,10 +391,16 @@ export class WasteService {
       .slice(0, 10);
 
     // Calculate waste by type
-    const wasteByType = {} as Record<WasteType, { quantity: number; cost: number; percentage: number }>;
-    Object.values(WasteType).forEach(type => {
-      const typeRecords = records.filter(r => r.type === type);
-      const quantity = typeRecords.reduce((sum, r) => sum + Number(r.quantity), 0);
+    const wasteByType = {} as Record<
+      WasteType,
+      { quantity: number; cost: number; percentage: number }
+    >;
+    Object.values(WasteType).forEach((type) => {
+      const typeRecords = records.filter((r) => r.type === type);
+      const quantity = typeRecords.reduce(
+        (sum, r) => sum + Number(r.quantity),
+        0,
+      );
       const cost = typeRecords.reduce((sum, r) => sum + Number(r.totalCost), 0);
       wasteByType[type] = {
         quantity,
@@ -355,11 +410,20 @@ export class WasteService {
     });
 
     // Calculate waste by category
-    const wasteByCategory = {} as Record<WasteCategory, { quantity: number; cost: number; percentage: number }>;
-    Object.values(WasteCategory).forEach(category => {
-      const categoryRecords = records.filter(r => r.category === category);
-      const quantity = categoryRecords.reduce((sum, r) => sum + Number(r.quantity), 0);
-      const cost = categoryRecords.reduce((sum, r) => sum + Number(r.totalCost), 0);
+    const wasteByCategory = {} as Record<
+      WasteCategory,
+      { quantity: number; cost: number; percentage: number }
+    >;
+    Object.values(WasteCategory).forEach((category) => {
+      const categoryRecords = records.filter((r) => r.category === category);
+      const quantity = categoryRecords.reduce(
+        (sum, r) => sum + Number(r.quantity),
+        0,
+      );
+      const cost = categoryRecords.reduce(
+        (sum, r) => sum + Number(r.totalCost),
+        0,
+      );
       wasteByCategory[category] = {
         quantity,
         cost,
@@ -369,30 +433,47 @@ export class WasteService {
 
     // Calculate environmental impact
     const environmentalImpact = {
-      totalCO2Equivalent: records.reduce((sum, r) => 
-        sum + (r.environmentalImpact?.co2Equivalent || 0), 0),
+      totalCO2Equivalent: records.reduce(
+        (sum, r) => sum + (r.environmentalImpact?.co2Equivalent || 0),
+        0,
+      ),
       hazardousWasteQuantity: records
-        .filter(r => r.environmentalImpact?.hazardousWaste)
+        .filter((r) => r.environmentalImpact?.hazardousWaste)
         .reduce((sum, r) => sum + Number(r.quantity), 0),
-      recycledQuantity: recycledRecords.reduce((sum, r) => sum + Number(r.quantity), 0),
+      recycledQuantity: recycledRecords.reduce(
+        (sum, r) => sum + Number(r.quantity),
+        0,
+      ),
       landfillQuantity: records
-        .filter(r => r.disposalMethod === DisposalMethod.LANDFILL)
+        .filter((r) => r.disposalMethod === DisposalMethod.LANDFILL)
         .reduce((sum, r) => sum + Number(r.quantity), 0),
     };
 
     // Calculate cost breakdown
     const costBreakdown = {
-      materialCost: records.reduce((sum, r) => sum + Number(r.materialCost || 0), 0),
+      materialCost: records.reduce(
+        (sum, r) => sum + Number(r.materialCost || 0),
+        0,
+      ),
       laborCost: records.reduce((sum, r) => sum + Number(r.laborCost || 0), 0),
-      overheadCost: records.reduce((sum, r) => sum + Number(r.overheadCost || 0), 0),
-      disposalCost: records.reduce((sum, r) => sum + Number(r.disposalCost || 0), 0),
-      recoveredValue: records.reduce((sum, r) => sum + Number(r.recoveredValue || 0), 0),
+      overheadCost: records.reduce(
+        (sum, r) => sum + Number(r.overheadCost || 0),
+        0,
+      ),
+      disposalCost: records.reduce(
+        (sum, r) => sum + Number(r.disposalCost || 0),
+        0,
+      ),
+      recoveredValue: records.reduce(
+        (sum, r) => sum + Number(r.recoveredValue || 0),
+        0,
+      ),
       netCost: totalWasteCost,
     };
 
     // Calculate trends (simplified - daily for now)
     const dailyTrends = new Map<string, { quantity: number; cost: number }>();
-    records.forEach(record => {
+    records.forEach((record) => {
       const dateKey = record.recordDate.toISOString().split('T')[0];
       if (dateKey) {
         const existing = dailyTrends.get(dateKey) || { quantity: 0, cost: 0 };
@@ -450,7 +531,10 @@ export class WasteService {
       };
     });
 
-    const byCategory = {} as Record<WasteCategory, { quantity: number; cost: number }>;
+    const byCategory = {} as Record<
+      WasteCategory,
+      { quantity: number; cost: number }
+    >;
     Object.entries(metrics.wasteByCategory).forEach(([category, data]) => {
       byCategory[category as WasteCategory] = {
         quantity: data.quantity,
@@ -458,13 +542,15 @@ export class WasteService {
       };
     });
 
-    const byProduct = metrics.mostWastedProduct 
-      ? [{
-          productId: metrics.mostWastedProduct.productId,
-          productName: metrics.mostWastedProduct.productName,
-          quantity: metrics.mostWastedProduct.totalWaste,
-          cost: metrics.mostWastedProduct.totalCost,
-        }]
+    const byProduct = metrics.mostWastedProduct
+      ? [
+          {
+            productId: metrics.mostWastedProduct.productId,
+            productName: metrics.mostWastedProduct.productName,
+            quantity: metrics.mostWastedProduct.totalWaste,
+            cost: metrics.mostWastedProduct.totalCost,
+          },
+        ]
       : [];
 
     return {
@@ -475,7 +561,7 @@ export class WasteService {
       byProduct,
       wasteRate: metrics.wasteRate,
       recyclingRate: metrics.recyclingRate,
-      topCauses: metrics.topWasteCauses.slice(0, 5).map(c => ({
+      topCauses: metrics.topWasteCauses.slice(0, 5).map((c) => ({
         cause: c.cause,
         count: c.occurrences,
         totalCost: c.totalCost,
@@ -526,14 +612,16 @@ export class WasteService {
 
     const trends = new Map<string, { quantity: number; cost: number }>();
 
-    records.forEach(record => {
+    records.forEach((record) => {
       let periodKey: string = '';
       const date = record.recordDate;
 
       if (period === 'daily') {
         periodKey = date.toISOString().split('T')[0] || '';
       } else if (period === 'weekly') {
-        const weekNumber = Math.floor((date.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+        const weekNumber = Math.floor(
+          (date.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000),
+        );
         periodKey = `Week ${weekNumber + 1}`;
       } else {
         periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -549,9 +637,10 @@ export class WasteService {
     let previousCost = 0;
 
     Array.from(trends.entries()).forEach(([period, data], index) => {
-      const change = index > 0 && previousCost > 0
-        ? ((data.cost - previousCost) / previousCost) * 100
-        : 0;
+      const change =
+        index > 0 && previousCost > 0
+          ? ((data.cost - previousCost) / previousCost) * 100
+          : 0;
 
       result.push({
         period,
@@ -566,12 +655,14 @@ export class WasteService {
     return result;
   }
 
-  async checkWasteAlerts(): Promise<Array<{
-    type: string;
-    message: string;
-    severity: 'low' | 'medium' | 'high' | 'critical';
-    data?: any;
-  }>> {
+  async checkWasteAlerts(): Promise<
+    Array<{
+      type: string;
+      message: string;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      data?: any;
+    }>
+  > {
     const alerts = [];
     const last7Days = subDays(new Date(), 7);
 

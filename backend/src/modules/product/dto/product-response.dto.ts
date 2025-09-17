@@ -10,7 +10,7 @@ export class ProductResponseDto extends TenantAwareResponseDto {
   name!: string;
 
   @ApiPropertyOptional({ description: 'Product description' })
-  description?:  string;
+  description?: string;
 
   @ApiProperty({ description: 'Product type', enum: ProductType })
   type!: ProductType;
@@ -19,13 +19,13 @@ export class ProductResponseDto extends TenantAwareResponseDto {
   status!: ProductStatus;
 
   @ApiPropertyOptional({ description: 'Category ID' })
-  categoryId?:  string;
+  categoryId?: string;
 
   @ApiProperty({ description: 'Unit of measure ID' })
   unitOfMeasureId!: string;
 
   @ApiPropertyOptional({ description: 'Barcode' })
-  barcode?:  string;
+  barcode?: string;
 
   @ApiProperty({ description: 'Product cost' })
   cost!: number;
@@ -34,31 +34,31 @@ export class ProductResponseDto extends TenantAwareResponseDto {
   price!: number;
 
   @ApiPropertyOptional({ description: 'Weight in kg' })
-  weight?:  number;
+  weight?: number;
 
   @ApiPropertyOptional({ description: 'Length in cm' })
-  length?:  number;
+  length?: number;
 
   @ApiPropertyOptional({ description: 'Width in cm' })
-  width?:  number;
+  width?: number;
 
   @ApiPropertyOptional({ description: 'Height in cm' })
-  height?:  number;
+  height?: number;
 
   @ApiProperty({ description: 'Minimum stock level' })
   minStockLevel!: number;
 
   @ApiPropertyOptional({ description: 'Maximum stock level' })
-  maxStockLevel?:  number;
+  maxStockLevel?: number;
 
   @ApiPropertyOptional({ description: 'Reorder point' })
-  reorderPoint?:  number;
+  reorderPoint?: number;
 
   @ApiProperty({ description: 'Lead time in days' })
   leadTimeDays!: number;
 
   @ApiPropertyOptional({ description: 'Shelf life in days' })
-  shelfLifeDays?:  number;
+  shelfLifeDays?: number;
 
   @ApiProperty({ description: 'Is perishable' })
   isPerishable!: boolean;
@@ -76,10 +76,10 @@ export class ProductResponseDto extends TenantAwareResponseDto {
   specifications?: Record<string, any>;
 
   @ApiPropertyOptional({ description: 'Manufacturing instructions' })
-  manufacturingInstructions?:  string;
+  manufacturingInstructions?: string;
 
   @ApiPropertyOptional({ description: 'Quality standards' })
-  qualityStandards?:  string;
+  qualityStandards?: string;
 
   @ApiPropertyOptional({ description: 'Image URLs' })
   imageUrls?: string[];

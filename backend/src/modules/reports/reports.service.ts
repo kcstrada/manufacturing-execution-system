@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClsService } from 'nestjs-cls';
-import { 
+import {
   ProductionEfficiencyReport,
   InventoryTurnoverReport,
   WorkerProductivityReport,
@@ -29,7 +29,6 @@ import { ProductionOrder } from '../../entities/production-order.entity';
 
 @Injectable()
 export class ReportsService {
-
   constructor(
     @InjectRepository(CustomerOrder)
     private readonly customerOrderRepository: Repository<CustomerOrder>,
@@ -60,7 +59,7 @@ export class ReportsService {
     filters: ReportFilters,
   ): Promise<ProductionEfficiencyReport> {
     const tenantId = this.getTenantId();
-    
+
     // Get production orders within date range
     const productionOrders = await this.productionOrderRepository
       .createQueryBuilder('po')
@@ -74,9 +73,16 @@ export class ReportsService {
       .getMany();
 
     // Calculate efficiency metrics
-    const totalPlanned = productionOrders.reduce((sum, po) => sum + (po.quantityOrdered || 0), 0);
-    const totalActual = productionOrders.reduce((sum, po) => sum + (po.quantityProduced || 0), 0);
-    const efficiencyRate = totalPlanned > 0 ? (totalActual / totalPlanned) * 100 : 0;
+    const totalPlanned = productionOrders.reduce(
+      (sum, po) => sum + (po.quantityOrdered || 0),
+      0,
+    );
+    const totalActual = productionOrders.reduce(
+      (sum, po) => sum + (po.quantityProduced || 0),
+      0,
+    );
+    const efficiencyRate =
+      totalPlanned > 0 ? (totalActual / totalPlanned) * 100 : 0;
 
     // Get equipment metrics for OEE calculation
     const equipmentMetrics = await this.calculateOEE(filters);
@@ -124,35 +130,42 @@ export class ReportsService {
       .getMany();
 
     // Calculate average inventory value
-    const averageInventoryValue = inventoryData.reduce(
-      (sum, inv) => sum + (inv.quantityOnHand * (inv.unitCost || 0)),
-      0,
-    ) / (inventoryData.length || 1);
+    const averageInventoryValue =
+      inventoryData.reduce(
+        (sum, inv) => sum + inv.quantityOnHand * (inv.unitCost || 0),
+        0,
+      ) / (inventoryData.length || 1);
 
     // Get cost of goods sold from completed orders
     const costOfGoodsSold = await this.calculateCOGS(filters);
 
     // Calculate turnover ratio
-    const turnoverRatio = averageInventoryValue > 0
-      ? costOfGoodsSold / averageInventoryValue
-      : 0;
+    const turnoverRatio =
+      averageInventoryValue > 0 ? costOfGoodsSold / averageInventoryValue : 0;
 
     // Days inventory outstanding
     const daysInPeriod = Math.ceil(
-      (filters.endDate.getTime() - filters.startDate.getTime()) / (1000 * 60 * 60 * 24)
+      (filters.endDate.getTime() - filters.startDate.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
-    const daysInventoryOutstanding = turnoverRatio > 0
-      ? daysInPeriod / turnoverRatio
-      : 0;
+    const daysInventoryOutstanding =
+      turnoverRatio > 0 ? daysInPeriod / turnoverRatio : 0;
 
     // Count stockout events
-    const stockoutEvents = inventoryData.filter(inv => inv.quantityOnHand <= 0).length;
+    const stockoutEvents = inventoryData.filter(
+      (inv) => inv.quantityOnHand <= 0,
+    ).length;
 
     // Calculate excess inventory (using threshold instead of reorderPoint)
     const excessInventoryThreshold = 100; // Fixed threshold
     const excessInventoryValue = inventoryData
-      .filter(inv => inv.quantityOnHand > excessInventoryThreshold)
-      .reduce((sum, inv) => sum + ((inv.quantityOnHand - excessInventoryThreshold) * (inv.unitCost || 0)), 0);
+      .filter((inv) => inv.quantityOnHand > excessInventoryThreshold)
+      .reduce(
+        (sum, inv) =>
+          sum +
+          (inv.quantityOnHand - excessInventoryThreshold) * (inv.unitCost || 0),
+        0,
+      );
 
     // Product-wise turnover
     const byProduct = await this.calculateProductTurnover(filters);
@@ -205,21 +218,32 @@ export class ReportsService {
       .getMany();
 
     // Calculate metrics
-    const totalWorkers = new Set(tasks.map(t => t.assignedToId)).size;
+    const totalWorkers = new Set(tasks.map((t) => t.assignedToId)).size;
     const totalTasksCompleted = tasks.length;
-    const averageTaskTime = tasks.reduce((sum, t) => {
-      return sum + (t.estimatedHours || 0);
-    }, 0) / (tasks.length || 1);
+    const averageTaskTime =
+      tasks.reduce((sum, t) => {
+        return sum + (t.estimatedHours || 0);
+      }, 0) / (tasks.length || 1);
 
     // Calculate utilization rate
-    const totalAvailableHours = timeEntries.reduce((sum, te) => sum + te.regularHours, 0);
-    const totalProductiveHours = tasks.reduce((sum, t) => sum + (t.estimatedHours || 0), 0);
-    const utilizationRate = totalAvailableHours > 0
-      ? (totalProductiveHours / totalAvailableHours) * 100
-      : 0;
+    const totalAvailableHours = timeEntries.reduce(
+      (sum, te) => sum + te.regularHours,
+      0,
+    );
+    const totalProductiveHours = tasks.reduce(
+      (sum, t) => sum + (t.estimatedHours || 0),
+      0,
+    );
+    const utilizationRate =
+      totalAvailableHours > 0
+        ? (totalProductiveHours / totalAvailableHours) * 100
+        : 0;
 
     // Calculate overtime
-    const overtimeHours = timeEntries.reduce((sum, te) => sum + te.overtimeHours, 0);
+    const overtimeHours = timeEntries.reduce(
+      (sum, te) => sum + te.overtimeHours,
+      0,
+    );
 
     // Worker-wise metrics
     const byWorker = await this.calculateWorkerMetrics(filters);
@@ -233,7 +257,9 @@ export class ReportsService {
     // Trends
     const trends = await this.calculateProductivityTrends(filters);
 
-    const averageProductivity = byWorker.reduce((sum, w) => sum + w.productivity, 0) / (byWorker.length || 1);
+    const averageProductivity =
+      byWorker.reduce((sum, w) => sum + w.productivity, 0) /
+      (byWorker.length || 1);
 
     return {
       period: `${filters.startDate.toISOString()} - ${filters.endDate.toISOString()}`,
@@ -279,15 +305,20 @@ export class ReportsService {
 
     // Calculate metrics
     const totalInspections = inspections.length;
-    const passedInspections = inspections.filter(i => (i as any).value >= ((i as any).targetValue || 0)).length;
-    const passRate = totalInspections > 0 ? (passedInspections / totalInspections) * 100 : 0;
+    const passedInspections = inspections.filter(
+      (i) => (i as any).value >= ((i as any).targetValue || 0),
+    ).length;
+    const passRate =
+      totalInspections > 0 ? (passedInspections / totalInspections) * 100 : 0;
     const defectRate = 100 - passRate;
 
     // Calculate rework and scrap rates
-    const reworkCount = wasteRecords.filter(w => w.type === 'rework').length;
-    const scrapCount = wasteRecords.filter(w => w.type === 'scrap').length;
-    const reworkRate = totalInspections > 0 ? (reworkCount / totalInspections) * 100 : 0;
-    const scrapRate = totalInspections > 0 ? (scrapCount / totalInspections) * 100 : 0;
+    const reworkCount = wasteRecords.filter((w) => w.type === 'rework').length;
+    const scrapCount = wasteRecords.filter((w) => w.type === 'scrap').length;
+    const reworkRate =
+      totalInspections > 0 ? (reworkCount / totalInspections) * 100 : 0;
+    const scrapRate =
+      totalInspections > 0 ? (scrapCount / totalInspections) * 100 : 0;
 
     // Calculate cost of quality
     const costOfQuality = wasteRecords.reduce((sum, w) => sum + w.totalCost, 0);
@@ -299,7 +330,8 @@ export class ReportsService {
     const byDefectType = await this.calculateDefectAnalysis(filters);
 
     // Inspection point metrics
-    const byInspectionPoint = await this.calculateInspectionPointMetrics(filters);
+    const byInspectionPoint =
+      await this.calculateInspectionPointMetrics(filters);
 
     // Quality trends
     const trends = await this.calculateQualityTrends(filters);
@@ -355,7 +387,10 @@ export class ReportsService {
       .createQueryBuilder('task')
       .where('task.tenantId = :tenantId', { tenantId })
       .andWhere('task.status = :status', { status: TaskStatus.COMPLETED })
-      .andWhere('task.completedAt BETWEEN :today AND :tomorrow', { today, tomorrow })
+      .andWhere('task.completedAt BETWEEN :today AND :tomorrow', {
+        today,
+        tomorrow,
+      })
       .getCount();
 
     // Calculate current production rate
@@ -366,9 +401,15 @@ export class ReportsService {
 
     // Monthly KPIs
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthlyEfficiency = await this.calculateMonthlyEfficiency(monthStart, today);
+    const monthlyEfficiency = await this.calculateMonthlyEfficiency(
+      monthStart,
+      today,
+    );
     const qualityRate = await this.calculateQualityRate(monthStart, today);
-    const onTimeDelivery = await this.calculateOnTimeDelivery(monthStart, today);
+    const onTimeDelivery = await this.calculateOnTimeDelivery(
+      monthStart,
+      today,
+    );
     const inventoryAccuracy = await this.calculateInventoryAccuracy();
 
     // Get alerts
@@ -410,11 +451,11 @@ export class ReportsService {
     metrics: string[],
   ): Promise<CustomReport> {
     const tenantId = this.getTenantId();
-    
+
     // Build dynamic query based on report type and filters
     let query: any;
     let data: any[] = [];
-    
+
     switch (reportType) {
       case 'production':
         query = this.productionOrderRepository
@@ -425,7 +466,7 @@ export class ReportsService {
             endDate: filters.endDate,
           });
         break;
-      
+
       case 'inventory':
         query = this.inventoryRepository
           .createQueryBuilder('inv')
@@ -435,7 +476,7 @@ export class ReportsService {
             endDate: filters.endDate,
           });
         break;
-      
+
       case 'quality':
         query = this.qualityMetricRepository
           .createQueryBuilder('qi')
@@ -445,7 +486,7 @@ export class ReportsService {
             endDate: filters.endDate,
           });
         break;
-      
+
       case 'worker':
         query = this.taskRepository
           .createQueryBuilder('task')
@@ -455,14 +496,16 @@ export class ReportsService {
             endDate: filters.endDate,
           });
         break;
-      
+
       default:
         throw new Error(`Unsupported report type: ${reportType}`);
     }
 
     // Apply additional filters
     if (filters.productId) {
-      query.andWhere('productId = :productId', { productId: filters.productId });
+      query.andWhere('productId = :productId', {
+        productId: filters.productId,
+      });
     }
     if (filters.workerId) {
       query.andWhere('workerId = :workerId', { workerId: filters.workerId });
@@ -472,12 +515,12 @@ export class ReportsService {
     }
 
     // Apply grouping
-    groupBy.forEach(field => {
+    groupBy.forEach((field) => {
       query.addGroupBy(field);
     });
 
     // Select metrics
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       switch (metric) {
         case 'count':
           query.addSelect('COUNT(*)', 'count');
@@ -522,26 +565,27 @@ export class ReportsService {
     let filename: string;
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    
+
     switch (format) {
       case 'csv':
         content = this.convertToCSV(reportData);
         mimeType = 'text/csv';
         filename = `report-${timestamp}.csv`;
         break;
-      
+
       case 'excel':
         content = await this.convertToExcel(reportData);
-        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        mimeType =
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         filename = `report-${timestamp}.xlsx`;
         break;
-      
+
       case 'pdf':
         content = await this.convertToPDF(reportData);
         mimeType = 'application/pdf';
         filename = `report-${timestamp}.pdf`;
         break;
-      
+
       default:
         throw new Error(`Unsupported export format: ${format}`);
     }
@@ -568,9 +612,11 @@ export class ReportsService {
     };
   }
 
-  private async calculateProductEfficiency(filters: ReportFilters): Promise<ProductEfficiency[]> {
+  private async calculateProductEfficiency(
+    filters: ReportFilters,
+  ): Promise<ProductEfficiency[]> {
     const tenantId = this.getTenantId();
-    
+
     const result = await this.productionOrderRepository
       .createQueryBuilder('po')
       .select('po.productId', 'productId')
@@ -587,23 +633,30 @@ export class ReportsService {
       .addGroupBy('product.name')
       .getRawMany();
 
-    return result.map(r => ({
+    return result.map((r) => ({
       productId: r.productId,
       productName: r.productName,
       plannedQuantity: parseFloat(r.plannedQuantity) || 0,
       actualQuantity: parseFloat(r.actualQuantity) || 0,
-      efficiency: r.plannedQuantity > 0 ? (r.actualQuantity / r.plannedQuantity) * 100 : 0,
+      efficiency:
+        r.plannedQuantity > 0
+          ? (r.actualQuantity / r.plannedQuantity) * 100
+          : 0,
       defectRate: 2, // Placeholder
       averageCycleTime: 5, // Placeholder
     }));
   }
 
-  private async calculateWorkCenterEfficiency(_filters: ReportFilters): Promise<WorkCenterEfficiency[]> {
+  private async calculateWorkCenterEfficiency(
+    _filters: ReportFilters,
+  ): Promise<WorkCenterEfficiency[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateEfficiencyTrends(_filters: ReportFilters): Promise<any[]> {
+  private async calculateEfficiencyTrends(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
@@ -613,57 +666,79 @@ export class ReportsService {
     return 0;
   }
 
-  private async calculateProductTurnover(_filters: ReportFilters): Promise<any[]> {
+  private async calculateProductTurnover(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateCategoryTurnover(_filters: ReportFilters): Promise<any[]> {
+  private async calculateCategoryTurnover(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateTurnoverTrends(_filters: ReportFilters): Promise<any[]> {
+  private async calculateTurnoverTrends(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateWorkerMetrics(_filters: ReportFilters): Promise<WorkerMetrics[]> {
+  private async calculateWorkerMetrics(
+    _filters: ReportFilters,
+  ): Promise<WorkerMetrics[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateDepartmentProductivity(_filters: ReportFilters): Promise<any[]> {
+  private async calculateDepartmentProductivity(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateShiftProductivity(_filters: ReportFilters): Promise<any[]> {
+  private async calculateShiftProductivity(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateProductivityTrends(_filters: ReportFilters): Promise<any[]> {
+  private async calculateProductivityTrends(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateProductQuality(_filters: ReportFilters): Promise<ProductQuality[]> {
+  private async calculateProductQuality(
+    _filters: ReportFilters,
+  ): Promise<ProductQuality[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateDefectAnalysis(_filters: ReportFilters): Promise<DefectAnalysis[]> {
+  private async calculateDefectAnalysis(
+    _filters: ReportFilters,
+  ): Promise<DefectAnalysis[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateInspectionPointMetrics(_filters: ReportFilters): Promise<any[]> {
+  private async calculateInspectionPointMetrics(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
 
-  private async calculateQualityTrends(_filters: ReportFilters): Promise<any[]> {
+  private async calculateQualityTrends(
+    _filters: ReportFilters,
+  ): Promise<any[]> {
     // Placeholder implementation
     return [];
   }
@@ -673,7 +748,7 @@ export class ReportsService {
     const total = sorted.reduce((sum, d) => sum + d.count, 0);
     let cumulative = 0;
 
-    return sorted.map(d => {
+    return sorted.map((d) => {
       cumulative += d.count;
       return {
         category: d.defectType,
@@ -694,17 +769,26 @@ export class ReportsService {
     return 85; // percentage
   }
 
-  private async calculateMonthlyEfficiency(_startDate: Date, _endDate: Date): Promise<number> {
+  private async calculateMonthlyEfficiency(
+    _startDate: Date,
+    _endDate: Date,
+  ): Promise<number> {
     // Placeholder implementation
     return 92; // percentage
   }
 
-  private async calculateQualityRate(_startDate: Date, _endDate: Date): Promise<number> {
+  private async calculateQualityRate(
+    _startDate: Date,
+    _endDate: Date,
+  ): Promise<number> {
     // Placeholder implementation
     return 98; // percentage
   }
 
-  private async calculateOnTimeDelivery(_startDate: Date, _endDate: Date): Promise<number> {
+  private async calculateOnTimeDelivery(
+    _startDate: Date,
+    _endDate: Date,
+  ): Promise<number> {
     // Placeholder implementation
     return 95; // percentage
   }
@@ -734,7 +818,10 @@ export class ReportsService {
     };
   }
 
-  private calculateSummary(_data: any[], _metrics: string[]): Record<string, any> {
+  private calculateSummary(
+    _data: any[],
+    _metrics: string[],
+  ): Record<string, any> {
     // Placeholder implementation
     return {};
   }

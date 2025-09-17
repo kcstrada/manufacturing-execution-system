@@ -26,7 +26,6 @@ export enum BOMStatus {
 @Index(['tenantId', 'status'])
 @Index(['tenantId', 'effectiveDate'])
 export class BillOfMaterials extends TenantBaseEntity {
-
   @Column({ type: 'varchar', length: 255, nullable: true })
   name?: string;
 
@@ -39,7 +38,6 @@ export class BillOfMaterials extends TenantBaseEntity {
     default: BOMStatus.DRAFT,
   })
   status!: BOMStatus;
-
 
   @Column({ type: 'date' })
   effectiveDate!: Date;
@@ -114,7 +112,8 @@ export class BillOfMaterials extends TenantBaseEntity {
     let total = 0;
     for (const component of this.components) {
       const componentCost = componentCosts.get(component.componentId) || 0;
-      const quantityWithScrap = component.quantity * (1 + component.scrapPercentage / 100);
+      const quantityWithScrap =
+        component.quantity * (1 + component.scrapPercentage / 100);
       total += componentCost * quantityWithScrap;
     }
     return total;
@@ -123,12 +122,14 @@ export class BillOfMaterials extends TenantBaseEntity {
   getAlternatesForComponent(componentId: string): any[] {
     if (!this.alternateComponents) return [];
     return this.alternateComponents
-      .filter(alt => alt.primaryComponentId === componentId && alt.isActive)
+      .filter((alt) => alt.primaryComponentId === componentId && alt.isActive)
       .sort((a, b) => a.preferenceOrder - b.preferenceOrder);
   }
 
   hasAlternates(): boolean {
-    return this.alternateComponents ? this.alternateComponents.length > 0 : false;
+    return this.alternateComponents
+      ? this.alternateComponents.length > 0
+      : false;
   }
 }
 

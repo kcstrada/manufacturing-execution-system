@@ -3,28 +3,37 @@ import { Repository, Between } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
 import { ProductionOrderRepository } from '../../src/repositories/production-order.repository';
-import { ProductionOrder, ProductionOrderStatus } from '../../src/entities/production-order.entity';
-import { mockRepository, mockClsService, createMockQueryBuilder, createTestEntity } from './repository-test.helper';
+import {
+  ProductionOrder,
+  ProductionOrderStatus,
+} from '../../src/entities/production-order.entity';
+import {
+  mockRepository,
+  mockClsService,
+  createMockQueryBuilder,
+  createTestEntity,
+} from './repository-test.helper';
 
 describe('ProductionOrderRepository', () => {
   let repository: ProductionOrderRepository;
   let typeOrmRepository: jest.Mocked<Repository<ProductionOrder>>;
   let clsService: jest.Mocked<ClsService>;
 
-  const createProductionOrder = (overrides = {}): ProductionOrder => createTestEntity({
-    orderNumber: 'PO-2024-001',
-    quantityOrdered: 1000,
-    quantityProduced: 0,
-    quantityScrapped: 0,
-    status: ProductionOrderStatus.PLANNED,
-    priority: 5,
-    productId: 'product-id',
-    unitOfMeasureId: 'uom-id',
-    customerOrderId: 'customer-order-id',
-    plannedStartDate: new Date('2024-01-01'),
-    plannedEndDate: new Date('2024-01-15'),
-    ...overrides,
-  }) as ProductionOrder;
+  const createProductionOrder = (overrides = {}): ProductionOrder =>
+    createTestEntity({
+      orderNumber: 'PO-2024-001',
+      quantityOrdered: 1000,
+      quantityProduced: 0,
+      quantityScrapped: 0,
+      status: ProductionOrderStatus.PLANNED,
+      priority: 5,
+      productId: 'product-id',
+      unitOfMeasureId: 'uom-id',
+      customerOrderId: 'customer-order-id',
+      plannedStartDate: new Date('2024-01-01'),
+      plannedEndDate: new Date('2024-01-15'),
+      ...overrides,
+    }) as ProductionOrder;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -41,7 +50,9 @@ describe('ProductionOrderRepository', () => {
       ],
     }).compile();
 
-    repository = module.get<ProductionOrderRepository>(ProductionOrderRepository);
+    repository = module.get<ProductionOrderRepository>(
+      ProductionOrderRepository,
+    );
     typeOrmRepository = module.get(getRepositoryToken(ProductionOrder));
     clsService = module.get(ClsService);
   });
@@ -67,14 +78,21 @@ describe('ProductionOrderRepository', () => {
 
   describe('findByStatus', () => {
     it('should find production orders by status', async () => {
-      const orders = [createProductionOrder({ status: ProductionOrderStatus.IN_PROGRESS })];
+      const orders = [
+        createProductionOrder({ status: ProductionOrderStatus.IN_PROGRESS }),
+      ];
       typeOrmRepository.find.mockResolvedValue(orders);
 
-      const result = await repository.findByStatus(ProductionOrderStatus.IN_PROGRESS);
+      const result = await repository.findByStatus(
+        ProductionOrderStatus.IN_PROGRESS,
+      );
 
       expect(result).toEqual(orders);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
-        where: { status: ProductionOrderStatus.IN_PROGRESS, tenantId: 'test-tenant-id' },
+        where: {
+          status: ProductionOrderStatus.IN_PROGRESS,
+          tenantId: 'test-tenant-id',
+        },
         relations: ['product', 'unitOfMeasure'],
         order: { priority: 'DESC', plannedStartDate: 'ASC' },
       });
@@ -128,13 +146,31 @@ describe('ProductionOrderRepository', () => {
       const result = await repository.findHighPriority(8);
 
       expect(result).toEqual(orders);
-      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('order.product', 'product');
-      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('order.unitOfMeasure', 'uom');
-      expect(queryBuilder.where).toHaveBeenCalledWith('order.tenantId = :tenantId', { tenantId: 'test-tenant-id' });
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith('order.priority >= :minPriority', { minPriority: 8 });
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith('order.status NOT IN (:...statuses)', {
-        statuses: [ProductionOrderStatus.COMPLETED, ProductionOrderStatus.CANCELLED],
-      });
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'order.product',
+        'product',
+      );
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'order.unitOfMeasure',
+        'uom',
+      );
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'order.tenantId = :tenantId',
+        { tenantId: 'test-tenant-id' },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'order.priority >= :minPriority',
+        { minPriority: 8 },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'order.status NOT IN (:...statuses)',
+        {
+          statuses: [
+            ProductionOrderStatus.COMPLETED,
+            ProductionOrderStatus.CANCELLED,
+          ],
+        },
+      );
     });
 
     it('should use default minimum priority of 8', async () => {
@@ -146,13 +182,19 @@ describe('ProductionOrderRepository', () => {
       const result = await repository.findHighPriority();
 
       expect(result).toEqual(orders);
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith('order.priority >= :minPriority', { minPriority: 8 });
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'order.priority >= :minPriority',
+        { minPriority: 8 },
+      );
     });
   });
 
   describe('updateProgress', () => {
     it('should update production order progress', async () => {
-      const order = createProductionOrder({ quantityProduced: 500, quantityScrapped: 10 });
+      const order = createProductionOrder({
+        quantityProduced: 500,
+        quantityScrapped: 10,
+      });
       typeOrmRepository.update.mockResolvedValue({ affected: 1 } as any);
       typeOrmRepository.findOne.mockResolvedValue(order);
 
@@ -161,14 +203,16 @@ describe('ProductionOrderRepository', () => {
       expect(result).toEqual(order);
       expect(typeOrmRepository.update).toHaveBeenCalledWith(
         { id: 'order-id', tenantId: 'test-tenant-id' },
-        { quantityProduced: 500, quantityScrapped: 10 }
+        { quantityProduced: 500, quantityScrapped: 10 },
       );
     });
   });
 
   describe('startProduction', () => {
     it('should start production', async () => {
-      const order = createProductionOrder({ status: ProductionOrderStatus.IN_PROGRESS });
+      const order = createProductionOrder({
+        status: ProductionOrderStatus.IN_PROGRESS,
+      });
       typeOrmRepository.update.mockResolvedValue({ affected: 1 } as any);
       typeOrmRepository.findOne.mockResolvedValue(order);
 
@@ -180,17 +224,17 @@ describe('ProductionOrderRepository', () => {
         {
           status: ProductionOrderStatus.IN_PROGRESS,
           actualStartDate: expect.any(Date),
-        }
+        },
       );
     });
   });
 
   describe('completeProduction', () => {
     it('should complete production', async () => {
-      const order = createProductionOrder({ 
+      const order = createProductionOrder({
         status: ProductionOrderStatus.COMPLETED,
         quantityProduced: 950,
-        quantityScrapped: 50 
+        quantityScrapped: 50,
       });
       typeOrmRepository.update.mockResolvedValue({ affected: 1 } as any);
       typeOrmRepository.findOne.mockResolvedValue(order);
@@ -205,14 +249,17 @@ describe('ProductionOrderRepository', () => {
           actualEndDate: expect.any(Date),
           quantityProduced: 950,
           quantityScrapped: 50,
-        }
+        },
       );
     });
   });
 
   describe('calculateCompletionPercentage', () => {
     it('should calculate completion percentage', async () => {
-      const order = createProductionOrder({ quantityOrdered: 1000, quantityProduced: 750 });
+      const order = createProductionOrder({
+        quantityOrdered: 1000,
+        quantityProduced: 750,
+      });
       typeOrmRepository.findOne.mockResolvedValue(order);
 
       const result = await repository.calculateCompletionPercentage('order-id');
@@ -229,7 +276,10 @@ describe('ProductionOrderRepository', () => {
     });
 
     it('should return 0 if quantity ordered is 0', async () => {
-      const order = createProductionOrder({ quantityOrdered: 0, quantityProduced: 0 });
+      const order = createProductionOrder({
+        quantityOrdered: 0,
+        quantityProduced: 0,
+      });
       typeOrmRepository.findOne.mockResolvedValue(order);
 
       const result = await repository.calculateCompletionPercentage('order-id');
@@ -247,7 +297,10 @@ describe('ProductionOrderRepository', () => {
 
       expect(result).toEqual(orders);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
-        where: { customerOrderId: 'customer-order-id', tenantId: 'test-tenant-id' },
+        where: {
+          customerOrderId: 'customer-order-id',
+          tenantId: 'test-tenant-id',
+        },
         relations: ['product', 'unitOfMeasure'],
         order: { priority: 'DESC' },
       });

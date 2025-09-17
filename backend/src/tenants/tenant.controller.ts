@@ -14,15 +14,23 @@ import {
   ApiOperation,
   ApiBearerAuth,
   ApiResponse,
-  ApiForbiddenResponse
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 // import { AuthGuard, Roles } from 'nest-keycloak-connect';
 import { TenantService } from './tenant.service';
 import { TenantInterceptor } from './tenant.interceptor';
 import { TenantGuard } from './tenant.guard';
-import { TenantId, TenantContext, CrossTenant } from './decorators/tenant.decorators';
+import {
+  TenantId,
+  TenantContext,
+  CrossTenant,
+} from './decorators/tenant.decorators';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { ApiAuth, ApiStandardResponses, ApiTenant } from '../common/swagger/swagger.decorators';
+import {
+  ApiAuth,
+  ApiStandardResponses,
+  ApiTenant,
+} from '../common/swagger/swagger.decorators';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { KeycloakAdminService } from '../auth/keycloak-admin.service';
@@ -41,9 +49,10 @@ export class TenantController {
   ) {}
 
   @Get('current')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get current tenant information',
-    description: 'Returns information about the current tenant based on the request context'
+    description:
+      'Returns information about the current tenant based on the request context',
   })
   @ApiResponse({
     status: 200,
@@ -56,13 +65,10 @@ export class TenantController {
         subdomain: { type: 'string' },
         customDomain: { type: 'string', nullable: true },
         createdAt: { type: 'string', format: 'date-time' },
-      }
-    }
+      },
+    },
   })
-  getCurrentTenant(
-    @TenantId() tenantId: string,
-    @TenantContext() tenant: any,
-  ) {
+  getCurrentTenant(@TenantId() tenantId: string, @TenantContext() tenant: any) {
     return {
       id: tenantId,
       ...tenant,
@@ -70,9 +76,9 @@ export class TenantController {
   }
 
   @Get('current/stats')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get current tenant statistics',
-    description: 'Returns usage statistics and metrics for the current tenant'
+    description: 'Returns usage statistics and metrics for the current tenant',
   })
   @ApiResponse({
     status: 200,
@@ -86,8 +92,8 @@ export class TenantController {
         productCount: { type: 'number' },
         storageUsed: { type: 'number' },
         lastActivity: { type: 'string', format: 'date-time' },
-      }
-    }
+      },
+    },
   })
   async getTenantStats(@TenantId() _tenantId: string) {
     return this.tenantService.getTenantStats();
@@ -95,17 +101,17 @@ export class TenantController {
 
   @Get('current/users')
   @UseGuards(TenantGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get users in current tenant',
-    description: 'Returns a list of all users belonging to the current tenant'
+    description: 'Returns a list of all users belonging to the current tenant',
   })
   @ApiResponse({
     status: 200,
     description: 'Users retrieved successfully',
-    type: [Object]
+    type: [Object],
   })
   @ApiForbiddenResponse({
-    description: 'Access denied - insufficient permissions'
+    description: 'Access denied - insufficient permissions',
   })
   async getTenantUsers(@TenantId() tenantId: string) {
     // This would query users filtered by tenant
@@ -239,7 +245,8 @@ export class TenantController {
   @ApiOperation({ summary: 'Create admin user for tenant' })
   async createAdminUser(
     @Param('tenantId') tenantId: string,
-    @Body() userData?: {
+    @Body()
+    userData?: {
       username?: string;
       email?: string;
       firstName?: string;
@@ -249,7 +256,10 @@ export class TenantController {
     },
   ) {
     try {
-      const user = await this.keycloakAdminService.createAdminUser(tenantId, userData);
+      const user = await this.keycloakAdminService.createAdminUser(
+        tenantId,
+        userData,
+      );
       return {
         success: true,
         message: `Admin user created for tenant ${tenantId}`,
@@ -270,7 +280,8 @@ export class TenantController {
   @ApiOperation({ summary: 'Create regular user for tenant' })
   async createRegularUser(
     @Param('tenantId') tenantId: string,
-    @Body() userData?: {
+    @Body()
+    userData?: {
       username?: string;
       email?: string;
       firstName?: string;
@@ -280,7 +291,10 @@ export class TenantController {
     },
   ) {
     try {
-      const user = await this.keycloakAdminService.createRegularUser(tenantId, userData);
+      const user = await this.keycloakAdminService.createRegularUser(
+        tenantId,
+        userData,
+      );
       return {
         success: true,
         message: `User created for tenant ${tenantId}`,

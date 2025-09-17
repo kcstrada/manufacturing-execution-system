@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EquipmentController } from './equipment.controller';
-import { EquipmentService, EquipmentMetrics, MaintenanceMetrics } from './equipment.service';
+import {
+  EquipmentService,
+  EquipmentMetrics,
+  MaintenanceMetrics,
+} from './equipment.service';
 import { AuthGuard, ResourceGuard } from 'nest-keycloak-connect';
 import { mockKeycloakProviders } from '../../../test/mocks/keycloak.mock';
 import {
@@ -260,7 +264,9 @@ describe('EquipmentController', () => {
 
     describe('getMetrics', () => {
       it('should return equipment metrics', async () => {
-        jest.spyOn(service, 'getEquipmentMetrics').mockResolvedValue(mockEquipmentMetrics);
+        jest
+          .spyOn(service, 'getEquipmentMetrics')
+          .mockResolvedValue(mockEquipmentMetrics);
 
         const result = await controller.getMetrics();
 
@@ -271,7 +277,9 @@ describe('EquipmentController', () => {
 
     describe('getCalibrationDue', () => {
       it('should return equipment requiring calibration', async () => {
-        jest.spyOn(service, 'getEquipmentRequiringCalibration').mockResolvedValue([mockEquipment]);
+        jest
+          .spyOn(service, 'getEquipmentRequiringCalibration')
+          .mockResolvedValue([mockEquipment]);
 
         const result = await controller.getCalibrationDue();
 
@@ -317,10 +325,16 @@ describe('EquipmentController', () => {
           status: EquipmentStatus.IN_USE,
         } as Equipment);
 
-        const result = await controller.updateStatus('equipment-1', EquipmentStatus.IN_USE);
+        const result = await controller.updateStatus(
+          'equipment-1',
+          EquipmentStatus.IN_USE,
+        );
 
         expect(result.status).toEqual(EquipmentStatus.IN_USE);
-        expect(service.updateStatus).toHaveBeenCalledWith('equipment-1', EquipmentStatus.IN_USE);
+        expect(service.updateStatus).toHaveBeenCalledWith(
+          'equipment-1',
+          EquipmentStatus.IN_USE,
+        );
       });
     });
 
@@ -331,10 +345,16 @@ describe('EquipmentController', () => {
           totalOperatingHours: 5100,
         } as Equipment);
 
-        const result = await controller.updateOperatingHours('equipment-1', 100);
+        const result = await controller.updateOperatingHours(
+          'equipment-1',
+          100,
+        );
 
         expect(result.totalOperatingHours).toEqual(5100);
-        expect(service.updateOperatingHours).toHaveBeenCalledWith('equipment-1', 100);
+        expect(service.updateOperatingHours).toHaveBeenCalledWith(
+          'equipment-1',
+          100,
+        );
       });
     });
 
@@ -353,7 +373,9 @@ describe('EquipmentController', () => {
 
         const result = await controller.recordCalibration('equipment-1', body);
 
-        expect(result.lastCalibrationDate).toEqual(new Date(body.calibrationDate));
+        expect(result.lastCalibrationDate).toEqual(
+          new Date(body.calibrationDate),
+        );
         expect(service.recordCalibration).toHaveBeenCalledWith(
           'equipment-1',
           new Date(body.calibrationDate),
@@ -369,7 +391,10 @@ describe('EquipmentController', () => {
         const result = await controller.calculateOEE('equipment-1');
 
         expect(result).toEqual({ oee: 82.8 });
-        expect(service.calculateOEE).toHaveBeenCalledWith('equipment-1', undefined);
+        expect(service.calculateOEE).toHaveBeenCalledWith(
+          'equipment-1',
+          undefined,
+        );
       });
 
       it('should calculate OEE for specific period', async () => {
@@ -382,13 +407,10 @@ describe('EquipmentController', () => {
         );
 
         expect(result).toEqual({ oee: 85.5 });
-        expect(service.calculateOEE).toHaveBeenCalledWith(
-          'equipment-1',
-          {
-            start: new Date('2024-01-01'),
-            end: new Date('2024-01-31'),
-          },
-        );
+        expect(service.calculateOEE).toHaveBeenCalledWith('equipment-1', {
+          start: new Date('2024-01-01'),
+          end: new Date('2024-01-31'),
+        });
       });
     });
 
@@ -416,18 +438,24 @@ describe('EquipmentController', () => {
           assignedToId: 'worker-1',
         };
 
-        jest.spyOn(service, 'createMaintenanceSchedule').mockResolvedValue(mockSchedule);
+        jest
+          .spyOn(service, 'createMaintenanceSchedule')
+          .mockResolvedValue(mockSchedule);
 
         const result = await controller.createMaintenanceSchedule(createDto);
 
         expect(result).toEqual(mockSchedule);
-        expect(service.createMaintenanceSchedule).toHaveBeenCalledWith(createDto);
+        expect(service.createMaintenanceSchedule).toHaveBeenCalledWith(
+          createDto,
+        );
       });
     });
 
     describe('getUpcomingMaintenance', () => {
       it('should return upcoming maintenance', async () => {
-        jest.spyOn(service, 'getUpcomingMaintenance').mockResolvedValue([mockSchedule]);
+        jest
+          .spyOn(service, 'getUpcomingMaintenance')
+          .mockResolvedValue([mockSchedule]);
 
         const result = await controller.getUpcomingMaintenance(7);
 
@@ -438,7 +466,9 @@ describe('EquipmentController', () => {
 
     describe('getOverdueMaintenance', () => {
       it('should return overdue maintenance', async () => {
-        jest.spyOn(service, 'getOverdueMaintenance').mockResolvedValue([mockSchedule]);
+        jest
+          .spyOn(service, 'getOverdueMaintenance')
+          .mockResolvedValue([mockSchedule]);
 
         const result = await controller.getOverdueMaintenance();
 
@@ -449,9 +479,14 @@ describe('EquipmentController', () => {
 
     describe('getMaintenanceMetrics', () => {
       it('should return maintenance metrics', async () => {
-        jest.spyOn(service, 'getMaintenanceMetrics').mockResolvedValue(mockMaintenanceMetrics);
+        jest
+          .spyOn(service, 'getMaintenanceMetrics')
+          .mockResolvedValue(mockMaintenanceMetrics);
 
-        const result = await controller.getMaintenanceMetrics('2024-01-01', '2024-12-31');
+        const result = await controller.getMaintenanceMetrics(
+          '2024-01-01',
+          '2024-12-31',
+        );
 
         expect(result).toEqual(mockMaintenanceMetrics);
         expect(service.getMaintenanceMetrics).toHaveBeenCalledWith(
@@ -474,10 +509,16 @@ describe('EquipmentController', () => {
           scheduledDate: new Date('2024-02-15'),
         } as MaintenanceSchedule);
 
-        const result = await controller.updateMaintenanceSchedule('schedule-1', updateDto);
+        const result = await controller.updateMaintenanceSchedule(
+          'schedule-1',
+          updateDto,
+        );
 
         expect(result.description).toEqual('Updated maintenance');
-        expect(service.updateMaintenanceSchedule).toHaveBeenCalledWith('schedule-1', updateDto);
+        expect(service.updateMaintenanceSchedule).toHaveBeenCalledWith(
+          'schedule-1',
+          updateDto,
+        );
       });
     });
 
@@ -509,12 +550,20 @@ describe('EquipmentController', () => {
           findings: 'All checks passed',
         };
 
-        jest.spyOn(service, 'completeMaintenance').mockResolvedValue(mockMaintenanceRecord);
+        jest
+          .spyOn(service, 'completeMaintenance')
+          .mockResolvedValue(mockMaintenanceRecord);
 
-        const result = await controller.completeMaintenance('schedule-1', recordDto);
+        const result = await controller.completeMaintenance(
+          'schedule-1',
+          recordDto,
+        );
 
         expect(result).toEqual(mockMaintenanceRecord);
-        expect(service.completeMaintenance).toHaveBeenCalledWith('schedule-1', recordDto);
+        expect(service.completeMaintenance).toHaveBeenCalledWith(
+          'schedule-1',
+          recordDto,
+        );
       });
     });
   });
@@ -534,7 +583,9 @@ describe('EquipmentController', () => {
           findings: 'Motor replaced',
         };
 
-        jest.spyOn(service, 'recordMaintenance').mockResolvedValue(mockMaintenanceRecord);
+        jest
+          .spyOn(service, 'recordMaintenance')
+          .mockResolvedValue(mockMaintenanceRecord);
 
         const result = await controller.recordMaintenance(recordDto);
 
@@ -545,12 +596,20 @@ describe('EquipmentController', () => {
 
     describe('getMaintenanceHistory', () => {
       it('should return maintenance history', async () => {
-        jest.spyOn(service, 'getMaintenanceHistory').mockResolvedValue([mockMaintenanceRecord]);
+        jest
+          .spyOn(service, 'getMaintenanceHistory')
+          .mockResolvedValue([mockMaintenanceRecord]);
 
-        const result = await controller.getMaintenanceHistory('equipment-1', 10);
+        const result = await controller.getMaintenanceHistory(
+          'equipment-1',
+          10,
+        );
 
         expect(result).toEqual([mockMaintenanceRecord]);
-        expect(service.getMaintenanceHistory).toHaveBeenCalledWith('equipment-1', 10);
+        expect(service.getMaintenanceHistory).toHaveBeenCalledWith(
+          'equipment-1',
+          10,
+        );
       });
     });
   });

@@ -5,7 +5,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ClsService } from 'nestjs-cls';
 import { OrderStateMachineService } from './order-state-machine.service';
 import { OrderStateTransition } from '../../../entities/order-state-transition.entity';
-import { CustomerOrder, CustomerOrderStatus } from '../../../entities/customer-order.entity';
+import {
+  CustomerOrder,
+  CustomerOrderStatus,
+} from '../../../entities/customer-order.entity';
 import { WorkflowEvent } from '../interfaces/state-machine.interface';
 
 describe('OrderStateMachineService', () => {
@@ -46,9 +49,9 @@ describe('OrderStateMachineService', () => {
     }).compile();
 
     service = module.get<OrderStateMachineService>(OrderStateMachineService);
-    transitionRepo = module.get(getRepositoryToken(OrderStateTransition)) as jest.Mocked<Repository<OrderStateTransition>>;
-    eventEmitter = module.get(EventEmitter2) as jest.Mocked<EventEmitter2>;
-    clsService = module.get(ClsService) as jest.Mocked<ClsService>;
+    transitionRepo = module.get(getRepositoryToken(OrderStateTransition));
+    eventEmitter = module.get(EventEmitter2);
+    clsService = module.get(ClsService);
 
     // Setup default cls service behavior
     clsService.get.mockImplementation((key?: string | symbol) => {
@@ -70,7 +73,10 @@ describe('OrderStateMachineService', () => {
         orderLines: [{ id: 'line-1' }],
       } as CustomerOrder;
 
-      const canTransition = await service.canTransition(order, WorkflowEvent.CONFIRM);
+      const canTransition = await service.canTransition(
+        order,
+        WorkflowEvent.CONFIRM,
+      );
       expect(canTransition).toBe(true);
     });
 
@@ -80,7 +86,10 @@ describe('OrderStateMachineService', () => {
         status: CustomerOrderStatus.DELIVERED,
       } as CustomerOrder;
 
-      const canTransition = await service.canTransition(order, WorkflowEvent.CONFIRM);
+      const canTransition = await service.canTransition(
+        order,
+        WorkflowEvent.CONFIRM,
+      );
       expect(canTransition).toBe(false);
     });
 
@@ -91,7 +100,10 @@ describe('OrderStateMachineService', () => {
         orderLines: [], // No order lines
       } as unknown as CustomerOrder;
 
-      const canTransition = await service.canTransition(order, WorkflowEvent.CONFIRM);
+      const canTransition = await service.canTransition(
+        order,
+        WorkflowEvent.CONFIRM,
+      );
       expect(canTransition).toBe(false);
     });
   });
@@ -114,11 +126,14 @@ describe('OrderStateMachineService', () => {
       expect(result.previousState).toBe(CustomerOrderStatus.DRAFT);
       expect(result.currentState).toBe(CustomerOrderStatus.PENDING);
       expect(order.status).toBe(CustomerOrderStatus.PENDING);
-      expect(eventEmitter.emit).toHaveBeenCalledWith('order.state.changed', expect.objectContaining({
-        orderId: mockOrderId,
-        previousState: CustomerOrderStatus.DRAFT,
-        currentState: CustomerOrderStatus.PENDING,
-      }));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'order.state.changed',
+        expect.objectContaining({
+          orderId: mockOrderId,
+          previousState: CustomerOrderStatus.DRAFT,
+          currentState: CustomerOrderStatus.PENDING,
+        }),
+      );
     });
 
     it('should fail transition when guard condition fails', async () => {
@@ -186,8 +201,12 @@ describe('OrderStateMachineService', () => {
       const transitions = service.getAvailableTransitions(order);
 
       expect(transitions).toHaveLength(2);
-      expect(transitions.map(t => t.to)).toContain(CustomerOrderStatus.PENDING);
-      expect(transitions.map(t => t.to)).toContain(CustomerOrderStatus.CANCELLED);
+      expect(transitions.map((t) => t.to)).toContain(
+        CustomerOrderStatus.PENDING,
+      );
+      expect(transitions.map((t) => t.to)).toContain(
+        CustomerOrderStatus.CANCELLED,
+      );
     });
 
     it('should return available transitions for IN_PRODUCTION status', () => {
@@ -197,8 +216,12 @@ describe('OrderStateMachineService', () => {
 
       const transitions = service.getAvailableTransitions(order);
 
-      expect(transitions.map(t => t.to)).toContain(CustomerOrderStatus.QUALITY_CONTROL);
-      expect(transitions.map(t => t.to)).toContain(CustomerOrderStatus.ON_HOLD);
+      expect(transitions.map((t) => t.to)).toContain(
+        CustomerOrderStatus.QUALITY_CONTROL,
+      );
+      expect(transitions.map((t) => t.to)).toContain(
+        CustomerOrderStatus.ON_HOLD,
+      );
     });
   });
 
@@ -290,12 +313,18 @@ describe('OrderStateMachineService', () => {
       transitionRepo.save.mockResolvedValue({} as OrderStateTransition);
 
       // Start production
-      let result = await service.transition(order, WorkflowEvent.START_PRODUCTION);
+      let result = await service.transition(
+        order,
+        WorkflowEvent.START_PRODUCTION,
+      );
       expect(result.success).toBe(true);
       expect(order.status).toBe(CustomerOrderStatus.IN_PRODUCTION);
 
       // Complete production
-      result = await service.transition(order, WorkflowEvent.COMPLETE_PRODUCTION);
+      result = await service.transition(
+        order,
+        WorkflowEvent.COMPLETE_PRODUCTION,
+      );
       expect(result.success).toBe(true);
       expect(order.status).toBe(CustomerOrderStatus.QUALITY_CONTROL);
 

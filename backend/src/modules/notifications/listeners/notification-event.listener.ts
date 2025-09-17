@@ -37,7 +37,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send order created notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send order created notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -63,7 +65,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send order completed notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send order completed notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -89,7 +93,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send order delayed notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send order delayed notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -129,7 +135,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send low stock notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send low stock notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -138,7 +146,12 @@ export class NotificationEventListener {
     try {
       const notification: NotificationPayload = {
         tenantId: payload.tenantId,
-        roles: ['ADMIN', 'INVENTORY_MANAGER', 'WAREHOUSE_MANAGER', 'PRODUCTION_MANAGER'],
+        roles: [
+          'ADMIN',
+          'INVENTORY_MANAGER',
+          'WAREHOUSE_MANAGER',
+          'PRODUCTION_MANAGER',
+        ],
         type: NotificationType.INVENTORY_OUT_OF_STOCK,
         channel: [NotificationChannel.EMAIL, NotificationChannel.IN_APP],
         priority: NotificationPriority.CRITICAL,
@@ -163,7 +176,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send out of stock notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send out of stock notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -190,7 +205,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send production started notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send production started notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -229,7 +246,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send production error notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send production error notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -242,7 +261,10 @@ export class NotificationEventListener {
         userId: payload.assignedTo,
         type: NotificationType.TASK_ASSIGNED,
         channel: [NotificationChannel.EMAIL, NotificationChannel.IN_APP],
-        priority: payload.priority === 'high' ? NotificationPriority.HIGH : NotificationPriority.MEDIUM,
+        priority:
+          payload.priority === 'high'
+            ? NotificationPriority.HIGH
+            : NotificationPriority.MEDIUM,
         title: `New Task: ${payload.taskTitle}`,
         message: `You have been assigned a new task: ${payload.taskDescription}`,
         data: payload,
@@ -269,7 +291,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send task assigned notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send task assigned notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -304,7 +328,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(managerNotification);
     } catch (error) {
-      this.logger.error(`Failed to send task overdue notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send task overdue notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -317,7 +343,10 @@ export class NotificationEventListener {
         roles: ['QUALITY_MANAGER', 'PRODUCTION_MANAGER', 'ADMIN'],
         type: NotificationType.QUALITY_ALERT,
         channel: [NotificationChannel.EMAIL, NotificationChannel.IN_APP],
-        priority: payload.severity === 'critical' ? NotificationPriority.CRITICAL : NotificationPriority.HIGH,
+        priority:
+          payload.severity === 'critical'
+            ? NotificationPriority.CRITICAL
+            : NotificationPriority.HIGH,
         title: `Quality Alert: ${payload.issueType}`,
         message: `Quality issue detected in ${payload.productName} (Batch: ${payload.batchNumber}): ${payload.issueDescription}`,
         data: payload,
@@ -345,7 +374,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send quality alert notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send quality alert notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -371,7 +402,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send inspection failed notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send inspection failed notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -406,7 +439,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send maintenance due notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send maintenance due notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -417,7 +452,11 @@ export class NotificationEventListener {
         tenantId: payload.tenantId,
         roles: ['MAINTENANCE_MANAGER', 'PRODUCTION_MANAGER', 'ADMIN'],
         type: NotificationType.EQUIPMENT_BREAKDOWN,
-        channel: [NotificationChannel.EMAIL, NotificationChannel.IN_APP, NotificationChannel.SMS],
+        channel: [
+          NotificationChannel.EMAIL,
+          NotificationChannel.IN_APP,
+          NotificationChannel.SMS,
+        ],
         priority: NotificationPriority.CRITICAL,
         title: `Equipment Breakdown: ${payload.equipmentName}`,
         message: `Critical: ${payload.equipmentName} has broken down. Production line ${payload.productionLine} affected`,
@@ -445,7 +484,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send equipment breakdown notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send equipment breakdown notification: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -469,7 +510,9 @@ export class NotificationEventListener {
 
       await this.notificationService.send(notification);
     } catch (error) {
-      this.logger.error(`Failed to send system error notification: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to send system error notification: ${(error as Error).message}`,
+      );
     }
   }
 }

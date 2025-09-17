@@ -24,11 +24,7 @@ import { ErrorLoggingFilter } from './error-logging.filter';
     }),
   ],
   controllers: [LoggingController],
-  providers: [
-    LoggingService,
-    RequestLoggingInterceptor,
-    ErrorLoggingFilter,
-  ],
+  providers: [LoggingService, RequestLoggingInterceptor, ErrorLoggingFilter],
   exports: [
     LoggingService,
     RequestLoggingInterceptor,

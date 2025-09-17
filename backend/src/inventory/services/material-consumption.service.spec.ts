@@ -3,8 +3,15 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { MaterialConsumptionService } from './material-consumption.service';
 import { Inventory } from '../../entities/inventory.entity';
-import { InventoryTransaction, InventoryTransactionType } from '../../entities/inventory-transaction.entity';
-import { BillOfMaterials, BOMComponent, BOMStatus } from '../../entities/bill-of-materials.entity';
+import {
+  InventoryTransaction,
+  InventoryTransactionType,
+} from '../../entities/inventory-transaction.entity';
+import {
+  BillOfMaterials,
+  BOMComponent,
+  BOMStatus,
+} from '../../entities/bill-of-materials.entity';
 import { Product, ProductType } from '../../entities/product.entity';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
@@ -75,7 +82,9 @@ describe('MaterialConsumptionService', () => {
       ],
     }).compile();
 
-    service = module.get<MaterialConsumptionService>(MaterialConsumptionService);
+    service = module.get<MaterialConsumptionService>(
+      MaterialConsumptionService,
+    );
     bomRepo = module.get<Repository<BillOfMaterials>>(
       getRepositoryToken(BillOfMaterials),
     );
@@ -127,8 +136,10 @@ describe('MaterialConsumptionService', () => {
 
       jest.spyOn(productRepo, 'findOne').mockResolvedValue(mockProduct as any);
       jest.spyOn(bomRepo, 'findOne').mockResolvedValue(mockBOM as any);
-      jest.spyOn(bomComponentRepo, 'find').mockResolvedValue(mockComponents as any);
-      
+      jest
+        .spyOn(bomComponentRepo, 'find')
+        .mockResolvedValue(mockComponents as any);
+
       // Mock availability check
       mockQueryBuilder.getMany.mockResolvedValue([
         {
@@ -139,7 +150,8 @@ describe('MaterialConsumptionService', () => {
       ]);
 
       // Mock recursive call for component
-      jest.spyOn(service, 'calculateMaterialRequirements')
+      jest
+        .spyOn(service, 'calculateMaterialRequirements')
         .mockImplementationOnce(async () => {
           // This is the original call, let it proceed
           return {
@@ -193,8 +205,10 @@ describe('MaterialConsumptionService', () => {
         unitOfMeasureId: 'uom-123',
       };
 
-      jest.spyOn(productRepo, 'findOne').mockResolvedValue(mockRawMaterial as any);
-      
+      jest
+        .spyOn(productRepo, 'findOne')
+        .mockResolvedValue(mockRawMaterial as any);
+
       mockQueryBuilder.getMany.mockResolvedValue([
         {
           quantityAvailable: 30,
@@ -417,7 +431,11 @@ describe('MaterialConsumptionService', () => {
       mockEntityManager.save.mockImplementation((_entity, data) => data);
       mockEntityManager.create.mockImplementation((_entity, data) => data);
 
-      await service.releaseMaterials('customer_order', 'order-123', 'tenant-123');
+      await service.releaseMaterials(
+        'customer_order',
+        'order-123',
+        'tenant-123',
+      );
 
       expect(mockEntityManager.save).toHaveBeenCalledWith(
         Inventory,

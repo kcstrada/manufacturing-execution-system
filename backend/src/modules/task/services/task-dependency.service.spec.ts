@@ -95,7 +95,7 @@ describe('TaskDependencyService', () => {
         expect.objectContaining({
           task: expect.objectContaining({ id: taskId }),
           dependsOn: dependsOnTask,
-        })
+        }),
       );
     });
 
@@ -103,7 +103,7 @@ describe('TaskDependencyService', () => {
       const taskId = 'task-1';
 
       await expect(service.addDependency(taskId, taskId)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
 
@@ -124,9 +124,9 @@ describe('TaskDependencyService', () => {
         .mockResolvedValueOnce(task)
         .mockResolvedValueOnce(dependsOnTask);
 
-      await expect(service.addDependency(taskId, dependsOnTaskId)).rejects.toThrow(
-        BadRequestException
-      );
+      await expect(
+        service.addDependency(taskId, dependsOnTaskId),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw error when tasks are in different work orders', async () => {
@@ -156,9 +156,9 @@ describe('TaskDependencyService', () => {
       };
       mockTaskRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
-      await expect(service.addDependency(taskId, dependsOnTaskId)).rejects.toThrow(
-        BadRequestException
-      );
+      await expect(
+        service.addDependency(taskId, dependsOnTaskId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -184,14 +184,14 @@ describe('TaskDependencyService', () => {
       const result = await service.removeDependency(taskId, dependsOnTaskId);
 
       expect(result.dependencies).not.toContainEqual(
-        expect.objectContaining({ id: dependsOnTaskId })
+        expect.objectContaining({ id: dependsOnTaskId }),
       );
       expect(mockEventEmitter.emit).toHaveBeenCalledWith(
         'task.dependency-removed',
         expect.objectContaining({
           task: expect.objectContaining({ id: taskId }),
           removedDependencyId: dependsOnTaskId,
-        })
+        }),
       );
     });
 
@@ -206,9 +206,9 @@ describe('TaskDependencyService', () => {
 
       mockTaskRepository.findOne.mockResolvedValue(task);
 
-      await expect(service.removeDependency(taskId, dependsOnTaskId)).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(
+        service.removeDependency(taskId, dependsOnTaskId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -234,7 +234,7 @@ describe('TaskDependencyService', () => {
 
     it('should return transitive dependencies', async () => {
       const taskId = 'task-1';
-      
+
       const task1 = {
         id: taskId,
         dependencies: [
@@ -262,19 +262,15 @@ describe('TaskDependencyService', () => {
       const result = await service.getTaskDependencies(taskId, true);
 
       expect(result).toHaveLength(2);
-      expect(result).toContainEqual(
-        expect.objectContaining({ id: 'task-2' })
-      );
-      expect(result).toContainEqual(
-        expect.objectContaining({ id: 'task-3' })
-      );
+      expect(result).toContainEqual(expect.objectContaining({ id: 'task-2' }));
+      expect(result).toContainEqual(expect.objectContaining({ id: 'task-3' }));
     });
   });
 
   describe('validateDependencies', () => {
     it('should validate dependencies successfully', async () => {
       const workOrderId = 'wo-1';
-      
+
       const tasks = [
         {
           id: 'task-1',
@@ -299,13 +295,13 @@ describe('TaskDependencyService', () => {
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
       expect(result.readyTasks).toContainEqual(
-        expect.objectContaining({ id: 'task-2' })
+        expect.objectContaining({ id: 'task-2' }),
       );
     });
 
     it('should detect circular dependencies', async () => {
       const workOrderId = 'wo-1';
-      
+
       const task1 = {
         id: 'task-1',
         taskNumber: 'TSK-001',
@@ -341,14 +337,12 @@ describe('TaskDependencyService', () => {
   describe('cascadeCompletionUpdate', () => {
     it('should update dependent tasks to ready status', async () => {
       const completedTaskId = 'task-1';
-      
+
       const dependentTask = {
         id: 'task-2',
         taskNumber: 'TSK-002',
         status: TaskStatus.PENDING,
-        dependencies: [
-          { id: completedTaskId, status: TaskStatus.COMPLETED },
-        ],
+        dependencies: [{ id: completedTaskId, status: TaskStatus.COMPLETED }],
       } as unknown as Task;
 
       const queryBuilder = {
@@ -373,7 +367,7 @@ describe('TaskDependencyService', () => {
         'task.ready',
         expect.objectContaining({
           task: expect.objectContaining({ status: TaskStatus.READY }),
-        })
+        }),
       );
     });
   });
@@ -381,7 +375,7 @@ describe('TaskDependencyService', () => {
   describe('getCriticalPath', () => {
     it.skip('should calculate critical path correctly', async () => {
       const workOrderId = 'wo-1';
-      
+
       // Create tasks with dependency references by ID only
       const tasks = [
         {
@@ -419,20 +413,14 @@ describe('TaskDependencyService', () => {
       const result = await service.getCriticalPath(workOrderId);
 
       // Critical path should be task1 -> task2 -> task4 (total: 7 hours)
-      expect(result).toContainEqual(
-        expect.objectContaining({ id: 'task-1' })
-      );
-      expect(result).toContainEqual(
-        expect.objectContaining({ id: 'task-2' })
-      );
-      expect(result).toContainEqual(
-        expect.objectContaining({ id: 'task-4' })
-      );
+      expect(result).toContainEqual(expect.objectContaining({ id: 'task-1' }));
+      expect(result).toContainEqual(expect.objectContaining({ id: 'task-2' }));
+      expect(result).toContainEqual(expect.objectContaining({ id: 'task-4' }));
     });
 
     it('should throw error when circular dependencies exist', async () => {
       const workOrderId = 'wo-1';
-      
+
       const task1 = {
         id: 'task-1',
         workOrderId,
@@ -454,7 +442,7 @@ describe('TaskDependencyService', () => {
       mockTaskRepository.find.mockResolvedValue([task1, task2]);
 
       await expect(service.getCriticalPath(workOrderId)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
   });
@@ -495,7 +483,9 @@ describe('TaskDependencyService', () => {
         ...data,
         id: `task-${Math.random()}`,
       }));
-      mockTaskRepository.save.mockImplementation((task) => Promise.resolve(task));
+      mockTaskRepository.save.mockImplementation((task) =>
+        Promise.resolve(task),
+      );
 
       const queryBuilder = {
         leftJoin: jest.fn().mockReturnThis(),
@@ -515,7 +505,7 @@ describe('TaskDependencyService', () => {
         expect.objectContaining({
           originalTask: expect.objectContaining({ id: taskId }),
           subtasks: result,
-        })
+        }),
       );
     });
 
@@ -529,7 +519,7 @@ describe('TaskDependencyService', () => {
       mockTaskRepository.findOne.mockResolvedValue(task);
 
       await expect(
-        service.splitTask(taskId, { subtasks: [], preserveDependencies: true })
+        service.splitTask(taskId, { subtasks: [], preserveDependencies: true }),
       ).rejects.toThrow(BadRequestException);
     });
   });

@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Between } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -62,7 +59,6 @@ export interface WorkloadAnalysis {
 
 @Injectable()
 export class WorkerService {
-
   constructor(
     @InjectRepository(Worker)
     private readonly workerRepository: Repository<Worker>,
@@ -82,7 +78,8 @@ export class WorkerService {
     shiftType?: ShiftType;
     hasSkill?: string;
   }): Promise<Worker[]> {
-    const query = this.workerRepository.createQueryBuilder('worker')
+    const query = this.workerRepository
+      .createQueryBuilder('worker')
       .leftJoinAndSelect('worker.department', 'department')
       .leftJoinAndSelect('worker.workCenters', 'workCenters')
       .leftJoinAndSelect('worker.user', 'user');
@@ -146,7 +143,8 @@ export class WorkerService {
       minimumMatchScore?: number;
     },
   ): Promise<WorkerSkillMatch[]> {
-    const query = this.workerRepository.createQueryBuilder('worker')
+    const query = this.workerRepository
+      .createQueryBuilder('worker')
       .leftJoinAndSelect('worker.workCenters', 'workCenters');
 
     // Filter by availability unless explicitly including unavailable
@@ -168,7 +166,7 @@ export class WorkerService {
 
     for (const worker of workers) {
       const match = this.evaluateSkillMatch(worker, skillRequirements);
-      
+
       // Apply minimum match score filter if specified
       if (
         !options?.minimumMatchScore ||
@@ -205,11 +203,13 @@ export class WorkerService {
 
         // Calculate score based on skill level match
         let skillScore = 0.5; // Base score for having the skill
-        
+
         if (requirement.minimumLevel) {
-          const requiredLevelValue = this.getSkillLevelValue(requirement.minimumLevel);
+          const requiredLevelValue = this.getSkillLevelValue(
+            requirement.minimumLevel,
+          );
           const workerLevelValue = this.getSkillLevelValue(workerSkill.level);
-          
+
           if (workerLevelValue >= requiredLevelValue) {
             skillScore = 1.0; // Full score for meeting level requirement
             // Bonus for exceeding requirement
@@ -225,7 +225,8 @@ export class WorkerService {
         if (requirement.certificationRequired) {
           if (
             !workerSkill.certifiedDate ||
-            (workerSkill.expiryDate && new Date(workerSkill.expiryDate) < new Date())
+            (workerSkill.expiryDate &&
+              new Date(workerSkill.expiryDate) < new Date())
           ) {
             certificationValid = false;
             skillScore *= 0.5; // Reduce score for invalid certification
@@ -235,7 +236,7 @@ export class WorkerService {
         totalScore += skillScore;
       } else {
         missingSkills.push(requirement.name);
-        
+
         if (requirement.required) {
           requiredSkillsMet = false;
         }
@@ -243,9 +244,8 @@ export class WorkerService {
     }
 
     // Calculate final match score (0-100)
-    const matchScore = requirements.length > 0
-      ? (totalScore / requirements.length) * 100
-      : 0;
+    const matchScore =
+      requirements.length > 0 ? (totalScore / requirements.length) * 100 : 0;
 
     return {
       worker,
@@ -339,24 +339,49 @@ export class WorkerService {
   private getDefaultSkillsForTaskType(taskType: string): SkillRequirement[] {
     const skillMap: Record<string, SkillRequirement[]> = {
       assembly: [
-        { name: 'Assembly', minimumLevel: SkillLevel.INTERMEDIATE, required: true },
+        {
+          name: 'Assembly',
+          minimumLevel: SkillLevel.INTERMEDIATE,
+          required: true,
+        },
         { name: 'Quality Control', minimumLevel: SkillLevel.BEGINNER },
       ],
       welding: [
-        { name: 'Welding', minimumLevel: SkillLevel.ADVANCED, required: true, certificationRequired: true },
-        { name: 'Safety', minimumLevel: SkillLevel.INTERMEDIATE, required: true },
+        {
+          name: 'Welding',
+          minimumLevel: SkillLevel.ADVANCED,
+          required: true,
+          certificationRequired: true,
+        },
+        {
+          name: 'Safety',
+          minimumLevel: SkillLevel.INTERMEDIATE,
+          required: true,
+        },
       ],
       packaging: [
         { name: 'Packaging', minimumLevel: SkillLevel.BEGINNER },
         { name: 'Inventory Management', minimumLevel: SkillLevel.BEGINNER },
       ],
       quality_control: [
-        { name: 'Quality Control', minimumLevel: SkillLevel.ADVANCED, required: true },
+        {
+          name: 'Quality Control',
+          minimumLevel: SkillLevel.ADVANCED,
+          required: true,
+        },
         { name: 'Documentation', minimumLevel: SkillLevel.INTERMEDIATE },
       ],
       maintenance: [
-        { name: 'Maintenance', minimumLevel: SkillLevel.ADVANCED, required: true },
-        { name: 'Troubleshooting', minimumLevel: SkillLevel.INTERMEDIATE, required: true },
+        {
+          name: 'Maintenance',
+          minimumLevel: SkillLevel.ADVANCED,
+          required: true,
+        },
+        {
+          name: 'Troubleshooting',
+          minimumLevel: SkillLevel.INTERMEDIATE,
+          required: true,
+        },
       ],
     };
 
@@ -377,11 +402,11 @@ export class WorkerService {
     return candidates.sort((a, b) => {
       const workloadA = workloadMap.get(a.worker.id) || 0;
       const workloadB = workloadMap.get(b.worker.id) || 0;
-      
+
       if (workloadA !== workloadB) {
         return workloadA - workloadB; // Less workload is better
       }
-      
+
       return b.matchScore - a.matchScore; // Higher match score is better
     });
   }
@@ -393,7 +418,7 @@ export class WorkerService {
 
     for (const candidate of candidates) {
       const performance = await this.getWorkerPerformance(candidate.worker.id);
-      const performanceScore = 
+      const performanceScore =
         (performance.efficiency + performance.qualityScore) / 2;
       performanceMap.set(candidate.worker.id, performanceScore);
     }
@@ -402,11 +427,11 @@ export class WorkerService {
     return candidates.sort((a, b) => {
       const perfA = performanceMap.get(a.worker.id) || 0;
       const perfB = performanceMap.get(b.worker.id) || 0;
-      
+
       // Combined score: 70% skill match, 30% performance
       const scoreA = a.matchScore * 0.7 + perfA * 0.3;
       const scoreB = b.matchScore * 0.7 + perfB * 0.3;
-      
+
       return scoreB - scoreA;
     });
   }
@@ -426,7 +451,7 @@ export class WorkerService {
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
     weekStart.setHours(0, 0, 0, 0);
-    
+
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 7);
 
@@ -441,7 +466,7 @@ export class WorkerService {
       (sum, schedule) => sum + Number(schedule.scheduledHours),
       0,
     );
-    
+
     const overtimeHours = schedules
       .filter((s) => s.isOvertime)
       .reduce((sum, schedule) => sum + Number(schedule.scheduledHours), 0);
@@ -450,8 +475,8 @@ export class WorkerService {
       0,
       worker.weeklyHoursLimit - scheduledHours,
     );
-    
-    const utilizationRate = 
+
+    const utilizationRate =
       worker.weeklyHoursLimit > 0
         ? (scheduledHours / worker.weeklyHoursLimit) * 100
         : 0;
@@ -473,7 +498,8 @@ export class WorkerService {
     const worker = await this.findOne(workerId);
 
     // Get completed tasks
-    const query = this.assignmentRepository.createQueryBuilder('assignment')
+    const query = this.assignmentRepository
+      .createQueryBuilder('assignment')
       .leftJoinAndSelect('assignment.task', 'task')
       .where('assignment.userId = :userId', { userId: worker.userId })
       .andWhere('assignment.status = :status', { status: 'completed' });
@@ -494,8 +520,8 @@ export class WorkerService {
 
     for (const assignment of completedAssignments) {
       if (assignment.startedAt && assignment.completedAt) {
-        const taskTime = 
-          (assignment.completedAt.getTime() - assignment.startedAt.getTime()) / 
+        const taskTime =
+          (assignment.completedAt.getTime() - assignment.startedAt.getTime()) /
           (1000 * 60 * 60); // Convert to hours
         totalTaskTime += taskTime;
       }
@@ -517,17 +543,17 @@ export class WorkerService {
       }
     }
 
-    const averageTaskTime = 
+    const averageTaskTime =
       completedAssignments.length > 0
         ? totalTaskTime / completedAssignments.length
         : 0;
 
-    const onTimeCompletion = 
+    const onTimeCompletion =
       completedAssignments.length > 0
         ? (onTimeCount / completedAssignments.length) * 100
         : 100;
 
-    const reworkRate = 
+    const reworkRate =
       completedAssignments.length > 0
         ? (reworkCount / completedAssignments.length) * 100
         : 0;
@@ -544,9 +570,7 @@ export class WorkerService {
     };
   }
 
-  async checkAvailability(
-    check: WorkerAvailabilityCheck,
-  ): Promise<{
+  async checkAvailability(check: WorkerAvailabilityCheck): Promise<{
     available: boolean;
     reason?: string;
     conflicts?: any[];
@@ -593,7 +617,7 @@ export class WorkerService {
     // Check daily/weekly hour limits
     if (check.hoursNeeded) {
       const workload = await this.getWorkerWorkload(check.workerId);
-      
+
       if (workload.availableCapacity < check.hoursNeeded) {
         return {
           available: false,
@@ -614,8 +638,9 @@ export class WorkerService {
     ][check.date.getDay()];
 
     if (worker.availability) {
-      const dayAvailability = worker.availability[dayOfWeek as keyof typeof worker.availability];
-      
+      const dayAvailability =
+        worker.availability[dayOfWeek as keyof typeof worker.availability];
+
       if (dayAvailability && dayAvailability.available === false) {
         return {
           available: false,
@@ -691,7 +716,10 @@ export class WorkerService {
     });
 
     // Handle status-specific logic
-    if (status === WorkerStatus.OFF_DUTY || status === WorkerStatus.SICK_LEAVE) {
+    if (
+      status === WorkerStatus.OFF_DUTY ||
+      status === WorkerStatus.SICK_LEAVE
+    ) {
       // Trigger task reassignment for unavailable worker
       this.eventEmitter.emit('worker.unavailable', {
         workerId,
@@ -724,7 +752,8 @@ export class WorkerService {
       worker.totalTasksCompleted += metrics.tasksCompleted;
     }
     if (metrics.hoursWorked !== undefined) {
-      worker.totalHoursWorked = Number(worker.totalHoursWorked) + metrics.hoursWorked;
+      worker.totalHoursWorked =
+        Number(worker.totalHoursWorked) + metrics.hoursWorked;
     }
 
     await this.workerRepository.save(worker);

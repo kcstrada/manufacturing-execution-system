@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
+import {
+  HealthIndicator,
+  HealthIndicatorResult,
+  HealthCheckError,
+} from '@nestjs/terminus';
 import { HealthService } from './health.service';
 
 /**
@@ -16,7 +20,7 @@ export class CustomHealthIndicator extends HealthIndicator {
    */
   async isAlive(key: string): Promise<HealthIndicatorResult> {
     const isAlive = true; // Service is alive if this code is running
-    
+
     const result = this.getStatus(key, isAlive, {
       status: 'alive',
       pid: process.pid,
@@ -99,10 +103,12 @@ export class CustomHealthIndicator extends HealthIndicator {
       monitoring: true, // Monitoring is working if this check is running
     };
 
-    const allFeaturesWorking = Object.values(features).every(f => f);
+    const allFeaturesWorking = Object.values(features).every((f) => f);
 
     const result = this.getStatus(key, allFeaturesWorking, {
-      status: allFeaturesWorking ? 'all_features_operational' : 'some_features_degraded',
+      status: allFeaturesWorking
+        ? 'all_features_operational'
+        : 'some_features_degraded',
       features,
     });
 
@@ -124,7 +130,9 @@ export class CustomHealthIndicator extends HealthIndicator {
       'REDIS_PORT',
     ];
 
-    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+    const missingVars = requiredEnvVars.filter(
+      (varName) => !process.env[varName],
+    );
     const isConfigured = missingVars.length === 0;
 
     const result = this.getStatus(key, isConfigured, {
@@ -146,7 +154,7 @@ export class CustomHealthIndicator extends HealthIndicator {
     try {
       // Perform a simple business logic check
       const testResult = await this.performBusinessLogicTest();
-      
+
       return this.getStatus(key, testResult.success, {
         status: testResult.success ? 'operational' : 'degraded',
         test: testResult.name,
@@ -193,12 +201,12 @@ export class CustomHealthIndicator extends HealthIndicator {
     duration: number;
   }> {
     const startTime = Date.now();
-    
+
     try {
       // Simulate a business logic test
       // In a real application, this would test core business functionality
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       return {
         success: true,
         name: 'basic_calculation',

@@ -23,7 +23,7 @@ export class IsSkuConstraint implements ValidatorConstraintInterface {
  * Validates that a string is a valid SKU
  */
 export function IsSku(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isSku',
       target: object.constructor,

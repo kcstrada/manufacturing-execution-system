@@ -20,9 +20,11 @@ process.env.OPENFGA_STORE_ID = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
 process.env.OPENFGA_API_URL = 'http://localhost:8080';
 
 // Global test utilities
-export const createTestApp = async (moduleRef: any): Promise<INestApplication> => {
+export const createTestApp = async (
+  moduleRef: any,
+): Promise<INestApplication> => {
   const app = moduleRef.createNestApplication();
-  
+
   // Apply the same pipes and middleware as production
   app.useGlobalPipes(
     new ValidationPipe({
@@ -43,7 +45,10 @@ export const createTestApp = async (moduleRef: any): Promise<INestApplication> =
 export const generateTestToken = (payload: any): string => {
   // This would normally use jsonwebtoken library
   // For testing, we'll return a mock token
-  return 'Bearer test-jwt-token-' + Buffer.from(JSON.stringify(payload)).toString('base64');
+  return (
+    'Bearer test-jwt-token-' +
+    Buffer.from(JSON.stringify(payload)).toString('base64')
+  );
 };
 
 // Test user fixtures
@@ -91,17 +96,19 @@ export const testUsers = {
 };
 
 // Helper to make authenticated requests
-export const makeAuthenticatedRequest = (
-  app: INestApplication,
-  user: any,
-) => {
+export const makeAuthenticatedRequest = (app: INestApplication, user: any) => {
   const token = generateTestToken(user);
   return {
-    get: (url: string) => request(app.getHttpServer()).get(url).set('Authorization', token),
-    post: (url: string) => request(app.getHttpServer()).post(url).set('Authorization', token),
-    put: (url: string) => request(app.getHttpServer()).put(url).set('Authorization', token),
-    patch: (url: string) => request(app.getHttpServer()).patch(url).set('Authorization', token),
-    delete: (url: string) => request(app.getHttpServer()).delete(url).set('Authorization', token),
+    get: (url: string) =>
+      request(app.getHttpServer()).get(url).set('Authorization', token),
+    post: (url: string) =>
+      request(app.getHttpServer()).post(url).set('Authorization', token),
+    put: (url: string) =>
+      request(app.getHttpServer()).put(url).set('Authorization', token),
+    patch: (url: string) =>
+      request(app.getHttpServer()).patch(url).set('Authorization', token),
+    delete: (url: string) =>
+      request(app.getHttpServer()).delete(url).set('Authorization', token),
   };
 };
 
@@ -110,7 +117,9 @@ export const cleanupDatabase = async (connection: any) => {
   const entities = connection.entityMetadatas;
   for (const entity of entities) {
     const repository = connection.getRepository(entity.name);
-    await repository.query(`TRUNCATE "${entity.tableName}" RESTART IDENTITY CASCADE;`);
+    await repository.query(
+      `TRUNCATE "${entity.tableName}" RESTART IDENTITY CASCADE;`,
+    );
   }
 };
 
@@ -125,28 +134,31 @@ export const createMockKeycloakService = () => ({
     }
   }),
   getUserRoles: jest.fn().mockImplementation((userId: string) => {
-    const user = Object.values(testUsers).find(u => u.id === userId);
+    const user = Object.values(testUsers).find((u) => u.id === userId);
     return user?.roles || [];
   }),
   refreshToken: jest.fn().mockResolvedValue('new-token'),
 });
 
 export const createMockOpenFGAService = () => ({
-  checkPermission: jest.fn().mockImplementation((userId: string, resource: string, action: string) => {
-    const user = Object.values(testUsers).find(u => u.id === userId);
-    if (!user) return false;
-    
-    // Check if user has wildcard permission
-    if (user.permissions.includes('*')) return true;
-    
-    // Check specific permissions
-    const permission = `${action}:${resource}`;
-    return user.permissions.some(p => {
-      if (p === permission) return true;
-      if (p.endsWith(':*') && permission.startsWith(p.replace(':*', ''))) return true;
-      return false;
-    });
-  }),
+  checkPermission: jest
+    .fn()
+    .mockImplementation((userId: string, resource: string, action: string) => {
+      const user = Object.values(testUsers).find((u) => u.id === userId);
+      if (!user) return false;
+
+      // Check if user has wildcard permission
+      if (user.permissions.includes('*')) return true;
+
+      // Check specific permissions
+      const permission = `${action}:${resource}`;
+      return user.permissions.some((p) => {
+        if (p === permission) return true;
+        if (p.endsWith(':*') && permission.startsWith(p.replace(':*', '')))
+          return true;
+        return false;
+      });
+    }),
   createRelationship: jest.fn().mockResolvedValue(true),
   deleteRelationship: jest.fn().mockResolvedValue(true),
 });
@@ -162,7 +174,7 @@ export const waitFor = async (
     if (await condition()) {
       return;
     }
-    await new Promise(resolve => setTimeout(resolve, interval));
+    await new Promise((resolve) => setTimeout(resolve, interval));
   }
   throw new Error('Timeout waiting for condition');
 };
@@ -176,5 +188,5 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // Global cleanup
-  await new Promise(resolve => setTimeout(resolve, 500)); // Allow connections to close
+  await new Promise((resolve) => setTimeout(resolve, 500)); // Allow connections to close
 });

@@ -33,7 +33,11 @@ import {
   TimeClockValidationResponseDto,
 } from './dto/time-clock.dto';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { TimeClockEntry, TimeClockSession, TimeClockRule } from '../../entities/time-clock.entity';
+import {
+  TimeClockEntry,
+  TimeClockSession,
+  TimeClockRule,
+} from '../../entities/time-clock.entity';
 
 @ApiTags('Time Clock')
 @ApiBearerAuth()
@@ -286,7 +290,7 @@ export class TimeClockController {
 
   @Get('summary/today')
   @Roles({ roles: ['admin', 'executive', 'sales'] })
-  @ApiOperation({ summary: 'Get today\'s time clock summary' })
+  @ApiOperation({ summary: "Get today's time clock summary" })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Summary retrieved',
@@ -299,7 +303,7 @@ export class TimeClockController {
 
   @Get('summary/week')
   @Roles({ roles: ['admin', 'executive', 'sales'] })
-  @ApiOperation({ summary: 'Get this week\'s time clock summary' })
+  @ApiOperation({ summary: "Get this week's time clock summary" })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Summary retrieved',

@@ -27,7 +27,6 @@ export abstract class BaseEntity {
   @DeleteDateColumn({ type: 'timestamp with time zone', nullable: true })
   deletedAt?: Date;
 
-
   @VersionColumn()
   version!: number;
 

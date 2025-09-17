@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { ProductionOrder, ProductionOrderStatus } from '../entities/production-order.entity';
+import {
+  ProductionOrder,
+  ProductionOrderStatus,
+} from '../entities/production-order.entity';
 import { TenantAwareRepository } from '../common/repositories/tenant-aware.repository';
 import { ClsService } from 'nestjs-cls';
 
@@ -15,7 +18,9 @@ export class ProductionOrderRepository extends TenantAwareRepository<ProductionO
     super(productionOrderRepository, 'ProductionOrder', clsService);
   }
 
-  async findByOrderNumber(orderNumber: string): Promise<ProductionOrder | null> {
+  async findByOrderNumber(
+    orderNumber: string,
+  ): Promise<ProductionOrder | null> {
     const tenantId = this.getTenantId();
     return this.repository.findOne({
       where: { orderNumber, tenantId },
@@ -23,7 +28,9 @@ export class ProductionOrderRepository extends TenantAwareRepository<ProductionO
     });
   }
 
-  async findByStatus(status: ProductionOrderStatus): Promise<ProductionOrder[]> {
+  async findByStatus(
+    status: ProductionOrderStatus,
+  ): Promise<ProductionOrder[]> {
     const tenantId = this.getTenantId();
     return this.repository.find({
       where: { status, tenantId },
@@ -41,7 +48,10 @@ export class ProductionOrderRepository extends TenantAwareRepository<ProductionO
     });
   }
 
-  async findByDateRange(startDate: Date, endDate: Date): Promise<ProductionOrder[]> {
+  async findByDateRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<ProductionOrder[]> {
     const tenantId = this.getTenantId();
     return this.repository.find({
       where: {
@@ -62,7 +72,10 @@ export class ProductionOrderRepository extends TenantAwareRepository<ProductionO
       .where('order.tenantId = :tenantId', { tenantId })
       .andWhere('order.priority >= :minPriority', { minPriority })
       .andWhere('order.status NOT IN (:...statuses)', {
-        statuses: [ProductionOrderStatus.COMPLETED, ProductionOrderStatus.CANCELLED],
+        statuses: [
+          ProductionOrderStatus.COMPLETED,
+          ProductionOrderStatus.CANCELLED,
+        ],
       })
       .orderBy('order.priority', 'DESC')
       .addOrderBy('order.plannedStartDate', 'ASC')
@@ -135,14 +148,16 @@ export class ProductionOrderRepository extends TenantAwareRepository<ProductionO
       where: { id: orderId, tenantId: this.getTenantId() },
     });
     if (!order) return 0;
-    
+
     const total = order.quantityOrdered;
     const produced = order.quantityProduced;
-    
+
     return total > 0 ? (produced / total) * 100 : 0;
   }
 
-  async findByCustomerOrder(customerOrderId: string): Promise<ProductionOrder[]> {
+  async findByCustomerOrder(
+    customerOrderId: string,
+  ): Promise<ProductionOrder[]> {
     const tenantId = this.getTenantId();
     return this.repository.find({
       where: { customerOrderId, tenantId },

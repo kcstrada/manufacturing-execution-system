@@ -2,13 +2,33 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EntityManager } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
-import { OrderToTaskConverterService, TaskGenerationOptions } from './order-to-task-converter.service';
-import { CustomerOrder, CustomerOrderStatus } from '../../../entities/customer-order.entity';
-import { ProductionOrder, ProductionOrderStatus } from '../../../entities/production-order.entity';
-import { WorkOrder, WorkOrderStatus } from '../../../entities/work-order.entity';
-import { Task, TaskStatus, TaskPriority, TaskType } from '../../../entities/task.entity';
+import {
+  OrderToTaskConverterService,
+  TaskGenerationOptions,
+} from './order-to-task-converter.service';
+import {
+  CustomerOrder,
+  CustomerOrderStatus,
+} from '../../../entities/customer-order.entity';
+import {
+  ProductionOrder,
+  ProductionOrderStatus,
+} from '../../../entities/production-order.entity';
+import {
+  WorkOrder,
+  WorkOrderStatus,
+} from '../../../entities/work-order.entity';
+import {
+  Task,
+  TaskStatus,
+  TaskPriority,
+  TaskType,
+} from '../../../entities/task.entity';
 import { Routing } from '../../../entities/routing.entity';
-import { ProductionStep, StepType } from '../../../entities/production-step.entity';
+import {
+  ProductionStep,
+  StepType,
+} from '../../../entities/production-step.entity';
 
 describe('OrderToTaskConverterService', () => {
   let service: OrderToTaskConverterService;
@@ -54,8 +74,10 @@ describe('OrderToTaskConverterService', () => {
       ],
     }).compile();
 
-    service = module.get<OrderToTaskConverterService>(OrderToTaskConverterService);
-    clsService = module.get(ClsService) as jest.Mocked<ClsService>;
+    service = module.get<OrderToTaskConverterService>(
+      OrderToTaskConverterService,
+    );
+    clsService = module.get(ClsService);
 
     // Setup default cls service behavior
     clsService.get.mockImplementation((key?: string | symbol) => {
@@ -189,7 +211,7 @@ describe('OrderToTaskConverterService', () => {
         CustomerOrder,
         expect.objectContaining({
           where: { id: mockOrderId, tenantId: mockTenantId },
-        })
+        }),
       );
     });
 
@@ -205,7 +227,9 @@ describe('OrderToTaskConverterService', () => {
 
       const result = await service.convertOrderToTasks(mockOrderId, {});
 
-      expect(result.warnings).toContain('Order ORD-001 is not in CONFIRMED status');
+      expect(result.warnings).toContain(
+        'Order ORD-001 is not in CONFIRMED status',
+      );
     });
 
     it('should handle missing routing gracefully', async () => {
@@ -236,7 +260,9 @@ describe('OrderToTaskConverterService', () => {
       expect(result.productionOrders).toHaveLength(0);
       expect(result.workOrders).toHaveLength(0);
       expect(result.tasks).toHaveLength(0);
-      expect(result.warnings).toContain('No active routing found for product Product A');
+      expect(result.warnings).toContain(
+        'No active routing found for product Product A',
+      );
     });
 
     it('should handle missing routing steps gracefully', async () => {
@@ -283,14 +309,16 @@ describe('OrderToTaskConverterService', () => {
       expect(result.productionOrders).toHaveLength(1);
       expect(result.workOrders).toHaveLength(0);
       expect(result.tasks).toHaveLength(0);
-      expect(result.warnings).toContain('No production steps found for routing Empty Routing');
+      expect(result.warnings).toContain(
+        'No production steps found for routing Empty Routing',
+      );
     });
 
     it('should throw error when order is not found', async () => {
       mockEntityManager.findOne.mockResolvedValueOnce(null);
 
       await expect(
-        service.convertOrderToTasks(mockOrderId, {})
+        service.convertOrderToTasks(mockOrderId, {}),
       ).rejects.toThrow(`Order ${mockOrderId} not found`);
     });
 
@@ -653,7 +681,10 @@ describe('OrderToTaskConverterService', () => {
         .mockResolvedValueOnce(mockWorkOrder)
         .mockResolvedValueOnce(mockTask);
 
-      const result = await service.generateTasksForProductionOrder('po-123', {});
+      const result = await service.generateTasksForProductionOrder(
+        'po-123',
+        {},
+      );
 
       expect(result.productionOrders).toHaveLength(0); // No new production orders
       expect(result.workOrders).toHaveLength(1);
@@ -670,9 +701,14 @@ describe('OrderToTaskConverterService', () => {
 
       mockEntityManager.findOne.mockResolvedValueOnce(mockProductionOrder);
 
-      const result = await service.generateTasksForProductionOrder('po-123', {});
+      const result = await service.generateTasksForProductionOrder(
+        'po-123',
+        {},
+      );
 
-      expect(result.warnings).toContain('Production order PO-001 already has work orders');
+      expect(result.warnings).toContain(
+        'Production order PO-001 already has work orders',
+      );
       expect(result.workOrders).toHaveLength(0);
       expect(result.tasks).toHaveLength(0);
     });
@@ -681,7 +717,7 @@ describe('OrderToTaskConverterService', () => {
       mockEntityManager.findOne.mockResolvedValueOnce(null);
 
       await expect(
-        service.generateTasksForProductionOrder('po-123', {})
+        service.generateTasksForProductionOrder('po-123', {}),
       ).rejects.toThrow('Production order po-123 not found');
     });
   });

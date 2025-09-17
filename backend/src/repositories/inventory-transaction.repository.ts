@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThan } from 'typeorm';
-import { InventoryTransaction, InventoryTransactionType } from '../entities/inventory-transaction.entity';
+import {
+  InventoryTransaction,
+  InventoryTransactionType,
+} from '../entities/inventory-transaction.entity';
 import { TenantAwareRepository } from '../common/repositories/tenant-aware.repository';
 import { ClsService } from 'nestjs-cls';
 
@@ -15,7 +18,10 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
     super(transactionRepository, 'InventoryTransaction', clsService);
   }
 
-  async findByProduct(productId: string, limit?: number): Promise<InventoryTransaction[]> {
+  async findByProduct(
+    productId: string,
+    limit?: number,
+  ): Promise<InventoryTransaction[]> {
     const tenantId = this.getTenantId();
     const query = this.repository
       .createQueryBuilder('transaction')
@@ -32,7 +38,10 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
     return query.getMany();
   }
 
-  async findByWarehouse(warehouseCode: string, limit?: number): Promise<InventoryTransaction[]> {
+  async findByWarehouse(
+    warehouseCode: string,
+    limit?: number,
+  ): Promise<InventoryTransaction[]> {
     const tenantId = this.getTenantId();
     const query = this.repository
       .createQueryBuilder('transaction')
@@ -52,7 +61,7 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
   async findByType(
     transactionType: InventoryTransactionType,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
   ): Promise<InventoryTransaction[]> {
     const tenantId = this.getTenantId();
     const whereClause: any = { transactionType, tenantId };
@@ -72,7 +81,7 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
 
   async findByReference(
     referenceType: string,
-    referenceId: string
+    referenceId: string,
   ): Promise<InventoryTransaction[]> {
     const tenantId = this.getTenantId();
     return this.repository.find({
@@ -86,7 +95,7 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
     startDate: Date,
     endDate: Date,
     productId?: string,
-    warehouseCode?: string
+    warehouseCode?: string,
   ): Promise<InventoryTransaction[]> {
     const tenantId = this.getTenantId();
     const query = this.repository
@@ -104,7 +113,9 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
     }
 
     if (warehouseCode) {
-      query.andWhere('transaction.warehouseCode = :warehouseCode', { warehouseCode });
+      query.andWhere('transaction.warehouseCode = :warehouseCode', {
+        warehouseCode,
+      });
     }
 
     return query.orderBy('transaction.transactionDate', 'DESC').getMany();
@@ -116,7 +127,7 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    
+
     const lastTransaction = await this.repository
       .createQueryBuilder('transaction')
       .where('transaction.tenantId = :tenantId', { tenantId })
@@ -132,7 +143,7 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
 
     const lastNumber = parseInt(lastTransaction.transactionNumber.slice(-3));
     const nextNumber = String(lastNumber + 1).padStart(3, '0');
-    
+
     return `${prefix}-${year}${month}${nextNumber}`;
   }
 
@@ -140,7 +151,7 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
     productId: string,
     transactionType: InventoryTransactionType,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
   ): Promise<number> {
     const tenantId = this.getTenantId();
     const query = this.repository
@@ -148,13 +159,18 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
       .select('SUM(transaction.totalCost)', 'total')
       .where('transaction.tenantId = :tenantId', { tenantId })
       .andWhere('transaction.productId = :productId', { productId })
-      .andWhere('transaction.transactionType = :transactionType', { transactionType });
+      .andWhere('transaction.transactionType = :transactionType', {
+        transactionType,
+      });
 
     if (startDate && endDate) {
-      query.andWhere('transaction.transactionDate BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      });
+      query.andWhere(
+        'transaction.transactionDate BETWEEN :startDate AND :endDate',
+        {
+          startDate,
+          endDate,
+        },
+      );
     }
 
     const result = await query.getRawOne();
@@ -164,7 +180,7 @@ export class InventoryTransactionRepository extends TenantAwareRepository<Invent
   async getTransactionSummary(
     startDate: Date,
     endDate: Date,
-    groupBy: 'product' | 'warehouse' | 'type'
+    groupBy: 'product' | 'warehouse' | 'type',
   ): Promise<any[]> {
     const tenantId = this.getTenantId();
     const query = this.repository

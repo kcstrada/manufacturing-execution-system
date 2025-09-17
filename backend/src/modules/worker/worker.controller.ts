@@ -172,9 +172,10 @@ export class WorkerController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    const dateRange = startDate && endDate
-      ? { start: new Date(startDate), end: new Date(endDate) }
-      : undefined;
+    const dateRange =
+      startDate && endDate
+        ? { start: new Date(startDate), end: new Date(endDate) }
+        : undefined;
 
     return this.workerService.getWorkerPerformance(id, dateRange);
   }
@@ -264,7 +265,9 @@ export class WorkerController {
       dto.skills.map((skill) => ({
         name: skill.name,
         level: skill.level,
-        certifiedDate: skill.certifiedDate ? new Date(skill.certifiedDate) : undefined,
+        certifiedDate: skill.certifiedDate
+          ? new Date(skill.certifiedDate)
+          : undefined,
         expiryDate: skill.expiryDate ? new Date(skill.expiryDate) : undefined,
       })),
     );

@@ -150,9 +150,9 @@ export const customLevels = {
  */
 export const createLogger = (isProduction: boolean): winston.Logger => {
   const logger = winston.createLogger(createWinstonConfig(isProduction));
-  
+
   // Add custom levels
   winston.addColors(customLevels.colors);
-  
+
   return logger;
 };

@@ -11,23 +11,29 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/guards/roles.guard';
 import { RequireRoles as Roles } from '../../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { NotificationTemplateService } from '../services/notification-template.service';
 import { NotificationTemplate } from '../entities/notification-template.entity';
-import { NotificationType, NotificationChannel } from '../types/notification.types';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../types/notification.types';
 
 @ApiTags('Notification Templates')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('notification-templates')
 export class NotificationTemplateController {
-  constructor(
-    private readonly templateService: NotificationTemplateService,
-  ) {}
+  constructor(private readonly templateService: NotificationTemplateService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get notification templates' })
@@ -37,13 +43,19 @@ export class NotificationTemplateController {
     @Query('type') type?: NotificationType,
     @Query('channel') channel?: NotificationChannel,
   ): Promise<NotificationTemplate[]> {
-    return await this.templateService.getTemplates(user.tenantId, type, channel);
+    return await this.templateService.getTemplates(
+      user.tenantId,
+      type,
+      channel,
+    );
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get template by ID' })
   @ApiResponse({ status: 200, description: 'Returns template' })
-  async getTemplate(@Param('id') id: string): Promise<NotificationTemplate | null> {
+  async getTemplate(
+    @Param('id') id: string,
+  ): Promise<NotificationTemplate | null> {
     return await this.templateService.getTemplate(id);
   }
 
@@ -65,7 +77,10 @@ export class NotificationTemplateController {
     @CurrentUser() user: any,
     @Body() templateData: Partial<NotificationTemplate>,
   ): Promise<NotificationTemplate> {
-    return await this.templateService.createTemplate(user.tenantId, templateData);
+    return await this.templateService.createTemplate(
+      user.tenantId,
+      templateData,
+    );
   }
 
   @Put(':id')

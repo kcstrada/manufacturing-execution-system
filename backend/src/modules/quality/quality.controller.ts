@@ -18,9 +18,9 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AuthGuard, RoleGuard, Roles } from 'nest-keycloak-connect';
-import { 
-  QualityService, 
-  QualityMetrics, 
+import {
+  QualityService,
+  QualityMetrics,
   InspectionSummary,
   ControlChartData,
 } from './quality.service';
@@ -60,7 +60,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'quality_manager'] })
   @ApiOperation({ summary: 'Create quality metric' })
   @ApiResponse({ status: HttpStatus.CREATED, type: QualityMetric })
-  async createMetric(@Body() createDto: CreateQualityMetricDto): Promise<QualityMetric> {
+  async createMetric(
+    @Body() createDto: CreateQualityMetricDto,
+  ): Promise<QualityMetric> {
     return this.qualityService.createMetric(createDto);
   }
 
@@ -90,7 +92,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'user'] })
   @ApiOperation({ summary: 'Get quality metric by ID' })
   @ApiResponse({ status: HttpStatus.OK, type: QualityMetric })
-  async findMetric(@Param('id', ParseUUIDPipe) id: string): Promise<QualityMetric> {
+  async findMetric(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<QualityMetric> {
     return this.qualityService.findMetricById(id);
   }
 
@@ -110,7 +114,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'quality_inspector', 'quality_manager'] })
   @ApiOperation({ summary: 'Create quality inspection' })
   @ApiResponse({ status: HttpStatus.CREATED, type: QualityInspection })
-  async createInspection(@Body() createDto: CreateQualityInspectionDto): Promise<QualityInspection> {
+  async createInspection(
+    @Body() createDto: CreateQualityInspectionDto,
+  ): Promise<QualityInspection> {
     return this.qualityService.createInspection(createDto);
   }
 
@@ -149,7 +155,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'user'] })
   @ApiOperation({ summary: 'Get quality inspection by ID' })
   @ApiResponse({ status: HttpStatus.OK, type: QualityInspection })
-  async findInspection(@Param('id', ParseUUIDPipe) id: string): Promise<QualityInspection> {
+  async findInspection(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<QualityInspection> {
     return this.qualityService.findInspectionById(id);
   }
 
@@ -180,7 +188,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'quality_manager'] })
   @ApiOperation({ summary: 'Create quality control plan' })
   @ApiResponse({ status: HttpStatus.CREATED, type: QualityControlPlan })
-  async createControlPlan(@Body() createDto: CreateQualityControlPlanDto): Promise<QualityControlPlan> {
+  async createControlPlan(
+    @Body() createDto: CreateQualityControlPlanDto,
+  ): Promise<QualityControlPlan> {
     return this.qualityService.createControlPlan(createDto);
   }
 
@@ -189,7 +199,9 @@ export class QualityController {
   @ApiOperation({ summary: 'Get all quality control plans' })
   @ApiQuery({ name: 'productId', required: false })
   @ApiResponse({ status: HttpStatus.OK, type: [QualityControlPlan] })
-  async findAllControlPlans(@Query('productId') productId?: string): Promise<QualityControlPlan[]> {
+  async findAllControlPlans(
+    @Query('productId') productId?: string,
+  ): Promise<QualityControlPlan[]> {
     return this.qualityService.findAllControlPlans(productId);
   }
 
@@ -197,7 +209,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'user'] })
   @ApiOperation({ summary: 'Get quality control plan by ID' })
   @ApiResponse({ status: HttpStatus.OK, type: QualityControlPlan })
-  async findControlPlan(@Param('id', ParseUUIDPipe) id: string): Promise<QualityControlPlan> {
+  async findControlPlan(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<QualityControlPlan> {
     return this.qualityService.findControlPlanById(id);
   }
 
@@ -217,7 +231,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'quality_inspector', 'quality_manager'] })
   @ApiOperation({ summary: 'Create non-conformance report' })
   @ApiResponse({ status: HttpStatus.CREATED, type: NonConformanceReport })
-  async createNCR(@Body() createDto: CreateNonConformanceReportDto): Promise<NonConformanceReport> {
+  async createNCR(
+    @Body() createDto: CreateNonConformanceReportDto,
+  ): Promise<NonConformanceReport> {
     return this.qualityService.createNCR(createDto);
   }
 
@@ -247,7 +263,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'user'] })
   @ApiOperation({ summary: 'Get non-conformance report by ID' })
   @ApiResponse({ status: HttpStatus.OK, type: NonConformanceReport })
-  async findNCR(@Param('id', ParseUUIDPipe) id: string): Promise<NonConformanceReport> {
+  async findNCR(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<NonConformanceReport> {
     return this.qualityService.findNCRById(id);
   }
 
@@ -330,7 +348,14 @@ export class QualityController {
   async getDefectPareto(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-  ): Promise<Array<{ defectCode: string; description: string; count: number; percentage: number }>> {
+  ): Promise<
+    Array<{
+      defectCode: string;
+      description: string;
+      count: number;
+      percentage: number;
+    }>
+  > {
     return this.qualityService.getDefectParetoAnalysis(
       startDate ? new Date(startDate) : undefined,
       endDate ? new Date(endDate) : undefined,
@@ -341,7 +366,9 @@ export class QualityController {
   @Roles({ roles: ['admin', 'quality_manager'] })
   @ApiOperation({ summary: 'Get quality alerts and warnings' })
   @ApiResponse({ status: HttpStatus.OK })
-  async getQualityAlerts(): Promise<Array<{ type: string; message: string; severity: string }>> {
+  async getQualityAlerts(): Promise<
+    Array<{ type: string; message: string; severity: string }>
+  > {
     return this.qualityService.checkQualityAlerts();
   }
 }

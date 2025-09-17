@@ -26,9 +26,9 @@ export class RequestLoggingInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     // Generate request ID if not present
-    const requestId = request.headers['x-request-id'] as string || 
-                     this.generateRequestId();
-    
+    const requestId =
+      (request.headers['x-request-id'] as string) || this.generateRequestId();
+
     // Add request ID to response headers
     response.setHeader('X-Request-Id', requestId);
 
@@ -153,9 +153,13 @@ export class RequestLoggingInterceptor implements NestInterceptor {
 
       for (const key in obj) {
         const lowerKey = key.toLowerCase();
-        
+
         // Check if field is sensitive
-        if (sensitiveFields.some(field => lowerKey.includes(field.toLowerCase()))) {
+        if (
+          sensitiveFields.some((field) =>
+            lowerKey.includes(field.toLowerCase()),
+          )
+        ) {
           obj[key] = '[REDACTED]';
         } else if (typeof obj[key] === 'object') {
           obj[key] = sanitizeObject(obj[key]);
@@ -176,7 +180,7 @@ export class RequestLoggingInterceptor implements NestInterceptor {
    */
   private getResponseSize(data: any): number {
     if (!data) return 0;
-    
+
     try {
       const jsonString = JSON.stringify(data);
       return Buffer.byteLength(jsonString, 'utf8');

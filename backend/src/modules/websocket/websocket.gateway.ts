@@ -49,7 +49,7 @@ export class ManufacturingWebSocketGateway
 
   afterInit(server: Server) {
     this.logger.log('WebSocket Gateway initialized');
-    
+
     // Configure socket middleware for authentication
     server.use(async (socket: Socket, next) => {
       try {
@@ -63,7 +63,7 @@ export class ManufacturingWebSocketGateway
         socket.data.tenantId = payload.tenantId;
         socket.data.userId = payload.sub;
         socket.data.roles = payload.roles || [];
-        
+
         next();
       } catch (error) {
         this.logger.error(`Authentication failed: ${(error as Error).message}`);
@@ -75,8 +75,10 @@ export class ManufacturingWebSocketGateway
   async handleConnection(client: Socket) {
     try {
       const { userId, tenantId, roles } = client.data;
-      
-      this.logger.log(`Client connected: ${client.id} (User: ${userId}, Tenant: ${tenantId})`);
+
+      this.logger.log(
+        `Client connected: ${client.id} (User: ${userId}, Tenant: ${tenantId})`,
+      );
 
       // Create client record
       const webSocketClient: WebSocketClient = {
@@ -112,14 +114,21 @@ export class ManufacturingWebSocketGateway
       });
 
       // Notify about new connection
-      this.broadcastToTenant(tenantId, WebSocketEvent.SYSTEM_NOTIFICATION, {
-        type: 'user_connected',
-        userId,
-        timestamp: new Date(),
-      }, [client.id]);
-
+      this.broadcastToTenant(
+        tenantId,
+        WebSocketEvent.SYSTEM_NOTIFICATION,
+        {
+          type: 'user_connected',
+          userId,
+          timestamp: new Date(),
+        },
+        [client.id],
+      );
     } catch (error) {
-      this.logger.error(`Connection handling failed: ${(error as Error).message}`, (error as Error).stack);
+      this.logger.error(
+        `Connection handling failed: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
       client.disconnect();
     }
   }
@@ -127,10 +136,12 @@ export class ManufacturingWebSocketGateway
   async handleDisconnect(client: Socket) {
     try {
       const webSocketClient = this.clients.get(client.id);
-      
+
       if (webSocketClient) {
-        this.logger.log(`Client disconnected: ${client.id} (User: ${webSocketClient.userId})`);
-        
+        this.logger.log(
+          `Client disconnected: ${client.id} (User: ${webSocketClient.userId})`,
+        );
+
         // Leave all rooms
         for (const room of webSocketClient.rooms) {
           await this.leaveRoom(client, room);
@@ -148,11 +159,14 @@ export class ManufacturingWebSocketGateway
             userId: webSocketClient.userId,
             timestamp: new Date(),
           },
-          [client.id]
+          [client.id],
         );
       }
     } catch (error) {
-      this.logger.error(`Disconnection handling failed: ${(error as Error).message}`, (error as Error).stack);
+      this.logger.error(
+        `Disconnection handling failed: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
     }
   }
 
@@ -164,7 +178,7 @@ export class ManufacturingWebSocketGateway
   ): Promise<WebSocketResponse> {
     try {
       const webSocketClient = this.clients.get(client.id);
-      
+
       if (!webSocketClient) {
         throw new WsException('Client not found');
       }
@@ -198,7 +212,7 @@ export class ManufacturingWebSocketGateway
   ): Promise<WebSocketResponse> {
     try {
       const webSocketClient = this.clients.get(client.id);
-      
+
       if (!webSocketClient) {
         throw new WsException('Client not found');
       }
@@ -232,7 +246,7 @@ export class ManufacturingWebSocketGateway
   ): Promise<WebSocketResponse> {
     try {
       const webSocketClient = this.clients.get(client.id);
-      
+
       if (!webSocketClient) {
         throw new WsException('Client not found');
       }
@@ -263,7 +277,7 @@ export class ManufacturingWebSocketGateway
   ): Promise<WebSocketResponse> {
     try {
       const webSocketClient = this.clients.get(client.id);
-      
+
       if (!webSocketClient) {
         throw new WsException('Client not found');
       }
@@ -368,7 +382,12 @@ export class ManufacturingWebSocketGateway
         this.server.to(room).emit(event, message);
       }
     } else if (options.tenantId) {
-      this.broadcastToTenant(options.tenantId, event, data, options.excludeUserIds);
+      this.broadcastToTenant(
+        options.tenantId,
+        event,
+        data,
+        options.excludeUserIds,
+      );
     }
   }
 
@@ -389,7 +408,7 @@ export class ManufacturingWebSocketGateway
 
   private async joinRoom(client: Socket, room: string) {
     await client.join(room);
-    
+
     const webSocketClient = this.clients.get(client.id);
     if (webSocketClient) {
       webSocketClient.rooms.add(room);
@@ -405,7 +424,7 @@ export class ManufacturingWebSocketGateway
 
   private async leaveRoom(client: Socket, room: string) {
     await client.leave(room);
-    
+
     const webSocketClient = this.clients.get(client.id);
     if (webSocketClient) {
       webSocketClient.rooms.delete(room);
@@ -448,7 +467,7 @@ export class ManufacturingWebSocketGateway
     if (authHeader?.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }
-    
+
     return queryToken || authToken || null;
   }
 
@@ -469,7 +488,7 @@ export class ManufacturingWebSocketGateway
 
   public getClientsByTenant(tenantId: string): WebSocketClient[] {
     return Array.from(this.clients.values()).filter(
-      client => client.tenantId === tenantId
+      (client) => client.tenantId === tenantId,
     );
   }
 

@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsUUID, IsArray, IsEnum, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsOptional,
+  IsUUID,
+  IsArray,
+  IsEnum,
+  IsString,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class ReportFiltersDto {
@@ -44,7 +51,7 @@ export class ReportFiltersDto {
   @IsString({ each: true })
   status?: string[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Group results by time period',
     enum: ['day', 'week', 'month', 'quarter', 'year'],
   })
@@ -70,7 +77,7 @@ export class CustomReportDto extends ReportFiltersDto {
 }
 
 export class ExportReportDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Export format',
     enum: ['pdf', 'excel', 'csv'],
   })

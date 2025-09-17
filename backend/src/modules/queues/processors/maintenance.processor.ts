@@ -8,9 +8,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 export class MaintenanceProcessor {
   private readonly logger = new Logger(MaintenanceProcessor.name);
 
-  constructor(
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   @Process(JOB_NAMES.CHECK_MAINTENANCE_DUE)
   async checkMaintenanceDue(job: Job) {
@@ -19,9 +17,9 @@ export class MaintenanceProcessor {
 
     try {
       // If no equipment list provided, generate mock data for demo
-      const equipmentToCheck = equipmentList.length > 0 ? equipmentList : 
-        this.generateMockEquipment();
-      
+      const equipmentToCheck =
+        equipmentList.length > 0 ? equipmentList : this.generateMockEquipment();
+
       const maintenanceDue = [];
 
       for (const equipment of equipmentToCheck) {
@@ -47,7 +45,9 @@ export class MaintenanceProcessor {
         }
       }
 
-      this.logger.log(`Found ${maintenanceDue.length} equipment requiring maintenance`);
+      this.logger.log(
+        `Found ${maintenanceDue.length} equipment requiring maintenance`,
+      );
 
       return {
         success: true,
@@ -133,11 +133,17 @@ export class MaintenanceProcessor {
   }
 
   private async simulateProcessing(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private getRandomMaintenanceType(): string {
-    const types = ['preventive', 'corrective', 'predictive', 'routine', 'emergency'];
+    const types = [
+      'preventive',
+      'corrective',
+      'predictive',
+      'routine',
+      'emergency',
+    ];
     return types[Math.floor(Math.random() * types.length)] || 'routine';
   }
 

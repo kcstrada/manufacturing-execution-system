@@ -39,7 +39,7 @@ export class SubtaskConfigDto {
   @IsUUID()
   assignToUserId?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Priority for the subtask',
     enum: TaskPriority,
   })

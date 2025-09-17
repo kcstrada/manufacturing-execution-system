@@ -1,18 +1,28 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateWorkInstruction1758039000000 implements MigrationInterface {
-    name = 'CreateWorkInstruction1758039000000'
+  name = 'CreateWorkInstruction1758039000000';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // Create enum types for WorkInstruction
-        await queryRunner.query(`CREATE TYPE "public"."work_instructions_type_enum" AS ENUM('setup', 'operation', 'quality', 'safety', 'maintenance', 'troubleshooting', 'changeover', 'cleaning')`);
-        await queryRunner.query(`CREATE TYPE "public"."work_instructions_format_enum" AS ENUM('text', 'html', 'markdown', 'pdf', 'video', 'image', 'interactive')`);
-        await queryRunner.query(`CREATE TYPE "public"."work_instructions_status_enum" AS ENUM('draft', 'under_review', 'approved', 'obsolete', 'archived')`);
-        await queryRunner.query(`CREATE TYPE "public"."work_instructions_skill_level_enum" AS ENUM('beginner', 'intermediate', 'advanced', 'expert')`);
-        await queryRunner.query(`CREATE TYPE "public"."work_instructions_priority_enum" AS ENUM('critical', 'high', 'medium', 'low', 'optional')`);
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Create enum types for WorkInstruction
+    await queryRunner.query(
+      `CREATE TYPE "public"."work_instructions_type_enum" AS ENUM('setup', 'operation', 'quality', 'safety', 'maintenance', 'troubleshooting', 'changeover', 'cleaning')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."work_instructions_format_enum" AS ENUM('text', 'html', 'markdown', 'pdf', 'video', 'image', 'interactive')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."work_instructions_status_enum" AS ENUM('draft', 'under_review', 'approved', 'obsolete', 'archived')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."work_instructions_skill_level_enum" AS ENUM('beginner', 'intermediate', 'advanced', 'expert')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."work_instructions_priority_enum" AS ENUM('critical', 'high', 'medium', 'low', 'optional')`,
+    );
 
-        // Create work_instructions table
-        await queryRunner.query(`CREATE TABLE "work_instructions" (
+    // Create work_instructions table
+    await queryRunner.query(`CREATE TABLE "work_instructions" (
             "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
             "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -85,33 +95,67 @@ export class CreateWorkInstruction1758039000000 implements MigrationInterface {
             CONSTRAINT "pk_work_instructions_id" PRIMARY KEY ("id")
         )`);
 
-        // Create indexes for performance
-        await queryRunner.query(`CREATE INDEX "idx_work_instructions_tenant_id_instruction_code" ON "work_instructions" ("tenant_id", "instruction_code")`);
-        await queryRunner.query(`CREATE INDEX "idx_work_instructions_tenant_id_production_step_id" ON "work_instructions" ("tenant_id", "production_step_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_work_instructions_tenant_id_type" ON "work_instructions" ("tenant_id", "type")`);
-        await queryRunner.query(`CREATE INDEX "idx_work_instructions_tenant_id_status" ON "work_instructions" ("tenant_id", "status")`);
-        await queryRunner.query(`CREATE INDEX "idx_work_instructions_tenant_id_is_active" ON "work_instructions" ("tenant_id", "is_active")`);
-        await queryRunner.query(`CREATE INDEX "idx_work_instructions_tenant_id_priority" ON "work_instructions" ("tenant_id", "priority")`);
-        
-        // Create GIN index for JSONB search
-        await queryRunner.query(`CREATE INDEX "idx_work_instructions_tags_gin" ON "work_instructions" USING gin("tags")`);
-        
-        // Create GIN index for full-text search
-        await queryRunner.query(`CREATE INDEX "idx_work_instructions_search_vector_gin" ON "work_instructions" USING gin("search_vector")`);
+    // Create indexes for performance
+    await queryRunner.query(
+      `CREATE INDEX "idx_work_instructions_tenant_id_instruction_code" ON "work_instructions" ("tenant_id", "instruction_code")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_work_instructions_tenant_id_production_step_id" ON "work_instructions" ("tenant_id", "production_step_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_work_instructions_tenant_id_type" ON "work_instructions" ("tenant_id", "type")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_work_instructions_tenant_id_status" ON "work_instructions" ("tenant_id", "status")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_work_instructions_tenant_id_is_active" ON "work_instructions" ("tenant_id", "is_active")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_work_instructions_tenant_id_priority" ON "work_instructions" ("tenant_id", "priority")`,
+    );
 
-        // Add foreign key constraints
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_tenant_id" FOREIGN KEY ("tenant_id") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_production_step_id" FOREIGN KEY ("production_step_id") REFERENCES "production_steps"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_product_id" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_work_center_id" FOREIGN KEY ("work_center_id") REFERENCES "work_centers"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_author_id" FOREIGN KEY ("author_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_reviewed_by" FOREIGN KEY ("reviewed_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_approved_by" FOREIGN KEY ("approved_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_last_viewed_by" FOREIGN KEY ("last_viewed_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_previous_version_id" FOREIGN KEY ("previous_version_id") REFERENCES "work_instructions"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        
-        // Create trigger function for updating search vector
-        await queryRunner.query(`
+    // Create GIN index for JSONB search
+    await queryRunner.query(
+      `CREATE INDEX "idx_work_instructions_tags_gin" ON "work_instructions" USING gin("tags")`,
+    );
+
+    // Create GIN index for full-text search
+    await queryRunner.query(
+      `CREATE INDEX "idx_work_instructions_search_vector_gin" ON "work_instructions" USING gin("search_vector")`,
+    );
+
+    // Add foreign key constraints
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_tenant_id" FOREIGN KEY ("tenant_id") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_production_step_id" FOREIGN KEY ("production_step_id") REFERENCES "production_steps"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_product_id" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_work_center_id" FOREIGN KEY ("work_center_id") REFERENCES "work_centers"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_author_id" FOREIGN KEY ("author_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_reviewed_by" FOREIGN KEY ("reviewed_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_approved_by" FOREIGN KEY ("approved_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_last_viewed_by" FOREIGN KEY ("last_viewed_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" ADD CONSTRAINT "fk_work_instructions_previous_version_id" FOREIGN KEY ("previous_version_id") REFERENCES "work_instructions"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+
+    // Create trigger function for updating search vector
+    await queryRunner.query(`
             CREATE OR REPLACE FUNCTION update_work_instruction_search_vector()
             RETURNS trigger AS $$
             BEGIN
@@ -124,51 +168,97 @@ export class CreateWorkInstruction1758039000000 implements MigrationInterface {
             END;
             $$ LANGUAGE plpgsql;
         `);
-        
-        // Create trigger for updating search vector
-        await queryRunner.query(`
+
+    // Create trigger for updating search vector
+    await queryRunner.query(`
             CREATE TRIGGER update_work_instruction_search_vector_trigger
             BEFORE INSERT OR UPDATE OF title, summary, content, instruction_code
             ON work_instructions
             FOR EACH ROW
             EXECUTE FUNCTION update_work_instruction_search_vector();
         `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop trigger and function
-        await queryRunner.query(`DROP TRIGGER IF EXISTS update_work_instruction_search_vector_trigger ON work_instructions`);
-        await queryRunner.query(`DROP FUNCTION IF EXISTS update_work_instruction_search_vector()`);
-        
-        // Drop foreign key constraints
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_previous_version_id"`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_last_viewed_by"`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_approved_by"`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_reviewed_by"`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_author_id"`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_work_center_id"`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_product_id"`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_production_step_id"`);
-        await queryRunner.query(`ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_tenant_id"`);
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop trigger and function
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS update_work_instruction_search_vector_trigger ON work_instructions`,
+    );
+    await queryRunner.query(
+      `DROP FUNCTION IF EXISTS update_work_instruction_search_vector()`,
+    );
 
-        // Drop indexes
-        await queryRunner.query(`DROP INDEX "public"."idx_work_instructions_search_vector_gin"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_work_instructions_tags_gin"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_work_instructions_tenant_id_priority"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_work_instructions_tenant_id_is_active"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_work_instructions_tenant_id_status"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_work_instructions_tenant_id_type"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_work_instructions_tenant_id_production_step_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_work_instructions_tenant_id_instruction_code"`);
+    // Drop foreign key constraints
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_previous_version_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_last_viewed_by"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_approved_by"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_reviewed_by"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_author_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_work_center_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_product_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_production_step_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_instructions" DROP CONSTRAINT "fk_work_instructions_tenant_id"`,
+    );
 
-        // Drop table
-        await queryRunner.query(`DROP TABLE "work_instructions"`);
+    // Drop indexes
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_work_instructions_search_vector_gin"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_work_instructions_tags_gin"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_work_instructions_tenant_id_priority"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_work_instructions_tenant_id_is_active"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_work_instructions_tenant_id_status"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_work_instructions_tenant_id_type"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_work_instructions_tenant_id_production_step_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_work_instructions_tenant_id_instruction_code"`,
+    );
 
-        // Drop enum types
-        await queryRunner.query(`DROP TYPE "public"."work_instructions_priority_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."work_instructions_skill_level_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."work_instructions_status_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."work_instructions_format_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."work_instructions_type_enum"`);
-    }
+    // Drop table
+    await queryRunner.query(`DROP TABLE "work_instructions"`);
+
+    // Drop enum types
+    await queryRunner.query(
+      `DROP TYPE "public"."work_instructions_priority_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."work_instructions_skill_level_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."work_instructions_status_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."work_instructions_format_enum"`,
+    );
+    await queryRunner.query(`DROP TYPE "public"."work_instructions_type_enum"`);
+  }
 }

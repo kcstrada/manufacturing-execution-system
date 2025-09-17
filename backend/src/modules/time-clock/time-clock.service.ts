@@ -75,7 +75,10 @@ export class TimeClockService {
     }
 
     // Get or create today's session
-    const session = await this.getOrCreateSession(workerId, dto.shiftAssignmentId);
+    const session = await this.getOrCreateSession(
+      workerId,
+      dto.shiftAssignmentId,
+    );
 
     // Create clock in entry
     const entry = this.entryRepository.create({
@@ -89,9 +92,10 @@ export class TimeClockService {
       ipAddress: dto.ipAddress,
       deviceId: dto.deviceId,
       notes: dto.notes,
-      gpsLocation: dto.latitude && dto.longitude
-        ? `POINT(${dto.longitude} ${dto.latitude})`
-        : undefined,
+      gpsLocation:
+        dto.latitude && dto.longitude
+          ? `POINT(${dto.longitude} ${dto.latitude})`
+          : undefined,
     });
 
     await this.entryRepository.save(entry);
@@ -102,8 +106,8 @@ export class TimeClockService {
     await this.sessionRepository.save(session);
 
     // Update worker status
-    await this.workerRepository.update(workerId, { 
-      status: WorkerStatus.WORKING 
+    await this.workerRepository.update(workerId, {
+      status: WorkerStatus.WORKING,
     });
 
     // Emit event
@@ -147,9 +151,10 @@ export class TimeClockService {
       ipAddress: dto.ipAddress,
       deviceId: dto.deviceId,
       notes: dto.notes,
-      gpsLocation: dto.latitude && dto.longitude
-        ? `POINT(${dto.longitude} ${dto.latitude})`
-        : undefined,
+      gpsLocation:
+        dto.latitude && dto.longitude
+          ? `POINT(${dto.longitude} ${dto.latitude})`
+          : undefined,
     });
 
     await this.entryRepository.save(entry);
@@ -160,8 +165,8 @@ export class TimeClockService {
     await this.sessionRepository.save(session);
 
     // Update worker status
-    await this.workerRepository.update(workerId, { 
-      status: WorkerStatus.OFF_DUTY 
+    await this.workerRepository.update(workerId, {
+      status: WorkerStatus.OFF_DUTY,
     });
 
     // Emit event
@@ -183,10 +188,10 @@ export class TimeClockService {
 
     // Map break type to event type
     const eventTypeMap: Record<string, ClockEventType> = {
-      'break_start': ClockEventType.BREAK_START,
-      'break_end': ClockEventType.BREAK_END,
-      'lunch_start': ClockEventType.LUNCH_START,
-      'lunch_end': ClockEventType.LUNCH_END,
+      break_start: ClockEventType.BREAK_START,
+      break_end: ClockEventType.BREAK_END,
+      lunch_start: ClockEventType.LUNCH_START,
+      lunch_end: ClockEventType.LUNCH_END,
     };
 
     const eventType = eventTypeMap[dto.breakType];
@@ -210,13 +215,16 @@ export class TimeClockService {
     await this.entryRepository.save(entry);
 
     // Update worker status
-    if (eventType === ClockEventType.BREAK_START || eventType === ClockEventType.LUNCH_START) {
-      await this.workerRepository.update(workerId, { 
-        status: WorkerStatus.BREAK 
+    if (
+      eventType === ClockEventType.BREAK_START ||
+      eventType === ClockEventType.LUNCH_START
+    ) {
+      await this.workerRepository.update(workerId, {
+        status: WorkerStatus.BREAK,
       });
     } else {
-      await this.workerRepository.update(workerId, { 
-        status: WorkerStatus.WORKING 
+      await this.workerRepository.update(workerId, {
+        status: WorkerStatus.WORKING,
       });
     }
 
@@ -226,7 +234,10 @@ export class TimeClockService {
     return entry;
   }
 
-  async createManualEntry(dto: ManualClockEntryDto, approvedBy: string): Promise<TimeClockEntry> {
+  async createManualEntry(
+    dto: ManualClockEntryDto,
+    approvedBy: string,
+  ): Promise<TimeClockEntry> {
     // Validate worker
     const worker = await this.workerRepository.findOne({
       where: { id: dto.workerId },
@@ -238,7 +249,8 @@ export class TimeClockService {
 
     // Check if manual entries require approval
     const rules = await this.getActiveRules();
-    const requiresApproval = rules?.requireManagerApprovalForManualEntry ?? true;
+    const requiresApproval =
+      rules?.requireManagerApprovalForManualEntry ?? true;
 
     // Create manual entry
     const entry = this.entryRepository.create({
@@ -259,7 +271,10 @@ export class TimeClockService {
     await this.entryRepository.save(entry);
 
     // Update or create session if needed
-    if (dto.eventType === ClockEventType.CLOCK_IN || dto.eventType === ClockEventType.CLOCK_OUT) {
+    if (
+      dto.eventType === ClockEventType.CLOCK_IN ||
+      dto.eventType === ClockEventType.CLOCK_OUT
+    ) {
       await this.updateSessionFromManualEntry(entry);
     }
 
@@ -273,7 +288,10 @@ export class TimeClockService {
     return entry;
   }
 
-  async approveEntry(dto: ApproveClockEntryDto, approvedBy: string): Promise<TimeClockEntry> {
+  async approveEntry(
+    dto: ApproveClockEntryDto,
+    approvedBy: string,
+  ): Promise<TimeClockEntry> {
     const entry = await this.entryRepository.findOne({
       where: { id: dto.entryId },
     });
@@ -302,7 +320,10 @@ export class TimeClockService {
     return entry;
   }
 
-  async correctTimeEntry(dto: CorrectTimeEntryDto, correctedBy: string): Promise<TimeClockSession> {
+  async correctTimeEntry(
+    dto: CorrectTimeEntryDto,
+    correctedBy: string,
+  ): Promise<TimeClockSession> {
     const session = await this.sessionRepository.findOne({
       where: { id: dto.sessionId },
     });
@@ -364,7 +385,9 @@ export class TimeClockService {
     return session;
   }
 
-  async getWorkerStatus(dto: TimeClockStatusDto): Promise<WorkerTimeStatusResponseDto[]> {
+  async getWorkerStatus(
+    dto: TimeClockStatusDto,
+  ): Promise<WorkerTimeStatusResponseDto[]> {
     const date = dto.date ? new Date(dto.date) : new Date();
     const workerIds = dto.workerId ? [dto.workerId] : undefined;
 
@@ -414,12 +437,17 @@ export class TimeClockService {
       );
 
       // Determine current status
-      let status: 'clocked_in' | 'clocked_out' | 'on_break' | 'on_lunch' = 'clocked_out';
+      let status: 'clocked_in' | 'clocked_out' | 'on_break' | 'on_lunch' =
+        'clocked_out';
       let currentSession = undefined;
 
-      if (todaySession && todaySession.clockInTime && !todaySession.clockOutTime) {
+      if (
+        todaySession &&
+        todaySession.clockInTime &&
+        !todaySession.clockOutTime
+      ) {
         status = 'clocked_in';
-        
+
         // Check if on break
         if (lastEntry) {
           if (lastEntry.eventType === ClockEventType.BREAK_START) {
@@ -429,7 +457,8 @@ export class TimeClockService {
           }
         }
 
-        const hoursWorked = differenceInMinutes(new Date(), todaySession.clockInTime) / 60;
+        const hoursWorked =
+          differenceInMinutes(new Date(), todaySession.clockInTime) / 60;
         currentSession = {
           clockInTime: todaySession.clockInTime,
           hoursWorked: Number(hoursWorked.toFixed(2)),
@@ -472,20 +501,20 @@ export class TimeClockService {
       });
 
     if (dto.workerIds?.length) {
-      query.andWhere('session.workerId IN (:...workerIds)', { 
-        workerIds: dto.workerIds 
+      query.andWhere('session.workerId IN (:...workerIds)', {
+        workerIds: dto.workerIds,
       });
     }
 
     if (dto.departmentId) {
-      query.andWhere('worker.departmentId = :departmentId', { 
-        departmentId: dto.departmentId 
+      query.andWhere('worker.departmentId = :departmentId', {
+        departmentId: dto.departmentId,
       });
     }
 
     if (dto.workCenterId) {
-      query.andWhere('worker.workCenterId = :workCenterId', { 
-        workCenterId: dto.workCenterId 
+      query.andWhere('worker.workCenterId = :workCenterId', {
+        workCenterId: dto.workCenterId,
       });
     }
 
@@ -494,7 +523,9 @@ export class TimeClockService {
     }
 
     if (dto.exceptionsOnly) {
-      query.andWhere('(session.isLateArrival = true OR session.isEarlyDeparture = true OR session.isAbsent = true)');
+      query.andWhere(
+        '(session.isLateArrival = true OR session.isEarlyDeparture = true OR session.isAbsent = true)',
+      );
     }
 
     const sessions = await query.getMany();
@@ -517,7 +548,7 @@ export class TimeClockService {
       summary.totalRegularHours += session.regularHours;
       summary.totalOvertimeHours += session.overtimeHours;
       summary.totalProductiveHours += session.productiveHours;
-      
+
       if (session.isLateArrival) summary.lateArrivals++;
       if (session.isEarlyDeparture) summary.earlyDepartures++;
       if (session.isAbsent) summary.absences++;
@@ -526,9 +557,9 @@ export class TimeClockService {
       if (!workerSummaries.has(session.workerId)) {
         workerSummaries.set(session.workerId, {
           workerId: session.workerId,
-          workerName: session.worker ? 
-            `${session.worker.firstName} ${session.worker.lastName}` : 
-            'Unknown',
+          workerName: session.worker
+            ? `${session.worker.firstName} ${session.worker.lastName}`
+            : 'Unknown',
           totalDays: 0,
           totalRegularHours: 0,
           totalOvertimeHours: 0,
@@ -549,9 +580,8 @@ export class TimeClockService {
       if (session.isAbsent) workerSummary.absences++;
     }
 
-    summary.averageHoursPerDay = sessions.length > 0
-      ? summary.totalProductiveHours / sessions.length
-      : 0;
+    summary.averageHoursPerDay =
+      sessions.length > 0 ? summary.totalProductiveHours / sessions.length : 0;
 
     return {
       summary,
@@ -559,9 +589,9 @@ export class TimeClockService {
       sessions: sessions.map((s) => ({
         sessionId: s.id,
         workerId: s.workerId,
-        workerName: s.worker ? 
-          `${s.worker.firstName} ${s.worker.lastName}` : 
-          'Unknown',
+        workerName: s.worker
+          ? `${s.worker.firstName} ${s.worker.lastName}`
+          : 'Unknown',
         date: s.sessionDate,
         clockIn: s.clockInTime,
         clockOut: s.clockOutTime,
@@ -590,7 +620,7 @@ export class TimeClockService {
 
     // Get active rules
     const rules = await this.getActiveRules();
-    
+
     // Check worker status
     const worker = await this.workerRepository.findOne({
       where: { id: workerId },
@@ -667,13 +697,16 @@ export class TimeClockService {
       valid: errors.length === 0,
       errors: errors.length > 0 ? errors : undefined,
       warnings: warnings.length > 0 ? warnings : undefined,
-      suggestions: Object.keys(suggestions).length > 0 ? suggestions : undefined,
+      suggestions:
+        Object.keys(suggestions).length > 0 ? suggestions : undefined,
     };
   }
 
   // Helper methods
 
-  private async getOpenSession(workerId: string): Promise<TimeClockSession | null> {
+  private async getOpenSession(
+    workerId: string,
+  ): Promise<TimeClockSession | null> {
     return this.sessionRepository.findOne({
       where: {
         workerId,
@@ -716,13 +749,15 @@ export class TimeClockService {
     longitude?: number,
   ): Promise<void> {
     const rules = await this.getActiveRules();
-    
+
     if (!rules?.requireGpsForMobile) {
       return;
     }
 
     if (!latitude || !longitude) {
-      throw new BadRequestException('GPS location is required for mobile clock in');
+      throw new BadRequestException(
+        'GPS location is required for mobile clock in',
+      );
     }
 
     // Check if within allowed radius
@@ -775,7 +810,10 @@ export class TimeClockService {
     const now = new Date();
     session.breakPeriods = session.breakPeriods || [];
 
-    if (eventType === ClockEventType.BREAK_START || eventType === ClockEventType.LUNCH_START) {
+    if (
+      eventType === ClockEventType.BREAK_START ||
+      eventType === ClockEventType.LUNCH_START
+    ) {
       // Start a new break period
       session.breakPeriods.push({
         startTime: now,
@@ -788,7 +826,7 @@ export class TimeClockService {
       if (currentBreak) {
         currentBreak.endTime = now;
         currentBreak.minutes = differenceInMinutes(now, currentBreak.startTime);
-        
+
         // Update session totals
         if (currentBreak.type === 'break') {
           session.breakMinutes += currentBreak.minutes;
@@ -801,8 +839,13 @@ export class TimeClockService {
     await this.sessionRepository.save(session);
   }
 
-  private async updateSessionFromManualEntry(entry: TimeClockEntry): Promise<void> {
-    const session = await this.getOrCreateSession(entry.workerId, entry.shiftAssignmentId);
+  private async updateSessionFromManualEntry(
+    entry: TimeClockEntry,
+  ): Promise<void> {
+    const session = await this.getOrCreateSession(
+      entry.workerId,
+      entry.shiftAssignmentId,
+    );
 
     if (entry.eventType === ClockEventType.CLOCK_IN) {
       session.clockInTime = entry.clockedAt;

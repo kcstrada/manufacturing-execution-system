@@ -16,7 +16,11 @@ export const TIMEOUT_KEY = 'request-timeout';
  * Decorator to set custom timeout for an endpoint
  */
 export const Timeout = (ms: number) => {
-  return (target: any, _propertyKey?: string, descriptor?: PropertyDescriptor) => {
+  return (
+    target: any,
+    _propertyKey?: string,
+    descriptor?: PropertyDescriptor,
+  ) => {
     if (descriptor) {
       Reflect.defineMetadata(TIMEOUT_KEY, ms, descriptor.value);
       return descriptor;
@@ -42,7 +46,7 @@ export class TimeoutInterceptor implements NestInterceptor {
       TIMEOUT_KEY,
       context.getHandler(),
     );
-    
+
     const timeoutValue = customTimeout || this.getTimeoutByContext(context);
     const request = context.switchToHttp().getRequest();
 
@@ -51,7 +55,7 @@ export class TimeoutInterceptor implements NestInterceptor {
       catchError((err) => {
         if (err instanceof TimeoutError) {
           const message = `Request timeout after ${timeoutValue}ms`;
-          
+
           this.logger.warn(message, {
             url: request.url,
             method: request.method,
@@ -61,14 +65,15 @@ export class TimeoutInterceptor implements NestInterceptor {
           });
 
           return throwError(
-            () => new RequestTimeoutException({
-              message,
-              error: 'Request Timeout',
-              statusCode: 408,
-              path: request.url,
-              method: request.method,
-              timeout: timeoutValue,
-            }),
+            () =>
+              new RequestTimeoutException({
+                message,
+                error: 'Request Timeout',
+                statusCode: 408,
+                path: request.url,
+                method: request.method,
+                timeout: timeoutValue,
+              }),
           );
         }
         return throwError(() => err);

@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { QualityService } from './quality.service';
 import {
   QualityMetric,
@@ -247,11 +251,13 @@ describe('QualityService', () => {
     }).compile();
 
     service = module.get<QualityService>(QualityService);
-    metricRepository = module.get(getRepositoryToken(QualityMetric)) as jest.Mocked<Repository<QualityMetric>>;
-    inspectionRepository = module.get(getRepositoryToken(QualityInspection)) as jest.Mocked<Repository<QualityInspection>>;
-    planRepository = module.get(getRepositoryToken(QualityControlPlan)) as jest.Mocked<Repository<QualityControlPlan>>;
-    ncrRepository = module.get(getRepositoryToken(NonConformanceReport)) as jest.Mocked<Repository<NonConformanceReport>>;
-    eventEmitter = module.get<EventEmitter2>(EventEmitter2) as jest.Mocked<EventEmitter2>;
+    metricRepository = module.get(getRepositoryToken(QualityMetric));
+    inspectionRepository = module.get(getRepositoryToken(QualityInspection));
+    planRepository = module.get(getRepositoryToken(QualityControlPlan));
+    ncrRepository = module.get(getRepositoryToken(NonConformanceReport));
+    eventEmitter = module.get<EventEmitter2>(
+      EventEmitter2,
+    ) as jest.Mocked<EventEmitter2>;
   });
 
   it('should be defined', () => {
@@ -310,9 +316,7 @@ describe('QualityService', () => {
           isActive: true,
         };
 
-        jest
-          .spyOn(metricRepository, 'find')
-          .mockResolvedValue([mockMetric]);
+        jest.spyOn(metricRepository, 'find').mockResolvedValue([mockMetric]);
 
         const result = await service.findAllMetrics(filters);
 
@@ -331,7 +335,9 @@ describe('QualityService', () => {
         const updatedMetric = { ...mockMetric, ...updateDto };
 
         jest.spyOn(metricRepository, 'findOne').mockResolvedValue(mockMetric);
-        jest.spyOn(metricRepository, 'save').mockResolvedValue(updatedMetric as unknown as QualityMetric);
+        jest
+          .spyOn(metricRepository, 'save')
+          .mockResolvedValue(updatedMetric as unknown as QualityMetric);
 
         const result = await service.updateMetric('1', updateDto);
 
@@ -390,7 +396,9 @@ describe('QualityService', () => {
           result: InspectionResult.PASS,
         };
 
-        jest.spyOn(inspectionRepository, 'findOne').mockResolvedValue(mockInspection);
+        jest
+          .spyOn(inspectionRepository, 'findOne')
+          .mockResolvedValue(mockInspection);
 
         await expect(service.createInspection(dto)).rejects.toThrow(
           NotFoundException,
@@ -418,7 +426,9 @@ describe('QualityService', () => {
           .mockResolvedValue(mockInspection);
         jest
           .spyOn(inspectionRepository, 'save')
-          .mockResolvedValue(reviewedInspection as unknown as QualityInspection);
+          .mockResolvedValue(
+            reviewedInspection as unknown as QualityInspection,
+          );
 
         const result = await service.reviewInspection('1', reviewDto);
 
@@ -443,12 +453,8 @@ describe('QualityService', () => {
         };
 
         jest.spyOn(planRepository, 'findOne').mockResolvedValue(null);
-        jest
-          .spyOn(planRepository, 'create')
-          .mockReturnValue(mockControlPlan);
-        jest
-          .spyOn(planRepository, 'save')
-          .mockResolvedValue(mockControlPlan);
+        jest.spyOn(planRepository, 'create').mockReturnValue(mockControlPlan);
+        jest.spyOn(planRepository, 'save').mockResolvedValue(mockControlPlan);
 
         const result = await service.createControlPlan(dto);
 
@@ -472,7 +478,9 @@ describe('QualityService', () => {
         jest
           .spyOn(planRepository, 'findOne')
           .mockResolvedValue(mockControlPlan);
-        jest.spyOn(planRepository, 'save').mockResolvedValue(approvedPlan as unknown as QualityControlPlan);
+        jest
+          .spyOn(planRepository, 'save')
+          .mockResolvedValue(approvedPlan as unknown as QualityControlPlan);
 
         const result = await service.approveControlPlan('1', 'approver-1');
 
@@ -485,7 +493,9 @@ describe('QualityService', () => {
 
       it('should throw BadRequestException if plan already approved', async () => {
         const approvedPlan = { ...mockControlPlan, isApproved: true };
-        jest.spyOn(planRepository, 'findOne').mockResolvedValue(approvedPlan as unknown as QualityControlPlan);
+        jest
+          .spyOn(planRepository, 'findOne')
+          .mockResolvedValue(approvedPlan as unknown as QualityControlPlan);
 
         await expect(
           service.approveControlPlan('1', 'approver-1'),
@@ -541,7 +551,9 @@ describe('QualityService', () => {
         };
 
         jest.spyOn(ncrRepository, 'findOne').mockResolvedValue(mockNCR);
-        jest.spyOn(ncrRepository, 'save').mockResolvedValue(closedNCR as unknown as NonConformanceReport);
+        jest
+          .spyOn(ncrRepository, 'save')
+          .mockResolvedValue(closedNCR as unknown as NonConformanceReport);
 
         const result = await service.closeNCR('1', closeDto);
 
@@ -554,7 +566,9 @@ describe('QualityService', () => {
 
       it('should throw BadRequestException if NCR already closed', async () => {
         const closedNCR = { ...mockNCR, status: 'closed' };
-        jest.spyOn(ncrRepository, 'findOne').mockResolvedValue(closedNCR as unknown as NonConformanceReport);
+        jest
+          .spyOn(ncrRepository, 'findOne')
+          .mockResolvedValue(closedNCR as unknown as NonConformanceReport);
 
         await expect(
           service.closeNCR('1', {} as CloseNonConformanceDto),

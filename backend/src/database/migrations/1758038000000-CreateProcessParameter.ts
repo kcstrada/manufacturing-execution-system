@@ -1,17 +1,25 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateProcessParameter1758038000000 implements MigrationInterface {
-    name = 'CreateProcessParameter1758038000000'
+  name = 'CreateProcessParameter1758038000000';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // Create enum types for ProcessParameter
-        await queryRunner.query(`CREATE TYPE "public"."process_parameters_type_enum" AS ENUM('numeric', 'text', 'boolean', 'date', 'time', 'datetime', 'select', 'multiselect', 'range', 'file', 'json')`);
-        await queryRunner.query(`CREATE TYPE "public"."process_parameters_category_enum" AS ENUM('machine_setting', 'process_control', 'quality_spec', 'safety_requirement', 'environmental', 'material_spec', 'tool_setting', 'inspection', 'documentation')`);
-        await queryRunner.query(`CREATE TYPE "public"."process_parameters_frequency_enum" AS ENUM('once_per_batch', 'once_per_shift', 'hourly', 'every_piece', 'random_sample', 'start_of_run', 'end_of_run', 'continuous')`);
-        await queryRunner.query(`CREATE TYPE "public"."process_parameters_priority_enum" AS ENUM('critical', 'high', 'medium', 'low', 'optional')`);
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Create enum types for ProcessParameter
+    await queryRunner.query(
+      `CREATE TYPE "public"."process_parameters_type_enum" AS ENUM('numeric', 'text', 'boolean', 'date', 'time', 'datetime', 'select', 'multiselect', 'range', 'file', 'json')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."process_parameters_category_enum" AS ENUM('machine_setting', 'process_control', 'quality_spec', 'safety_requirement', 'environmental', 'material_spec', 'tool_setting', 'inspection', 'documentation')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."process_parameters_frequency_enum" AS ENUM('once_per_batch', 'once_per_shift', 'hourly', 'every_piece', 'random_sample', 'start_of_run', 'end_of_run', 'continuous')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."process_parameters_priority_enum" AS ENUM('critical', 'high', 'medium', 'low', 'optional')`,
+    );
 
-        // Create process_parameters table
-        await queryRunner.query(`CREATE TABLE "process_parameters" (
+    // Create process_parameters table
+    await queryRunner.query(`CREATE TABLE "process_parameters" (
             "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
             "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -84,41 +92,85 @@ export class CreateProcessParameter1758038000000 implements MigrationInterface {
             CONSTRAINT "pk_process_parameters_id" PRIMARY KEY ("id")
         )`);
 
-        // Create indexes for performance
-        await queryRunner.query(`CREATE INDEX "idx_process_parameters_tenant_id_parameter_code" ON "process_parameters" ("tenant_id", "parameter_code")`);
-        await queryRunner.query(`CREATE INDEX "idx_process_parameters_tenant_id_production_step_id" ON "process_parameters" ("tenant_id", "production_step_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_process_parameters_tenant_id_category" ON "process_parameters" ("tenant_id", "category")`);
-        await queryRunner.query(`CREATE INDEX "idx_process_parameters_tenant_id_is_required" ON "process_parameters" ("tenant_id", "is_required")`);
-        await queryRunner.query(`CREATE INDEX "idx_process_parameters_tenant_id_priority" ON "process_parameters" ("tenant_id", "priority")`);
+    // Create indexes for performance
+    await queryRunner.query(
+      `CREATE INDEX "idx_process_parameters_tenant_id_parameter_code" ON "process_parameters" ("tenant_id", "parameter_code")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_process_parameters_tenant_id_production_step_id" ON "process_parameters" ("tenant_id", "production_step_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_process_parameters_tenant_id_category" ON "process_parameters" ("tenant_id", "category")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_process_parameters_tenant_id_is_required" ON "process_parameters" ("tenant_id", "is_required")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_process_parameters_tenant_id_priority" ON "process_parameters" ("tenant_id", "priority")`,
+    );
 
-        // Add foreign key constraints
-        await queryRunner.query(`ALTER TABLE "process_parameters" ADD CONSTRAINT "fk_process_parameters_tenant_id" FOREIGN KEY ("tenant_id") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "process_parameters" ADD CONSTRAINT "fk_process_parameters_production_step_id" FOREIGN KEY ("production_step_id") REFERENCES "production_steps"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "process_parameters" ADD CONSTRAINT "fk_process_parameters_product_id" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "process_parameters" ADD CONSTRAINT "fk_process_parameters_work_center_id" FOREIGN KEY ("work_center_id") REFERENCES "work_centers"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-    }
+    // Add foreign key constraints
+    await queryRunner.query(
+      `ALTER TABLE "process_parameters" ADD CONSTRAINT "fk_process_parameters_tenant_id" FOREIGN KEY ("tenant_id") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "process_parameters" ADD CONSTRAINT "fk_process_parameters_production_step_id" FOREIGN KEY ("production_step_id") REFERENCES "production_steps"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "process_parameters" ADD CONSTRAINT "fk_process_parameters_product_id" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "process_parameters" ADD CONSTRAINT "fk_process_parameters_work_center_id" FOREIGN KEY ("work_center_id") REFERENCES "work_centers"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop foreign key constraints
-        await queryRunner.query(`ALTER TABLE "process_parameters" DROP CONSTRAINT "fk_process_parameters_work_center_id"`);
-        await queryRunner.query(`ALTER TABLE "process_parameters" DROP CONSTRAINT "fk_process_parameters_product_id"`);
-        await queryRunner.query(`ALTER TABLE "process_parameters" DROP CONSTRAINT "fk_process_parameters_production_step_id"`);
-        await queryRunner.query(`ALTER TABLE "process_parameters" DROP CONSTRAINT "fk_process_parameters_tenant_id"`);
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop foreign key constraints
+    await queryRunner.query(
+      `ALTER TABLE "process_parameters" DROP CONSTRAINT "fk_process_parameters_work_center_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "process_parameters" DROP CONSTRAINT "fk_process_parameters_product_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "process_parameters" DROP CONSTRAINT "fk_process_parameters_production_step_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "process_parameters" DROP CONSTRAINT "fk_process_parameters_tenant_id"`,
+    );
 
-        // Drop indexes
-        await queryRunner.query(`DROP INDEX "public"."idx_process_parameters_tenant_id_priority"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_process_parameters_tenant_id_is_required"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_process_parameters_tenant_id_category"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_process_parameters_tenant_id_production_step_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_process_parameters_tenant_id_parameter_code"`);
+    // Drop indexes
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_process_parameters_tenant_id_priority"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_process_parameters_tenant_id_is_required"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_process_parameters_tenant_id_category"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_process_parameters_tenant_id_production_step_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_process_parameters_tenant_id_parameter_code"`,
+    );
 
-        // Drop table
-        await queryRunner.query(`DROP TABLE "process_parameters"`);
+    // Drop table
+    await queryRunner.query(`DROP TABLE "process_parameters"`);
 
-        // Drop enum types
-        await queryRunner.query(`DROP TYPE "public"."process_parameters_priority_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."process_parameters_frequency_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."process_parameters_category_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."process_parameters_type_enum"`);
-    }
+    // Drop enum types
+    await queryRunner.query(
+      `DROP TYPE "public"."process_parameters_priority_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."process_parameters_frequency_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."process_parameters_category_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."process_parameters_type_enum"`,
+    );
+  }
 }

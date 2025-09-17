@@ -40,7 +40,10 @@ export interface StateMachineConfig {
   initialState: CustomerOrderStatus;
   states: CustomerOrderStatus[];
   transitions: StateTransition[];
-  onStateChange?: (context: StateMachineContext, result: TransitionResult) => void | Promise<void>;
+  onStateChange?: (
+    context: StateMachineContext,
+    result: TransitionResult,
+  ) => void | Promise<void>;
 }
 
 /**
@@ -69,7 +72,7 @@ export interface IOrderStateMachine {
    */
   canTransition(
     order: CustomerOrder,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): boolean | Promise<boolean>;
 
   /**
@@ -78,7 +81,7 @@ export interface IOrderStateMachine {
   transition(
     order: CustomerOrder,
     event: WorkflowEvent,
-    context?: Partial<StateMachineContext>
+    context?: Partial<StateMachineContext>,
   ): Promise<TransitionResult>;
 
   /**

@@ -51,7 +51,11 @@ export interface ShiftSwapRequest {
 export interface ScheduleConflict {
   workerId: string;
   date: Date;
-  conflictType: 'double_booking' | 'overtime_violation' | 'rest_period' | 'availability';
+  conflictType:
+    | 'double_booking'
+    | 'overtime_violation'
+    | 'rest_period'
+    | 'availability';
   details: string;
 }
 
@@ -79,8 +83,17 @@ export class ShiftSchedulingService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async generateSchedule(request: ShiftScheduleRequest): Promise<ShiftAssignment[]> {
-    const { startDate, endDate, shiftIds, departmentId, workCenterId, autoAssign } = request;
+  async generateSchedule(
+    request: ShiftScheduleRequest,
+  ): Promise<ShiftAssignment[]> {
+    const {
+      startDate,
+      endDate,
+      shiftIds,
+      departmentId,
+      workCenterId,
+      autoAssign,
+    } = request;
 
     // Get applicable shifts
     const shifts = await this.getApplicableShifts({
@@ -109,11 +122,16 @@ export class ShiftSchedulingService {
     while (currentDate <= endDate) {
       const dayOfWeek = this.getDayOfWeek(currentDate);
       const calendarEntry = calendar.find(
-        (c) => format(c.date, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd'),
+        (c) =>
+          format(c.date, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd'),
       );
 
       // Skip non-working days unless there are shift overrides
-      if (calendarEntry && !calendarEntry.isWorkingDay && !calendarEntry.shiftOverrides) {
+      if (
+        calendarEntry &&
+        !calendarEntry.isWorkingDay &&
+        !calendarEntry.shiftOverrides
+      ) {
         currentDate.setDate(currentDate.getDate() + 1);
         continue;
       }
@@ -137,7 +155,11 @@ export class ShiftSchedulingService {
         }
 
         // Create shift assignments for the required number of workers
-        const targetWorkers = this.calculateTargetWorkers(shift, calendarEntry, exception || undefined);
+        const targetWorkers = this.calculateTargetWorkers(
+          shift,
+          calendarEntry,
+          exception || undefined,
+        );
 
         if (autoAssign) {
           // Auto-assign workers based on availability and skills
@@ -186,12 +208,15 @@ export class ShiftSchedulingService {
     departmentId?: string;
     workCenterId?: string;
   }): Promise<Shift[]> {
-    const query = this.shiftRepository.createQueryBuilder('shift')
+    const query = this.shiftRepository
+      .createQueryBuilder('shift')
       .leftJoinAndSelect('shift.workCenters', 'workCenters')
       .where('shift.isActive = :isActive', { isActive: true });
 
     if (filters.shiftIds?.length) {
-      query.andWhere('shift.id IN (:...shiftIds)', { shiftIds: filters.shiftIds });
+      query.andWhere('shift.id IN (:...shiftIds)', {
+        shiftIds: filters.shiftIds,
+      });
     }
 
     if (filters.departmentId) {
@@ -231,7 +256,9 @@ export class ShiftSchedulingService {
 
     // Apply calendar overrides
     if (calendarEntry?.shiftOverrides) {
-      const override = calendarEntry.shiftOverrides.find((o) => o.shiftId === shift.id);
+      const override = calendarEntry.shiftOverrides.find(
+        (o) => o.shiftId === shift.id,
+      );
       if (override?.minWorkers) {
         target = override.minWorkers;
       }
@@ -243,7 +270,10 @@ export class ShiftSchedulingService {
     }
 
     // Apply capacity percentage from calendar
-    if (calendarEntry?.capacityPercentage && calendarEntry.capacityPercentage !== 100) {
+    if (
+      calendarEntry?.capacityPercentage &&
+      calendarEntry.capacityPercentage !== 100
+    ) {
       target = Math.ceil(target * (calendarEntry.capacityPercentage / 100));
     }
 
@@ -265,7 +295,10 @@ export class ShiftSchedulingService {
 
     // Filter by skills if required
     if (respectSkills && shift.skillRequirements?.length) {
-      availableWorkers = await this.filterBySkills(availableWorkers, shift.skillRequirements);
+      availableWorkers = await this.filterBySkills(
+        availableWorkers,
+        shift.skillRequirements,
+      );
     }
 
     // Sort by workload if balancing is requested
@@ -290,7 +323,10 @@ export class ShiftSchedulingService {
     return assignments;
   }
 
-  private async getAvailableWorkers(date: Date, shift: Shift): Promise<Worker[]> {
+  private async getAvailableWorkers(
+    date: Date,
+    shift: Shift,
+  ): Promise<Worker[]> {
     // Get all active workers
     const workers = await this.workerRepository.find({
       where: {
@@ -366,7 +402,10 @@ export class ShiftSchedulingService {
     return filteredWorkers;
   }
 
-  private async sortByWorkload(workers: Worker[], date: Date): Promise<Worker[]> {
+  private async sortByWorkload(
+    workers: Worker[],
+    date: Date,
+  ): Promise<Worker[]> {
     const workloadMap = new Map<string, number>();
 
     // Calculate weekly workload for each worker
@@ -429,7 +468,8 @@ export class ShiftSchedulingService {
 
         const assignedCount = shiftAssignments.filter((a) => a.workerId).length;
         const requiredCount = shift.targetWorkers;
-        const coveragePercentage = requiredCount > 0 ? (assignedCount / requiredCount) * 100 : 0;
+        const coveragePercentage =
+          requiredCount > 0 ? (assignedCount / requiredCount) * 100 : 0;
 
         coverageAnalysis.push({
           shiftId: shift.id,
@@ -449,7 +489,8 @@ export class ShiftSchedulingService {
   }
 
   async requestShiftSwap(request: ShiftSwapRequest): Promise<ShiftAssignment> {
-    const { fromWorkerId, toWorkerId, assignmentId, reason, requestedBy } = request;
+    const { fromWorkerId, toWorkerId, assignmentId, reason, requestedBy } =
+      request;
 
     // Get the original assignment
     const originalAssignment = await this.assignmentRepository.findOne({
@@ -490,7 +531,9 @@ export class ShiftSchedulingService {
     });
 
     if (existingAssignment) {
-      throw new ConflictException('Worker already has a shift assignment on this date');
+      throw new ConflictException(
+        'Worker already has a shift assignment on this date',
+      );
     }
 
     // Create new assignment for the replacement worker
@@ -541,7 +584,7 @@ export class ShiftSchedulingService {
     }
 
     const shiftMap = new Map(shifts.map((s) => [s.shiftCode, s]));
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     let patternIndex = 0;
 
     while (currentDate <= endDate) {
@@ -621,16 +664,16 @@ export class ShiftSchedulingService {
       // Check for double booking on the same day
       const sameDayAssignments = assignments.filter(
         (a) =>
-          format(a.date, 'yyyy-MM-dd') === format(current!.date, 'yyyy-MM-dd') &&
-          a.id !== current!.id,
+          format(a.date, 'yyyy-MM-dd') === format(current.date, 'yyyy-MM-dd') &&
+          a.id !== current.id,
       );
 
       if (sameDayAssignments.length > 0) {
         conflicts.push({
           workerId,
-          date: current!.date,
+          date: current.date,
           conflictType: 'double_booking',
-          details: `Multiple shifts assigned on ${format(current!.date, 'yyyy-MM-dd')}`,
+          details: `Multiple shifts assigned on ${format(current.date, 'yyyy-MM-dd')}`,
         });
       }
 
@@ -643,7 +686,7 @@ export class ShiftSchedulingService {
           if (restHours < 8) {
             conflicts.push({
               workerId,
-              date: current!.date,
+              date: current.date,
               conflictType: 'rest_period',
               details: `Only ${restHours} hours rest between shifts (minimum 8 required)`,
             });
@@ -652,8 +695,8 @@ export class ShiftSchedulingService {
       }
 
       // Check for weekly hour limits
-      const weekStart = startOfWeek(current!.date);
-      const weekEnd = endOfWeek(current!.date);
+      const weekStart = startOfWeek(current.date);
+      const weekEnd = endOfWeek(current.date);
       const weeklyAssignments = assignments.filter(
         (a) => a.date >= weekStart && a.date <= weekEnd,
       );
@@ -666,7 +709,7 @@ export class ShiftSchedulingService {
       if (weeklyHours > 40) {
         conflicts.push({
           workerId,
-          date: current!.date,
+          date: current.date,
           conflictType: 'overtime_violation',
           details: `Weekly hours exceed limit: ${weeklyHours} hours`,
         });

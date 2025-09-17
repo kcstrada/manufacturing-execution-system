@@ -24,7 +24,10 @@ export class GenerateScheduleDto {
   @IsDateString()
   endDate!: string;
 
-  @ApiPropertyOptional({ description: 'Specific shift IDs to include', type: [String] })
+  @ApiPropertyOptional({
+    description: 'Specific shift IDs to include',
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
@@ -45,7 +48,9 @@ export class GenerateScheduleDto {
   @IsBoolean()
   autoAssign?: boolean;
 
-  @ApiPropertyOptional({ description: 'Respect skill requirements when auto-assigning' })
+  @ApiPropertyOptional({
+    description: 'Respect skill requirements when auto-assigning',
+  })
   @IsOptional()
   @IsBoolean()
   respectSkillRequirements?: boolean;
@@ -65,7 +70,10 @@ export class CoverageAnalysisDto {
   @IsDateString()
   endDate!: string;
 
-  @ApiPropertyOptional({ description: 'Specific shift IDs to analyze', type: [String] })
+  @ApiPropertyOptional({
+    description: 'Specific shift IDs to analyze',
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
@@ -95,7 +103,10 @@ export class ShiftPatternDto {
   @IsString()
   name!: string;
 
-  @ApiProperty({ description: 'Array of shift codes in the pattern', type: [String] })
+  @ApiProperty({
+    description: 'Array of shift codes in the pattern',
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
   pattern!: string[];
@@ -116,7 +127,10 @@ export class ApplyPatternDto {
   @Type(() => ShiftPatternDto)
   pattern!: ShiftPatternDto;
 
-  @ApiProperty({ description: 'Worker IDs to apply pattern to', type: [String] })
+  @ApiProperty({
+    description: 'Worker IDs to apply pattern to',
+    type: [String],
+  })
   @IsArray()
   @IsUUID('4', { each: true })
   workerIds!: string[];

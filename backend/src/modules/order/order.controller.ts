@@ -26,7 +26,10 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto, UpdateOrderStatusDto } from './dto/update-order.dto';
 import { OrderQueryDto } from './dto/order-query.dto';
-import { GenerateTasksDto, TaskGenerationResultDto } from './dto/generate-tasks.dto';
+import {
+  GenerateTasksDto,
+  TaskGenerationResultDto,
+} from './dto/generate-tasks.dto';
 import { CustomerOrder } from '../../entities/customer-order.entity';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -99,12 +102,12 @@ export class OrderController {
   })
   async exportToCSV(@Query() query: OrderQueryDto, @Res() res: Response) {
     const csv = await this.orderService.exportToCSV(query);
-    
+
     res.set({
       'Content-Type': 'text/csv',
       'Content-Disposition': `attachment; filename="orders-${Date.now()}.csv"`,
     });
-    
+
     res.send(csv);
   }
 
@@ -121,7 +124,9 @@ export class OrderController {
     status: HttpStatus.NOT_FOUND,
     description: 'Order not found.',
   })
-  async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<CustomerOrder> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CustomerOrder> {
     return this.orderService.findOne(id);
   }
 
@@ -134,7 +139,9 @@ export class OrderController {
     description: 'Return the order.',
     type: CustomerOrder,
   })
-  async findByOrderNumber(@Param('orderNumber') orderNumber: string): Promise<CustomerOrder | null> {
+  async findByOrderNumber(
+    @Param('orderNumber') orderNumber: string,
+  ): Promise<CustomerOrder | null> {
     return this.orderService.findByOrderNumber(orderNumber);
   }
 
@@ -148,7 +155,7 @@ export class OrderController {
     type: [CustomerOrder],
   })
   async findByCustomer(
-    @Param('customerId', ParseUUIDPipe) customerId: string
+    @Param('customerId', ParseUUIDPipe) customerId: string,
   ): Promise<CustomerOrder[]> {
     return this.orderService.findByCustomer(customerId);
   }
@@ -172,7 +179,7 @@ export class OrderController {
   })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateOrderDto: UpdateOrderDto
+    @Body() updateOrderDto: UpdateOrderDto,
   ): Promise<CustomerOrder> {
     return this.orderService.update(id, updateOrderDto);
   }
@@ -192,7 +199,7 @@ export class OrderController {
   })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() statusDto: UpdateOrderStatusDto
+    @Body() statusDto: UpdateOrderStatusDto,
   ): Promise<CustomerOrder> {
     return this.orderService.updateStatus(id, statusDto);
   }
@@ -207,7 +214,9 @@ export class OrderController {
     description: 'Order has been confirmed.',
     type: CustomerOrder,
   })
-  async confirm(@Param('id', ParseUUIDPipe) id: string): Promise<CustomerOrder> {
+  async confirm(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CustomerOrder> {
     return this.orderService.confirm(id);
   }
 
@@ -223,7 +232,7 @@ export class OrderController {
   })
   async cancel(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('reason') reason?: string
+    @Body('reason') reason?: string,
   ): Promise<CustomerOrder> {
     return this.orderService.cancel(id, reason);
   }
@@ -240,7 +249,7 @@ export class OrderController {
   })
   async ship(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('shippedDate') shippedDate?: Date
+    @Body('shippedDate') shippedDate?: Date,
   ): Promise<CustomerOrder> {
     return this.orderService.ship(id, shippedDate);
   }
@@ -255,7 +264,9 @@ export class OrderController {
     description: 'Order has been marked as delivered.',
     type: CustomerOrder,
   })
-  async deliver(@Param('id', ParseUUIDPipe) id: string): Promise<CustomerOrder> {
+  async deliver(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CustomerOrder> {
     return this.orderService.deliver(id);
   }
 
@@ -269,7 +280,9 @@ export class OrderController {
     description: 'Order has been duplicated.',
     type: CustomerOrder,
   })
-  async duplicate(@Param('id', ParseUUIDPipe) id: string): Promise<CustomerOrder> {
+  async duplicate(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CustomerOrder> {
     return this.orderService.duplicate(id);
   }
 
@@ -298,7 +311,9 @@ export class OrderController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Can only generate production orders for confirmed orders.',
   })
-  async generateProductionOrders(@Param('id', ParseUUIDPipe) id: string): Promise<CustomerOrder> {
+  async generateProductionOrders(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CustomerOrder> {
     return this.orderService.generateProductionOrders(id);
   }
 

@@ -1,5 +1,8 @@
 import { IsDateString, IsEnum, IsOptional } from 'class-validator';
-import { WasteType, WasteCategory } from '../../../entities/waste-record.entity';
+import {
+  WasteType,
+  WasteCategory,
+} from '../../../entities/waste-record.entity';
 
 export class WasteAnalyticsDto {
   @IsDateString()

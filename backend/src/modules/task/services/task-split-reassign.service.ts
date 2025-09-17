@@ -9,7 +9,10 @@ import { Repository, In, Not } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ClsService } from 'nestjs-cls';
 import { Task, TaskStatus, TaskPriority } from '../../../entities/task.entity';
-import { TaskAssignment, AssignmentStatus } from '../../../entities/task-assignment.entity';
+import {
+  TaskAssignment,
+  AssignmentStatus,
+} from '../../../entities/task-assignment.entity';
 import { User } from '../../../entities/user.entity';
 import { TaskDependencyService } from './task-dependency.service';
 import { TaskService } from './task.service';
@@ -80,7 +83,8 @@ export class TaskSplitReassignService {
    * Split a task and optionally assign subtasks to different users
    */
   async splitTaskWithAssignments(config: TaskSplitConfig): Promise<Task[]> {
-    const { taskId, subtasks, preserveDependencies, autoAssign, splitReason } = config;
+    const { taskId, subtasks, preserveDependencies, autoAssign, splitReason } =
+      config;
 
     // Validate original task
     const originalTask = await this.taskRepository.findOne({
@@ -92,16 +96,24 @@ export class TaskSplitReassignService {
       throw new NotFoundException(`Task with ID ${taskId} not found`);
     }
 
-    if (originalTask.status !== TaskStatus.PENDING && originalTask.status !== TaskStatus.READY) {
-      throw new BadRequestException('Can only split tasks that have not started');
+    if (
+      originalTask.status !== TaskStatus.PENDING &&
+      originalTask.status !== TaskStatus.READY
+    ) {
+      throw new BadRequestException(
+        'Can only split tasks that have not started',
+      );
     }
 
     // Calculate if subtasks cover the original task
-    const totalQuantity = subtasks.reduce((sum, st) => sum + st.targetQuantity, 0);
+    const totalQuantity = subtasks.reduce(
+      (sum, st) => sum + st.targetQuantity,
+      0,
+    );
 
     if (Math.abs(totalQuantity - originalTask.targetQuantity) > 0.01) {
       this.logger.warn(
-        `Split tasks quantity (${totalQuantity}) doesn't match original (${originalTask.targetQuantity})`
+        `Split tasks quantity (${totalQuantity}) doesn't match original (${originalTask.targetQuantity})`,
       );
     }
 
@@ -169,7 +181,9 @@ export class TaskSplitReassignService {
 
         if (depWithDeps && lastSubtask) {
           // Replace original task with last subtask in dependencies
-          const depIndex = depWithDeps.dependencies.findIndex(d => d.id === taskId);
+          const depIndex = depWithDeps.dependencies.findIndex(
+            (d) => d.id === taskId,
+          );
           if (depIndex !== -1) {
             depWithDeps.dependencies[depIndex] = lastSubtask;
             await this.taskRepository.save(depWithDeps);
@@ -187,12 +201,14 @@ export class TaskSplitReassignService {
     await this.assignmentRepository.update(
       {
         taskId: originalTask.id,
-        status: Not(In([AssignmentStatus.COMPLETED, AssignmentStatus.REASSIGNED])),
+        status: Not(
+          In([AssignmentStatus.COMPLETED, AssignmentStatus.REASSIGNED]),
+        ),
       },
       {
         status: AssignmentStatus.REASSIGNED,
         notes: 'Task was split into subtasks',
-      }
+      },
     );
 
     this.eventEmitter.emit('task.split', {
@@ -202,7 +218,7 @@ export class TaskSplitReassignService {
     });
 
     this.logger.log(
-      `Task ${originalTask.taskNumber} split into ${createdTasks.length} subtasks`
+      `Task ${originalTask.taskNumber} split into ${createdTasks.length} subtasks`,
     );
 
     return createdTasks;
@@ -211,7 +227,9 @@ export class TaskSplitReassignService {
   /**
    * Bulk reassign tasks from one user to another
    */
-  async bulkReassignTasks(config: BulkReassignConfig): Promise<TaskReassignmentResult[]> {
+  async bulkReassignTasks(
+    config: BulkReassignConfig,
+  ): Promise<TaskReassignmentResult[]> {
     const { taskIds, fromUserId, toUserId, reason, reassignedBy } = config;
 
     const results: TaskReassignmentResult[] = [];
@@ -233,7 +251,9 @@ export class TaskSplitReassignService {
       .andWhere('task.id IN (:...taskIds)', { taskIds });
 
     if (fromUserId) {
-      tasksQuery = tasksQuery.andWhere('task.assignedToId = :fromUserId', { fromUserId });
+      tasksQuery = tasksQuery.andWhere('task.assignedToId = :fromUserId', {
+        fromUserId,
+      });
     }
 
     const tasks = await tasksQuery.getMany();
@@ -242,7 +262,10 @@ export class TaskSplitReassignService {
     for (const task of tasks) {
       try {
         // Skip if task is already completed or cancelled
-        if (task.status === TaskStatus.COMPLETED || task.status === TaskStatus.CANCELLED) {
+        if (
+          task.status === TaskStatus.COMPLETED ||
+          task.status === TaskStatus.CANCELLED
+        ) {
           results.push({
             taskId: task.id,
             previousAssignee: task.assignedTo,
@@ -259,7 +282,7 @@ export class TaskSplitReassignService {
           task.id,
           toUserId,
           reason,
-          reassignedBy
+          reassignedBy,
         );
 
         results.push({
@@ -270,7 +293,9 @@ export class TaskSplitReassignService {
           success: true,
         });
 
-        this.logger.log(`Task ${task.taskNumber} reassigned to ${targetUser.id}`);
+        this.logger.log(
+          `Task ${task.taskNumber} reassigned to ${targetUser.id}`,
+        );
       } catch (error: any) {
         results.push({
           taskId: task.id,
@@ -281,7 +306,9 @@ export class TaskSplitReassignService {
           error: error.message,
         });
 
-        this.logger.error(`Failed to reassign task ${task.id}: ${error.message}`);
+        this.logger.error(
+          `Failed to reassign task ${task.id}: ${error.message}`,
+        );
       }
     }
 
@@ -289,7 +316,7 @@ export class TaskSplitReassignService {
     this.eventEmitter.emit('tasks.bulk-reassigned', {
       fromUserId,
       toUserId,
-      taskCount: results.filter(r => r.success).length,
+      taskCount: results.filter((r) => r.success).length,
       reason,
       reassignedBy,
     });
@@ -303,7 +330,7 @@ export class TaskSplitReassignService {
   async handleWorkerUnavailability(
     workerId: string,
     reason: string,
-    redistributionStrategy: 'workload' | 'skills' | 'priority' = 'workload'
+    redistributionStrategy: 'workload' | 'skills' | 'priority' = 'workload',
   ): Promise<TaskReassignmentResult[]> {
     // Get all active tasks assigned to the worker
     const activeTasks = await this.taskRepository.find({
@@ -347,7 +374,9 @@ export class TaskSplitReassignService {
         }
 
         if (!targetUser) {
-          this.logger.warn(`No suitable replacement found for task ${task.taskNumber}`);
+          this.logger.warn(
+            `No suitable replacement found for task ${task.taskNumber}`,
+          );
           continue;
         }
 
@@ -355,7 +384,7 @@ export class TaskSplitReassignService {
           task.id,
           targetUser.id,
           `Worker unavailable: ${reason}`,
-          'system'
+          'system',
         );
 
         results.push({
@@ -379,7 +408,7 @@ export class TaskSplitReassignService {
 
     this.eventEmitter.emit('worker.unavailability-handled', {
       workerId,
-      tasksReassigned: results.filter(r => r.success).length,
+      tasksReassigned: results.filter((r) => r.success).length,
       totalTasks: activeTasks.length,
       reason,
     });
@@ -390,21 +419,33 @@ export class TaskSplitReassignService {
   /**
    * Balance workload across workers
    */
-  async balanceWorkload(config: WorkloadBalanceConfig): Promise<TaskReassignmentResult[]> {
-    const { workCenterId, maxTasksPerWorker = 5, considerSkills, timeWindow } = config;
+  async balanceWorkload(
+    config: WorkloadBalanceConfig,
+  ): Promise<TaskReassignmentResult[]> {
+    const {
+      workCenterId,
+      maxTasksPerWorker = 5,
+      considerSkills,
+      timeWindow,
+    } = config;
 
     // Get workload distribution
-    const workloadStats = await this.getWorkloadStatistics(workCenterId, timeWindow);
-    
+    const workloadStats = await this.getWorkloadStatistics(
+      workCenterId,
+      timeWindow,
+    );
+
     const overloadedWorkers = workloadStats.filter(
-      stat => stat.taskCount > maxTasksPerWorker
+      (stat) => stat.taskCount > maxTasksPerWorker,
     );
     const underloadedWorkers = workloadStats.filter(
-      stat => stat.taskCount < maxTasksPerWorker
+      (stat) => stat.taskCount < maxTasksPerWorker,
     );
 
     if (overloadedWorkers.length === 0 || underloadedWorkers.length === 0) {
-      this.logger.log('Workload is already balanced or no workers available for balancing');
+      this.logger.log(
+        'Workload is already balanced or no workers available for balancing',
+      );
       return [];
     }
 
@@ -413,27 +454,31 @@ export class TaskSplitReassignService {
     // Redistribute tasks from overloaded to underloaded workers
     for (const overloaded of overloadedWorkers) {
       const excessTasks = overloaded.taskCount - maxTasksPerWorker;
-      
+
       // Get tasks that can be reassigned
       const reassignableTasks = await this.getReassignableTasks(
         overloaded.userId,
-        excessTasks
+        excessTasks,
       );
 
       for (const task of reassignableTasks) {
         // Find best underloaded worker
         const targetWorker = underloadedWorkers
-          .filter(w => w.taskCount < maxTasksPerWorker)
+          .filter((w) => w.taskCount < maxTasksPerWorker)
           .sort((a, b) => a.taskCount - b.taskCount)[0];
 
         if (!targetWorker) break;
 
         try {
           // Check skills if required
-          if (considerSkills && task.requiredSkills && task.requiredSkills.length > 0) {
+          if (
+            considerSkills &&
+            task.requiredSkills &&
+            task.requiredSkills.length > 0
+          ) {
             const hasSkills = await this.checkUserSkills(
               targetWorker.userId,
-              task.requiredSkills
+              task.requiredSkills,
             );
             if (!hasSkills) continue;
           }
@@ -442,7 +487,7 @@ export class TaskSplitReassignService {
             task.id,
             targetWorker.userId,
             'Workload balancing',
-            'system'
+            'system',
           );
 
           targetWorker.taskCount++;
@@ -456,13 +501,15 @@ export class TaskSplitReassignService {
             success: true,
           });
         } catch (error: any) {
-          this.logger.error(`Failed to reassign task ${task.id}: ${error.message}`);
+          this.logger.error(
+            `Failed to reassign task ${task.id}: ${error.message}`,
+          );
         }
       }
     }
 
     this.eventEmitter.emit('workload.balanced', {
-      tasksReassigned: results.filter(r => r.success).length,
+      tasksReassigned: results.filter((r) => r.success).length,
       workCenterId,
     });
 
@@ -472,23 +519,27 @@ export class TaskSplitReassignService {
   /**
    * Emergency task redistribution
    */
-  async emergencyRedistribution(
-    criteria: {
-      priority?: TaskPriority;
-      dueWithinHours?: number;
-      workCenterId?: string;
-    }
-  ): Promise<TaskReassignmentResult[]> {
+  async emergencyRedistribution(criteria: {
+    priority?: TaskPriority;
+    dueWithinHours?: number;
+    workCenterId?: string;
+  }): Promise<TaskReassignmentResult[]> {
     const query = this.taskRepository
       .createQueryBuilder('task')
       .leftJoinAndSelect('task.assignedTo', 'assignedTo')
       .where('task.tenantId = :tenantId', { tenantId: this.getTenantId() })
       .andWhere('task.status IN (:...statuses)', {
-        statuses: [TaskStatus.PENDING, TaskStatus.READY, TaskStatus.IN_PROGRESS],
+        statuses: [
+          TaskStatus.PENDING,
+          TaskStatus.READY,
+          TaskStatus.IN_PROGRESS,
+        ],
       });
 
     if (criteria.priority) {
-      query.andWhere('task.priority = :priority', { priority: criteria.priority });
+      query.andWhere('task.priority = :priority', {
+        priority: criteria.priority,
+      });
     }
 
     if (criteria.dueWithinHours) {
@@ -515,7 +566,9 @@ export class TaskSplitReassignService {
       const targetUser = await this.assignmentService.findByPriority(task);
 
       if (!targetUser) {
-        this.logger.warn(`No worker available for urgent task ${task.taskNumber}`);
+        this.logger.warn(
+          `No worker available for urgent task ${task.taskNumber}`,
+        );
         continue;
       }
 
@@ -529,7 +582,7 @@ export class TaskSplitReassignService {
           task.id,
           targetUser.id,
           'Emergency redistribution - urgent task',
-          'system'
+          'system',
         );
 
         results.push({
@@ -552,7 +605,7 @@ export class TaskSplitReassignService {
     }
 
     this.eventEmitter.emit('emergency.redistribution-completed', {
-      tasksReassigned: results.filter(r => r.success).length,
+      tasksReassigned: results.filter((r) => r.success).length,
       criteria,
     });
 
@@ -564,7 +617,7 @@ export class TaskSplitReassignService {
    */
   private async getWorkloadStatistics(
     workCenterId?: string,
-    timeWindow?: { start: Date; end: Date }
+    timeWindow?: { start: Date; end: Date },
   ): Promise<Array<{ userId: string; taskCount: number; totalHours: number }>> {
     const query = this.taskRepository
       .createQueryBuilder('task')
@@ -574,7 +627,11 @@ export class TaskSplitReassignService {
       .where('task.tenantId = :tenantId', { tenantId: this.getTenantId() })
       .andWhere('task.assignedToId IS NOT NULL')
       .andWhere('task.status IN (:...statuses)', {
-        statuses: [TaskStatus.PENDING, TaskStatus.READY, TaskStatus.IN_PROGRESS],
+        statuses: [
+          TaskStatus.PENDING,
+          TaskStatus.READY,
+          TaskStatus.IN_PROGRESS,
+        ],
       });
 
     if (workCenterId) {
@@ -583,15 +640,15 @@ export class TaskSplitReassignService {
 
     if (timeWindow) {
       query
-        .andWhere('task.scheduledStartDate >= :start', { start: timeWindow.start })
+        .andWhere('task.scheduledStartDate >= :start', {
+          start: timeWindow.start,
+        })
         .andWhere('task.scheduledEndDate <= :end', { end: timeWindow.end });
     }
 
-    const results = await query
-      .groupBy('task.assignedToId')
-      .getRawMany();
+    const results = await query.groupBy('task.assignedToId').getRawMany();
 
-    return results.map(r => ({
+    return results.map((r) => ({
       userId: r.userId,
       taskCount: parseInt(r.taskCount, 10),
       totalHours: parseFloat(r.totalHours) || 0,
@@ -603,7 +660,7 @@ export class TaskSplitReassignService {
    */
   private async getReassignableTasks(
     userId: string,
-    limit: number
+    limit: number,
   ): Promise<Task[]> {
     return this.taskRepository.find({
       where: {
@@ -638,7 +695,10 @@ export class TaskSplitReassignService {
   /**
    * Check if user has required skills
    */
-  private async checkUserSkills(_userId: string, _requiredSkills: string[]): Promise<boolean> {
+  private async checkUserSkills(
+    _userId: string,
+    _requiredSkills: string[],
+  ): Promise<boolean> {
     // This would typically check against a user skills table
     // For now, returning true as placeholder
     return true;

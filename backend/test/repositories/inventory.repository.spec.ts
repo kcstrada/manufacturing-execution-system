@@ -3,29 +3,38 @@ import { Repository, LessThan } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
 import { InventoryRepository } from '../../src/repositories/inventory.repository';
-import { Inventory, InventoryStatus } from '../../src/entities/inventory.entity';
-import { mockRepository, mockClsService, createMockQueryBuilder, createTestEntity } from './repository-test.helper';
+import {
+  Inventory,
+  InventoryStatus,
+} from '../../src/entities/inventory.entity';
+import {
+  mockRepository,
+  mockClsService,
+  createMockQueryBuilder,
+  createTestEntity,
+} from './repository-test.helper';
 
 describe('InventoryRepository', () => {
   let repository: InventoryRepository;
   let typeOrmRepository: jest.Mocked<Repository<Inventory>>;
   let clsService: jest.Mocked<ClsService>;
 
-  const createInventory = (overrides = {}): Inventory => createTestEntity({
-    warehouseCode: 'WH-001',
-    locationCode: 'LOC-A1',
-    lotNumber: 'LOT-2024-001',
-    serialNumber: 'SN-12345',
-    quantityOnHand: 100,
-    quantityAvailable: 80,
-    quantityReserved: 20,
-    quantityInTransit: 0,
-    status: InventoryStatus.AVAILABLE,
-    productId: 'product-id',
-    unitCost: 10.50,
-    expirationDate: new Date('2025-01-01'),
-    ...overrides,
-  }) as Inventory;
+  const createInventory = (overrides = {}): Inventory =>
+    createTestEntity({
+      warehouseCode: 'WH-001',
+      locationCode: 'LOC-A1',
+      lotNumber: 'LOT-2024-001',
+      serialNumber: 'SN-12345',
+      quantityOnHand: 100,
+      quantityAvailable: 80,
+      quantityReserved: 20,
+      quantityInTransit: 0,
+      status: InventoryStatus.AVAILABLE,
+      productId: 'product-id',
+      unitCost: 10.5,
+      expirationDate: new Date('2025-01-01'),
+      ...overrides,
+    }) as Inventory;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -92,10 +101,10 @@ describe('InventoryRepository', () => {
 
       expect(result).toEqual(inventoryItems);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
-        where: { 
-          warehouseCode: 'WH-001', 
-          locationCode: 'LOC-A1', 
-          tenantId: 'test-tenant-id' 
+        where: {
+          warehouseCode: 'WH-001',
+          locationCode: 'LOC-A1',
+          tenantId: 'test-tenant-id',
         },
         relations: ['product'],
       });
@@ -119,14 +128,19 @@ describe('InventoryRepository', () => {
 
   describe('findByStatus', () => {
     it('should find inventory by status', async () => {
-      const inventoryItems = [createInventory({ status: InventoryStatus.QUARANTINE })];
+      const inventoryItems = [
+        createInventory({ status: InventoryStatus.QUARANTINE }),
+      ];
       typeOrmRepository.find.mockResolvedValue(inventoryItems);
 
       const result = await repository.findByStatus(InventoryStatus.QUARANTINE);
 
       expect(result).toEqual(inventoryItems);
       expect(typeOrmRepository.find).toHaveBeenCalledWith({
-        where: { status: InventoryStatus.QUARANTINE, tenantId: 'test-tenant-id' },
+        where: {
+          status: InventoryStatus.QUARANTINE,
+          tenantId: 'test-tenant-id',
+        },
         relations: ['product'],
       });
     });
@@ -134,7 +148,9 @@ describe('InventoryRepository', () => {
 
   describe('findExpiredItems', () => {
     it('should find expired inventory items', async () => {
-      const expiredItems = [createInventory({ expirationDate: new Date('2023-01-01') })];
+      const expiredItems = [
+        createInventory({ expirationDate: new Date('2023-01-01') }),
+      ];
       typeOrmRepository.find.mockResolvedValue(expiredItems);
 
       const result = await repository.findExpiredItems();
@@ -218,7 +234,10 @@ describe('InventoryRepository', () => {
 
   describe('reserveQuantity', () => {
     it('should reserve quantity from available inventory', async () => {
-      const inventory = createInventory({ quantityAvailable: 100, quantityReserved: 0 });
+      const inventory = createInventory({
+        quantityAvailable: 100,
+        quantityReserved: 0,
+      });
       typeOrmRepository.findOne.mockResolvedValue(inventory);
       typeOrmRepository.save.mockResolvedValue({
         ...inventory,
@@ -226,7 +245,12 @@ describe('InventoryRepository', () => {
         quantityReserved: 20,
       } as Inventory);
 
-      const result = await repository.reserveQuantity('product-id', 'WH-001', 'LOC-A1', 20);
+      const result = await repository.reserveQuantity(
+        'product-id',
+        'WH-001',
+        'LOC-A1',
+        20,
+      );
 
       expect(result).toBeTruthy();
       expect(result?.quantityAvailable).toBe(80);
@@ -237,17 +261,30 @@ describe('InventoryRepository', () => {
     it('should return null if inventory not found', async () => {
       typeOrmRepository.findOne.mockResolvedValue(null);
 
-      const result = await repository.reserveQuantity('product-id', 'WH-001', 'LOC-A1', 20);
+      const result = await repository.reserveQuantity(
+        'product-id',
+        'WH-001',
+        'LOC-A1',
+        20,
+      );
 
       expect(result).toBeNull();
       expect(typeOrmRepository.save).not.toHaveBeenCalled();
     });
 
     it('should return null if insufficient quantity available', async () => {
-      const inventory = createInventory({ quantityAvailable: 10, quantityReserved: 0 });
+      const inventory = createInventory({
+        quantityAvailable: 10,
+        quantityReserved: 0,
+      });
       typeOrmRepository.findOne.mockResolvedValue(inventory);
 
-      const result = await repository.reserveQuantity('product-id', 'WH-001', 'LOC-A1', 20);
+      const result = await repository.reserveQuantity(
+        'product-id',
+        'WH-001',
+        'LOC-A1',
+        20,
+      );
 
       expect(result).toBeNull();
       expect(typeOrmRepository.save).not.toHaveBeenCalled();
@@ -265,7 +302,7 @@ describe('InventoryRepository', () => {
       expect(result).toEqual(inventory);
       expect(typeOrmRepository.update).toHaveBeenCalledWith(
         { id: 'inv-id', tenantId: 'test-tenant-id' },
-        { quantityOnHand: 120, quantityAvailable: 100, quantityReserved: 20 }
+        { quantityOnHand: 120, quantityAvailable: 100, quantityReserved: 20 },
       );
     });
 
@@ -273,8 +310,9 @@ describe('InventoryRepository', () => {
       typeOrmRepository.update.mockResolvedValue({ affected: 1 } as any);
       typeOrmRepository.findOne.mockResolvedValue(null);
 
-      await expect(repository.updateQuantities('inv-id', 120, 100, 20))
-        .rejects.toThrow('Inventory not found');
+      await expect(
+        repository.updateQuantities('inv-id', 120, 100, 20),
+      ).rejects.toThrow('Inventory not found');
     });
   });
 
@@ -288,10 +326,22 @@ describe('InventoryRepository', () => {
       const result = await repository.findLowStockItems(10);
 
       expect(result).toEqual(lowStockItems);
-      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('inventory.product', 'product');
-      expect(queryBuilder.where).toHaveBeenCalledWith('inventory.tenantId = :tenantId', { tenantId: 'test-tenant-id' });
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith('inventory.quantityOnHand < :threshold', { threshold: 10 });
-      expect(queryBuilder.orderBy).toHaveBeenCalledWith('inventory.quantityOnHand', 'ASC');
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'inventory.product',
+        'product',
+      );
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'inventory.tenantId = :tenantId',
+        { tenantId: 'test-tenant-id' },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'inventory.quantityOnHand < :threshold',
+        { threshold: 10 },
+      );
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        'inventory.quantityOnHand',
+        'ASC',
+      );
     });
   });
 
@@ -308,13 +358,21 @@ describe('InventoryRepository', () => {
       const result = await repository.getInventoryValuation();
 
       expect(result).toEqual(valuationData);
-      expect(queryBuilder.select).toHaveBeenCalledWith('inventory.productId', 'productId');
-      expect(queryBuilder.addSelect).toHaveBeenCalledWith(
-        'SUM(inventory.quantityOnHand * inventory.unitCost)', 
-        'totalValue'
+      expect(queryBuilder.select).toHaveBeenCalledWith(
+        'inventory.productId',
+        'productId',
       );
-      expect(queryBuilder.where).toHaveBeenCalledWith('inventory.tenantId = :tenantId', { tenantId: 'test-tenant-id' });
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith('inventory.unitCost IS NOT NULL');
+      expect(queryBuilder.addSelect).toHaveBeenCalledWith(
+        'SUM(inventory.quantityOnHand * inventory.unitCost)',
+        'totalValue',
+      );
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'inventory.tenantId = :tenantId',
+        { tenantId: 'test-tenant-id' },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'inventory.unitCost IS NOT NULL',
+      );
       expect(queryBuilder.groupBy).toHaveBeenCalledWith('inventory.productId');
     });
   });

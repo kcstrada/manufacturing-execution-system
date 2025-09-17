@@ -51,7 +51,9 @@ export class QueueManagementService {
         ...options,
       });
 
-      this.logger.log(`Job ${jobName} added to queue ${queueName}, ID: ${job.id}`);
+      this.logger.log(
+        `Job ${jobName} added to queue ${queueName}, ID: ${job.id}`,
+      );
       return job;
     } catch (error) {
       this.logger.error(`Failed to add job to queue ${queueName}:`, error);
@@ -82,9 +84,9 @@ export class QueueManagementService {
     cron: string,
     options?: JobOptions,
   ): Promise<Job<T>> {
-    return this.addJob(queueName, jobName, data, { 
-      ...options, 
-      repeat: { cron } 
+    return this.addJob(queueName, jobName, data, {
+      ...options,
+      repeat: { cron },
     });
   }
 
@@ -147,21 +149,15 @@ export class QueueManagementService {
       throw new Error(`Queue ${queueName} not found`);
     }
 
-    const [
-      waiting,
-      active,
-      completed,
-      failed,
-      delayed,
-      paused,
-    ] = await Promise.all([
-      queue.getWaitingCount(),
-      queue.getActiveCount(),
-      queue.getCompletedCount(),
-      queue.getFailedCount(),
-      queue.getDelayedCount(),
-      queue.isPaused(),
-    ]);
+    const [waiting, active, completed, failed, delayed, paused] =
+      await Promise.all([
+        queue.getWaitingCount(),
+        queue.getActiveCount(),
+        queue.getCompletedCount(),
+        queue.getFailedCount(),
+        queue.getDelayedCount(),
+        queue.isPaused(),
+      ]);
 
     return {
       name: queueName,
@@ -245,7 +241,9 @@ export class QueueManagementService {
     }
 
     const removed = await queue.clean(grace, 'completed');
-    this.logger.log(`Cleaned ${removed.length} completed jobs from queue ${queueName}`);
+    this.logger.log(
+      `Cleaned ${removed.length} completed jobs from queue ${queueName}`,
+    );
     return removed;
   }
 
@@ -259,7 +257,9 @@ export class QueueManagementService {
     }
 
     const removed = await queue.clean(grace, 'failed');
-    this.logger.log(`Cleaned ${removed.length} failed jobs from queue ${queueName}`);
+    this.logger.log(
+      `Cleaned ${removed.length} failed jobs from queue ${queueName}`,
+    );
     return removed;
   }
 

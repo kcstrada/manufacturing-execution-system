@@ -1,39 +1,51 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddRoutingFields1758041000000 implements MigrationInterface {
-    name = 'AddRoutingFields1758041000000'
+  name = 'AddRoutingFields1758041000000';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // Add new fields to routings table
-        await queryRunner.query(`ALTER TABLE "routings" ADD "is_default" boolean NOT NULL DEFAULT false`);
-        await queryRunner.query(`ALTER TABLE "routings" ADD "expected_yield" numeric(5,2) NOT NULL DEFAULT '100'`);
-        await queryRunner.query(`ALTER TABLE "routings" ADD "alternate_routes" jsonb`);
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Add new fields to routings table
+    await queryRunner.query(
+      `ALTER TABLE "routings" ADD "is_default" boolean NOT NULL DEFAULT false`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "routings" ADD "expected_yield" numeric(5,2) NOT NULL DEFAULT '100'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "routings" ADD "alternate_routes" jsonb`,
+    );
 
-        // Create index for isDefault to ensure only one default routing per product
-        await queryRunner.query(`CREATE INDEX "idx_routings_tenant_id_product_id_is_default" ON "routings" ("tenant_id", "product_id", "is_default")`);
-        
-        // Create partial unique index to ensure only one default routing per product
-        await queryRunner.query(`
+    // Create index for isDefault to ensure only one default routing per product
+    await queryRunner.query(
+      `CREATE INDEX "idx_routings_tenant_id_product_id_is_default" ON "routings" ("tenant_id", "product_id", "is_default")`,
+    );
+
+    // Create partial unique index to ensure only one default routing per product
+    await queryRunner.query(`
             CREATE UNIQUE INDEX "uq_routings_default_per_product" 
             ON "routings" ("tenant_id", "product_id") 
             WHERE "is_default" = true AND "deleted_at" IS NULL
         `);
 
-        // Create index for expected_yield for performance queries
-        await queryRunner.query(`CREATE INDEX "idx_routings_expected_yield" ON "routings" ("expected_yield")`);
+    // Create index for expected_yield for performance queries
+    await queryRunner.query(
+      `CREATE INDEX "idx_routings_expected_yield" ON "routings" ("expected_yield")`,
+    );
 
-        // Create GIN index for alternate_routes JSONB search
-        await queryRunner.query(`CREATE INDEX "idx_routings_alternate_routes_gin" ON "routings" USING gin("alternate_routes") WHERE "alternate_routes" IS NOT NULL`);
+    // Create GIN index for alternate_routes JSONB search
+    await queryRunner.query(
+      `CREATE INDEX "idx_routings_alternate_routes_gin" ON "routings" USING gin("alternate_routes") WHERE "alternate_routes" IS NOT NULL`,
+    );
 
-        // Add check constraint for expected_yield
-        await queryRunner.query(`
+    // Add check constraint for expected_yield
+    await queryRunner.query(`
             ALTER TABLE "routings" 
             ADD CONSTRAINT "chk_routings_expected_yield" 
             CHECK ("expected_yield" >= 0 AND "expected_yield" <= 100)
         `);
 
-        // Create function to validate only one default routing
-        await queryRunner.query(`
+    // Create function to validate only one default routing
+    await queryRunner.query(`
             CREATE OR REPLACE FUNCTION validate_single_default_routing()
             RETURNS TRIGGER AS $$
             BEGIN
@@ -52,7 +64,7 @@ export class AddRoutingFields1758041000000 implements MigrationInterface {
             $$ LANGUAGE plpgsql;
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE TRIGGER ensure_single_default_routing_trigger
             BEFORE INSERT OR UPDATE OF is_default
             ON routings
@@ -61,8 +73,8 @@ export class AddRoutingFields1758041000000 implements MigrationInterface {
             EXECUTE FUNCTION validate_single_default_routing();
         `);
 
-        // Create function to calculate cumulative yield through routing steps
-        await queryRunner.query(`
+    // Create function to calculate cumulative yield through routing steps
+    await queryRunner.query(`
             CREATE OR REPLACE FUNCTION calculate_routing_cumulative_yield(routing_id UUID)
             RETURNS NUMERIC AS $$
             DECLARE
@@ -85,8 +97,8 @@ export class AddRoutingFields1758041000000 implements MigrationInterface {
             $$ LANGUAGE plpgsql;
         `);
 
-        // Create function to track alternate route usage
-        await queryRunner.query(`
+    // Create function to track alternate route usage
+    await queryRunner.query(`
             CREATE OR REPLACE FUNCTION track_alternate_route_usage(
                 p_routing_id UUID,
                 p_alternate_routing_id TEXT
@@ -130,8 +142,8 @@ export class AddRoutingFields1758041000000 implements MigrationInterface {
             $$ LANGUAGE plpgsql;
         `);
 
-        // Create view for routing performance analysis
-        await queryRunner.query(`
+    // Create view for routing performance analysis
+    await queryRunner.query(`
             CREATE OR REPLACE VIEW v_routing_performance AS
             SELECT 
                 r.id,
@@ -161,32 +173,54 @@ export class AddRoutingFields1758041000000 implements MigrationInterface {
                 r.total_setup_time_minutes, r.total_run_time_per_unit_minutes,
                 r.total_cost_per_unit, r.status, r.alternate_routes;
         `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop view
-        await queryRunner.query(`DROP VIEW IF EXISTS v_routing_performance`);
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop view
+    await queryRunner.query(`DROP VIEW IF EXISTS v_routing_performance`);
 
-        // Drop functions
-        await queryRunner.query(`DROP FUNCTION IF EXISTS track_alternate_route_usage(UUID, TEXT)`);
-        await queryRunner.query(`DROP FUNCTION IF EXISTS calculate_routing_cumulative_yield(UUID)`);
-        await queryRunner.query(`DROP FUNCTION IF EXISTS validate_single_default_routing()`);
-        
-        // Drop trigger
-        await queryRunner.query(`DROP TRIGGER IF EXISTS ensure_single_default_routing_trigger ON routings`);
+    // Drop functions
+    await queryRunner.query(
+      `DROP FUNCTION IF EXISTS track_alternate_route_usage(UUID, TEXT)`,
+    );
+    await queryRunner.query(
+      `DROP FUNCTION IF EXISTS calculate_routing_cumulative_yield(UUID)`,
+    );
+    await queryRunner.query(
+      `DROP FUNCTION IF EXISTS validate_single_default_routing()`,
+    );
 
-        // Drop constraint
-        await queryRunner.query(`ALTER TABLE "routings" DROP CONSTRAINT IF EXISTS "chk_routings_expected_yield"`);
+    // Drop trigger
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS ensure_single_default_routing_trigger ON routings`,
+    );
 
-        // Drop indexes
-        await queryRunner.query(`DROP INDEX IF EXISTS "idx_routings_alternate_routes_gin"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "idx_routings_expected_yield"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "uq_routings_default_per_product"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "idx_routings_tenant_id_product_id_is_default"`);
+    // Drop constraint
+    await queryRunner.query(
+      `ALTER TABLE "routings" DROP CONSTRAINT IF EXISTS "chk_routings_expected_yield"`,
+    );
 
-        // Remove fields from routings
-        await queryRunner.query(`ALTER TABLE "routings" DROP COLUMN "alternate_routes"`);
-        await queryRunner.query(`ALTER TABLE "routings" DROP COLUMN "expected_yield"`);
-        await queryRunner.query(`ALTER TABLE "routings" DROP COLUMN "is_default"`);
-    }
+    // Drop indexes
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_routings_alternate_routes_gin"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_routings_expected_yield"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "uq_routings_default_per_product"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_routings_tenant_id_product_id_is_default"`,
+    );
+
+    // Remove fields from routings
+    await queryRunner.query(
+      `ALTER TABLE "routings" DROP COLUMN "alternate_routes"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "routings" DROP COLUMN "expected_yield"`,
+    );
+    await queryRunner.query(`ALTER TABLE "routings" DROP COLUMN "is_default"`);
+  }
 }

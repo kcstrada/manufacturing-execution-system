@@ -36,12 +36,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     } else if (typeof exceptionResponse === 'object') {
       // Merge exception response with error response
       Object.assign(errorResponse, exceptionResponse);
-      
+
       // Ensure message is always present
       if (!errorResponse.message) {
         errorResponse.message = exception.message || 'An error occurred';
       }
-      
+
       // Format validation errors
       if (Array.isArray(errorResponse.message)) {
         errorResponse.errors = errorResponse.message;

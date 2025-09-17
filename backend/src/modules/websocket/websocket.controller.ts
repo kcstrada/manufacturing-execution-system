@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  HttpStatus,
-  Param,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpStatus, Param } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -49,21 +42,14 @@ export class WebSocketController {
     status: HttpStatus.OK,
     description: 'Message broadcasted successfully',
   })
-  broadcast(
-    @Body() broadcastDto: BroadcastDto,
-    @CurrentUser() user: any,
-  ) {
-    this.webSocketService.broadcast(
-      broadcastDto.event,
-      broadcastDto.data,
-      {
-        rooms: broadcastDto.rooms,
-        roles: broadcastDto.roles,
-        userIds: broadcastDto.userIds,
-        excludeUserIds: broadcastDto.excludeUserIds,
-        tenantId: user.tenantId,
-      },
-    );
+  broadcast(@Body() broadcastDto: BroadcastDto, @CurrentUser() user: any) {
+    this.webSocketService.broadcast(broadcastDto.event, broadcastDto.data, {
+      rooms: broadcastDto.rooms,
+      roles: broadcastDto.roles,
+      userIds: broadcastDto.userIds,
+      excludeUserIds: broadcastDto.excludeUserIds,
+      tenantId: user.tenantId,
+    });
 
     return {
       success: true,
@@ -83,18 +69,14 @@ export class WebSocketController {
     @Body() notificationDto: NotificationDto,
     @CurrentUser() user: any,
   ) {
-    this.webSocketService.sendNotificationToUser(
-      userId,
-      user.tenantId,
-      {
-        type: notificationDto.type,
-        title: notificationDto.title,
-        message: notificationDto.message,
-        severity: notificationDto.severity,
-        data: notificationDto.data,
-        actions: notificationDto.actions,
-      },
-    );
+    this.webSocketService.sendNotificationToUser(userId, user.tenantId, {
+      type: notificationDto.type,
+      title: notificationDto.title,
+      message: notificationDto.message,
+      severity: notificationDto.severity,
+      data: notificationDto.data,
+      actions: notificationDto.actions,
+    });
 
     return {
       success: true,
@@ -104,7 +86,9 @@ export class WebSocketController {
   }
 
   @Post('notify/role/:role')
-  @ApiOperation({ summary: 'Send notification to all users with specific role' })
+  @ApiOperation({
+    summary: 'Send notification to all users with specific role',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Notification sent to role successfully',
@@ -173,24 +157,21 @@ export class WebSocketController {
   })
   testConnection(@CurrentUser() user: any) {
     // Send a test message to the current user
-    this.webSocketService.sendNotificationToUser(
-      user.sub,
-      user.tenantId,
-      {
-        type: 'info' as any,
-        title: 'WebSocket Test',
-        message: 'This is a test message from the WebSocket server',
-        severity: 'low' as any,
-        data: {
-          timestamp: new Date(),
-          userId: user.sub,
-        },
+    this.webSocketService.sendNotificationToUser(user.sub, user.tenantId, {
+      type: 'info' as any,
+      title: 'WebSocket Test',
+      message: 'This is a test message from the WebSocket server',
+      severity: 'low' as any,
+      data: {
+        timestamp: new Date(),
+        userId: user.sub,
       },
-    );
+    });
 
     return {
       success: true,
-      message: 'Test message sent. Check your WebSocket connection for the message.',
+      message:
+        'Test message sent. Check your WebSocket connection for the message.',
       timestamp: new Date(),
     };
   }

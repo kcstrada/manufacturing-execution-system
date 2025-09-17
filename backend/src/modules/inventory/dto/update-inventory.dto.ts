@@ -1,17 +1,15 @@
 import { PartialType, OmitType } from '@nestjs/swagger';
-import {
-  IsNumber,
-  IsEnum,
-  IsOptional,
-  IsString,
-  Min,
-} from 'class-validator';
+import { IsNumber, IsEnum, IsOptional, IsString, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateInventoryDto } from './create-inventory.dto';
 import { InventoryStatus } from '../../../entities/inventory.entity';
 
 export class UpdateInventoryDto extends PartialType(
-  OmitType(CreateInventoryDto, ['productId', 'warehouseCode', 'locationCode'] as const)
+  OmitType(CreateInventoryDto, [
+    'productId',
+    'warehouseCode',
+    'locationCode',
+  ] as const),
 ) {}
 
 export class UpdateInventoryQuantitiesDto {
@@ -41,9 +39,9 @@ export class UpdateInventoryQuantitiesDto {
 }
 
 export class UpdateInventoryStatusDto {
-  @ApiPropertyOptional({ 
-    description: 'Inventory status', 
-    enum: InventoryStatus 
+  @ApiPropertyOptional({
+    description: 'Inventory status',
+    enum: InventoryStatus,
   })
   @IsEnum(InventoryStatus)
   status!: InventoryStatus;

@@ -9,12 +9,20 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { NotificationPreferenceService } from '../services/notification-preference.service';
 import { NotificationPreference } from '../entities/notification-preference.entity';
-import { NotificationType, NotificationChannel } from '../types/notification.types';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../types/notification.types';
 
 @ApiTags('Notification Preferences')
 @ApiBearerAuth()
@@ -28,8 +36,13 @@ export class NotificationPreferenceController {
   @Get()
   @ApiOperation({ summary: 'Get user notification preferences' })
   @ApiResponse({ status: 200, description: 'Returns user preferences' })
-  async getPreferences(@CurrentUser() user: any): Promise<NotificationPreference[]> {
-    return await this.preferenceService.getUserPreferences(user.id, user.tenantId);
+  async getPreferences(
+    @CurrentUser() user: any,
+  ): Promise<NotificationPreference[]> {
+    return await this.preferenceService.getUserPreferences(
+      user.id,
+      user.tenantId,
+    );
   }
 
   @Put()
@@ -37,7 +50,8 @@ export class NotificationPreferenceController {
   @ApiResponse({ status: 200, description: 'Preference updated successfully' })
   async updatePreference(
     @CurrentUser() user: any,
-    @Body() body: {
+    @Body()
+    body: {
       type: NotificationType;
       channel: NotificationChannel;
       enabled: boolean;
@@ -59,7 +73,8 @@ export class NotificationPreferenceController {
   @ApiResponse({ status: 200, description: 'Preferences updated successfully' })
   async bulkUpdatePreferences(
     @CurrentUser() user: any,
-    @Body() preferences: Array<{
+    @Body()
+    preferences: Array<{
       type: NotificationType;
       channel: NotificationChannel;
       enabled: boolean;
@@ -86,7 +101,10 @@ export class NotificationPreferenceController {
   @ApiOperation({ summary: 'Disable all notifications' })
   @ApiResponse({ status: 204, description: 'All notifications disabled' })
   async disableAll(@CurrentUser() user: any): Promise<void> {
-    await this.preferenceService.disableAllNotifications(user.id, user.tenantId);
+    await this.preferenceService.disableAllNotifications(
+      user.id,
+      user.tenantId,
+    );
   }
 
   @Put('enable-all')
@@ -118,14 +136,20 @@ export class NotificationPreferenceController {
   @ApiOperation({ summary: 'Get quiet hours settings' })
   @ApiResponse({ status: 200, description: 'Returns quiet hours settings' })
   async getQuietHours(@CurrentUser() user: any): Promise<any> {
-    return await this.preferenceService.getQuietHoursSettings(user.id, user.tenantId);
+    return await this.preferenceService.getQuietHoursSettings(
+      user.id,
+      user.tenantId,
+    );
   }
 
   @Get('quiet-hours/active')
   @ApiOperation({ summary: 'Check if currently in quiet hours' })
   @ApiResponse({ status: 200, description: 'Returns quiet hours status' })
   async isInQuietHours(@CurrentUser() user: any): Promise<{ active: boolean }> {
-    const active = await this.preferenceService.isInQuietHours(user.id, user.tenantId);
+    const active = await this.preferenceService.isInQuietHours(
+      user.id,
+      user.tenantId,
+    );
     return { active };
   }
 
@@ -136,14 +160,19 @@ export class NotificationPreferenceController {
     @CurrentUser() user: any,
     @Param('channel') channel: 'email' | 'sms',
   ): Promise<{ token: string }> {
-    const token = await this.preferenceService.generateUnsubscribeToken(user.id, channel);
+    const token = await this.preferenceService.generateUnsubscribeToken(
+      user.id,
+      channel,
+    );
     return { token };
   }
 
   @Post('unsubscribe/:token')
   @ApiOperation({ summary: 'Unsubscribe using token' })
   @ApiResponse({ status: 200, description: 'Unsubscribed successfully' })
-  async unsubscribe(@Param('token') token: string): Promise<{ success: boolean }> {
+  async unsubscribe(
+    @Param('token') token: string,
+  ): Promise<{ success: boolean }> {
     const success = await this.preferenceService.unsubscribeByToken(token);
     return { success };
   }

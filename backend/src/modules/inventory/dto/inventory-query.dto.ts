@@ -38,9 +38,9 @@ export class InventoryQueryDto {
   @IsString()
   serialNumber?: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Inventory status', 
-    enum: InventoryStatus 
+  @ApiPropertyOptional({
+    description: 'Inventory status',
+    enum: InventoryStatus,
   })
   @IsOptional()
   @IsEnum(InventoryStatus)
@@ -87,7 +87,11 @@ export class InventoryQueryDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Items per page', minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Items per page',
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsNumber()
@@ -148,7 +152,11 @@ export class InventoryTransactionQueryDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Items per page', minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Items per page',
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsNumber()
@@ -167,7 +175,10 @@ export class InventoryValuationQueryDto {
   @IsUUID()
   productId?: string;
 
-  @ApiPropertyOptional({ description: 'Group by field', enum: ['product', 'warehouse', 'location'] })
+  @ApiPropertyOptional({
+    description: 'Group by field',
+    enum: ['product', 'warehouse', 'location'],
+  })
   @IsOptional()
   @IsEnum(['product', 'warehouse', 'location'])
   groupBy?: 'product' | 'warehouse' | 'location';

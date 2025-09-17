@@ -51,7 +51,11 @@ export class TaskController {
   @Post()
   @RequireRoles('Admin', 'Manager', 'Supervisor')
   @ApiOperation({ summary: 'Create a new task' })
-  @ApiResponse({ status: 201, description: 'Task created successfully', type: Task })
+  @ApiResponse({
+    status: 201,
+    description: 'Task created successfully',
+    type: Task,
+  })
   async create(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
     return this.taskService.create(createTaskDto);
   }
@@ -78,7 +82,11 @@ export class TaskController {
   @Get('overdue')
   @RequireRoles('Admin', 'Manager', 'Supervisor')
   @ApiOperation({ summary: 'Get overdue tasks' })
-  @ApiResponse({ status: 200, description: 'List of overdue tasks', type: [Task] })
+  @ApiResponse({
+    status: 200,
+    description: 'List of overdue tasks',
+    type: [Task],
+  })
   async getOverdueTasks(): Promise<Task[]> {
     return this.taskService.getOverdueTasks();
   }
@@ -104,7 +112,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor', 'Viewer')
   @ApiOperation({ summary: 'Get task assignments' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task assignments', type: [TaskAssignment] })
+  @ApiResponse({
+    status: 200,
+    description: 'Task assignments',
+    type: [TaskAssignment],
+  })
   async getTaskAssignments(@Param('id') id: string): Promise<TaskAssignment[]> {
     return this.taskService.getTaskAssignments(id);
   }
@@ -113,7 +125,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor')
   @ApiOperation({ summary: 'Update task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task updated successfully', type: Task })
+  @ApiResponse({
+    status: 200,
+    description: 'Task updated successfully',
+    type: Task,
+  })
   async update(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
@@ -125,7 +141,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor')
   @ApiOperation({ summary: 'Assign task to user' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task assigned successfully', type: TaskAssignment })
+  @ApiResponse({
+    status: 200,
+    description: 'Task assigned successfully',
+    type: TaskAssignment,
+  })
   async assignTask(
     @Param('id') id: string,
     @Body() assignTaskDto: AssignTaskDto,
@@ -147,7 +167,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor')
   @ApiOperation({ summary: 'Reassign task to another user' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task reassigned successfully', type: TaskAssignment })
+  @ApiResponse({
+    status: 200,
+    description: 'Task reassigned successfully',
+    type: TaskAssignment,
+  })
   async reassignTask(
     @Param('id') id: string,
     @Body() reassignTaskDto: ReassignTaskDto,
@@ -164,7 +188,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor', 'Worker')
   @ApiOperation({ summary: 'Start working on a task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task started successfully', type: Task })
+  @ApiResponse({
+    status: 200,
+    description: 'Task started successfully',
+    type: Task,
+  })
   async startTask(
     @Param('id') id: string,
     @CurrentUser() user: any,
@@ -176,7 +204,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor', 'Worker')
   @ApiOperation({ summary: 'Pause a task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task paused successfully', type: Task })
+  @ApiResponse({
+    status: 200,
+    description: 'Task paused successfully',
+    type: Task,
+  })
   async pauseTask(@Param('id') id: string): Promise<Task> {
     return this.taskService.update(id, { status: 'paused' as any });
   }
@@ -185,7 +217,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor', 'Worker')
   @ApiOperation({ summary: 'Resume a paused task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task resumed successfully', type: Task })
+  @ApiResponse({
+    status: 200,
+    description: 'Task resumed successfully',
+    type: Task,
+  })
   async resumeTask(@Param('id') id: string): Promise<Task> {
     return this.taskService.update(id, { status: 'in_progress' as any });
   }
@@ -194,7 +230,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor', 'Worker')
   @ApiOperation({ summary: 'Complete a task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task completed successfully', type: Task })
+  @ApiResponse({
+    status: 200,
+    description: 'Task completed successfully',
+    type: Task,
+  })
   async completeTask(
     @Param('id') id: string,
     @Body() completeTaskDto: CompleteTaskDto,
@@ -207,7 +247,7 @@ export class TaskController {
         completeTaskDto.rejectedQuantity,
       );
     }
-    
+
     return this.taskService.completeTask(
       id,
       completeTaskDto.userId,
@@ -219,7 +259,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor')
   @ApiOperation({ summary: 'Cancel a task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Task cancelled successfully', type: Task })
+  @ApiResponse({
+    status: 200,
+    description: 'Task cancelled successfully',
+    type: Task,
+  })
   async cancelTask(
     @Param('id') id: string,
     @Body('reason') reason: string,
@@ -234,7 +278,11 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor', 'Worker')
   @ApiOperation({ summary: 'Update task progress' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Progress updated successfully', type: Task })
+  @ApiResponse({
+    status: 200,
+    description: 'Progress updated successfully',
+    type: Task,
+  })
   async updateProgress(
     @Param('id') id: string,
     @Body() updateProgressDto: UpdateProgressDto,
@@ -250,15 +298,21 @@ export class TaskController {
   @RequireRoles('Admin', 'Manager', 'Supervisor', 'Worker')
   @ApiOperation({ summary: 'Update checklist item' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'Checklist updated successfully', type: Task })
+  @ApiResponse({
+    status: 200,
+    description: 'Checklist updated successfully',
+    type: Task,
+  })
   async updateChecklist(
     @Param('id') id: string,
     @Body() checklistItemDto: ChecklistItemDto,
   ): Promise<Task> {
     const task = await this.taskService.findOne(id);
-    
+
     if (task.checklistItems) {
-      const item = task.checklistItems.find(i => i.id === checklistItemDto.id);
+      const item = task.checklistItems.find(
+        (i) => i.id === checklistItemDto.id,
+      );
       if (item) {
         item.completed = checklistItemDto.completed;
         if (checklistItemDto.completed) {
@@ -267,7 +321,7 @@ export class TaskController {
         }
       }
     }
-    
+
     return this.taskService.update(id, { checklistItems: task.checklistItems });
   }
 

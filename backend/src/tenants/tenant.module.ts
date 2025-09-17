@@ -1,4 +1,10 @@
-import { Module, Global, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
+import {
+  Module,
+  Global,
+  MiddlewareConsumer,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TenantService } from './tenant.service';
 import { TenantMiddleware } from './tenant.middleware';
@@ -14,21 +20,10 @@ import { AuthModule } from '../auth/auth.module';
  */
 @Global()
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Tenant]),
-    AuthModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Tenant]), AuthModule],
   controllers: [TenantController],
-  providers: [
-    TenantService,
-    TenantInterceptor,
-    TenantGuard,
-  ],
-  exports: [
-    TenantService,
-    TenantInterceptor,
-    TenantGuard,
-  ],
+  providers: [TenantService, TenantInterceptor, TenantGuard],
+  exports: [TenantService, TenantInterceptor, TenantGuard],
 })
 export class TenantModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

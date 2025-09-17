@@ -143,10 +143,7 @@ export interface IProductionOrderService
   /**
    * Split production order
    */
-  split(
-    orderId: string,
-    quantities: number[],
-  ): Promise<ProductionOrder[]>;
+  split(orderId: string, quantities: number[]): Promise<ProductionOrder[]>;
 
   /**
    * Merge production orders
@@ -166,8 +163,5 @@ export interface IProductionOrderService
   /**
    * Get production orders by date range
    */
-  getByDateRange(
-    startDate: Date,
-    endDate: Date,
-  ): Promise<ProductionOrder[]>;
+  getByDateRange(startDate: Date, endDate: Date): Promise<ProductionOrder[]>;
 }

@@ -6,8 +6,15 @@ import { ClsService } from 'nestjs-cls';
 import { OrderService } from './order.service';
 import { OrderStateMachineService } from './services/order-state-machine.service';
 import { OrderToTaskConverterService } from './services/order-to-task-converter.service';
-import { OrderRepository, OrderLineRepository } from '../../repositories/order.repository';
-import { CustomerOrder, CustomerOrderLine, CustomerOrderStatus } from '../../entities/customer-order.entity';
+import {
+  OrderRepository,
+  OrderLineRepository,
+} from '../../repositories/order.repository';
+import {
+  CustomerOrder,
+  CustomerOrderLine,
+  CustomerOrderStatus,
+} from '../../entities/customer-order.entity';
 import { UpdateOrderStatusDto } from './dto/update-order.dto';
 import { WorkflowEvent } from './interfaces/state-machine.interface';
 
@@ -113,9 +120,9 @@ describe('OrderService - State Machine Integration', () => {
     }).compile();
 
     service = module.get<OrderService>(OrderService);
-    orderRepo = module.get(getRepositoryToken(CustomerOrder)) as jest.Mocked<Repository<CustomerOrder>>;
-    clsService = module.get(ClsService) as jest.Mocked<ClsService>;
-    stateMachine = module.get(OrderStateMachineService) as jest.Mocked<OrderStateMachineService>;
+    orderRepo = module.get(getRepositoryToken(CustomerOrder));
+    clsService = module.get(ClsService);
+    stateMachine = module.get(OrderStateMachineService);
 
     // Setup default cls service behavior
     clsService.get.mockImplementation((key?: string | symbol) => {
@@ -158,7 +165,7 @@ describe('OrderService - State Machine Integration', () => {
         expect.objectContaining({
           userId: mockUserId,
           reason: undefined,
-        })
+        }),
       );
       expect(orderRepo.save).toHaveBeenCalled();
     });
@@ -188,7 +195,7 @@ describe('OrderService - State Machine Integration', () => {
       expect(stateMachine.transition).toHaveBeenCalledWith(
         mockOrder,
         WorkflowEvent.COMPLETE_PRODUCTION,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -220,7 +227,7 @@ describe('OrderService - State Machine Integration', () => {
         WorkflowEvent.PASS_QC,
         expect.objectContaining({
           reason: 'All quality checks passed',
-        })
+        }),
       );
     });
 
@@ -252,7 +259,7 @@ describe('OrderService - State Machine Integration', () => {
         WorkflowEvent.FAIL_QC,
         expect.objectContaining({
           reason: 'Defects found',
-        })
+        }),
       );
     });
 
@@ -284,7 +291,7 @@ describe('OrderService - State Machine Integration', () => {
         WorkflowEvent.START_PRODUCTION,
         expect.objectContaining({
           reason: 'Rework initiated',
-        })
+        }),
       );
     });
 
@@ -325,7 +332,7 @@ describe('OrderService - State Machine Integration', () => {
           WorkflowEvent.CANCEL,
           expect.objectContaining({
             reason: 'Customer request',
-          })
+          }),
         );
       }
     });
@@ -358,7 +365,7 @@ describe('OrderService - State Machine Integration', () => {
         WorkflowEvent.HOLD,
         expect.objectContaining({
           reason: 'Payment issue',
-        })
+        }),
       );
     });
 
@@ -390,7 +397,7 @@ describe('OrderService - State Machine Integration', () => {
         WorkflowEvent.RELEASE,
         expect.objectContaining({
           reason: 'Issue resolved',
-        })
+        }),
       );
     });
 
@@ -414,7 +421,9 @@ describe('OrderService - State Machine Integration', () => {
         timestamp: new Date(),
       });
 
-      await expect(service.updateStatus(mockOrderId, statusDto)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.updateStatus(mockOrderId, statusDto),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should fall back to old validation for unmapped transitions', async () => {
@@ -428,7 +437,8 @@ describe('OrderService - State Machine Integration', () => {
         status: CustomerOrderStatus.SHIPPED,
       };
 
-      jest.spyOn(service, 'findOne')
+      jest
+        .spyOn(service, 'findOne')
         .mockResolvedValueOnce(mockOrder)
         .mockResolvedValueOnce(mockOrder);
       orderRepo.save.mockResolvedValue(mockOrder);
@@ -469,7 +479,7 @@ describe('OrderService - State Machine Integration', () => {
         WorkflowEvent.SHIP,
         expect.objectContaining({
           metadata: { shippedDate },
-        })
+        }),
       );
     });
   });
@@ -485,7 +495,8 @@ describe('OrderService - State Machine Integration', () => {
         status: CustomerOrderStatus.CONFIRMED,
       };
 
-      jest.spyOn(service, 'findOne')
+      jest
+        .spyOn(service, 'findOne')
         .mockResolvedValueOnce(mockOrder)
         .mockResolvedValueOnce(mockOrder);
       stateMachine.transition.mockResolvedValue({
@@ -496,7 +507,9 @@ describe('OrderService - State Machine Integration', () => {
       });
       orderRepo.save.mockResolvedValue(mockOrder);
 
-      await expect(service.updateStatus(mockOrderId, statusDto)).resolves.toBeDefined();
+      await expect(
+        service.updateStatus(mockOrderId, statusDto),
+      ).resolves.toBeDefined();
     });
 
     it('should allow transition from IN_PRODUCTION to QUALITY_CONTROL', async () => {
@@ -518,7 +531,9 @@ describe('OrderService - State Machine Integration', () => {
       });
       orderRepo.save.mockResolvedValue(mockOrder);
 
-      await expect(service.updateStatus(mockOrderId, statusDto)).resolves.toBeDefined();
+      await expect(
+        service.updateStatus(mockOrderId, statusDto),
+      ).resolves.toBeDefined();
     });
 
     it('should reject invalid transition from QC_PASSED to IN_PRODUCTION', async () => {
@@ -533,7 +548,9 @@ describe('OrderService - State Machine Integration', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockOrder);
 
-      await expect(service.updateStatus(mockOrderId, statusDto)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.updateStatus(mockOrderId, statusDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

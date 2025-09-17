@@ -1,12 +1,12 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, In, LessThan } from 'typeorm';
 import { ClsService } from 'nestjs-cls';
 import { Task, TaskStatus, TaskPriority } from '../../../entities/task.entity';
-import { TaskAssignment, AssignmentStatus } from '../../../entities/task-assignment.entity';
+import {
+  TaskAssignment,
+  AssignmentStatus,
+} from '../../../entities/task-assignment.entity';
 import { User } from '../../../entities/user.entity';
 import { WorkCenter } from '../../../entities/work-center.entity';
 
@@ -57,7 +57,7 @@ export class TaskAssignmentService {
 
     for (const user of availableUsers) {
       const matchScore = await this.calculateSkillMatch(user, task);
-      
+
       if (matchScore > 0) {
         skillMatches.push({
           userId: user.id,
@@ -71,12 +71,12 @@ export class TaskAssignmentService {
 
     // Sort by match score and return best match
     skillMatches.sort((a, b) => b.matchScore - a.matchScore);
-    
+
     if (skillMatches.length > 0) {
       const bestMatch = skillMatches[0];
       if (bestMatch) {
         this.logger.log(
-          `Best skill match for task ${task.taskNumber}: User ${bestMatch.userId} with score ${bestMatch.matchScore}`
+          `Best skill match for task ${task.taskNumber}: User ${bestMatch.userId} with score ${bestMatch.matchScore}`,
         );
         return bestMatch.user;
       }
@@ -110,11 +110,11 @@ export class TaskAssignmentService {
     if (workloads.length > 0) {
       const leastLoaded = workloads[0];
       if (leastLoaded) {
-        const user = availableUsers.find(u => u.id === leastLoaded.userId);
-        
+        const user = availableUsers.find((u) => u.id === leastLoaded.userId);
+
         if (user) {
           this.logger.log(
-            `Least loaded user for task ${task.taskNumber}: User ${user.id} with ${leastLoaded.activeTasks} active tasks`
+            `Least loaded user for task ${task.taskNumber}: User ${user.id} with ${leastLoaded.activeTasks} active tasks`,
           );
           return user;
         }
@@ -129,7 +129,7 @@ export class TaskAssignmentService {
    */
   async findNextInRotation(task: Task): Promise<User | null> {
     const availableUsers = await this.getAvailableUsers();
-    
+
     if (availableUsers.length === 0) {
       return null;
     }
@@ -142,16 +142,18 @@ export class TaskAssignmentService {
     if (!this.lastRoundRobinUserId) {
       nextUser = availableUsers[0];
     } else {
-      const lastIndex = availableUsers.findIndex(u => u.id === this.lastRoundRobinUserId);
+      const lastIndex = availableUsers.findIndex(
+        (u) => u.id === this.lastRoundRobinUserId,
+      );
       const nextIndex = (lastIndex + 1) % availableUsers.length;
       nextUser = availableUsers[nextIndex];
     }
 
     if (nextUser) {
       this.lastRoundRobinUserId = nextUser.id;
-      
+
       this.logger.log(
-        `Round-robin assignment for task ${task.taskNumber}: User ${nextUser.id}`
+        `Round-robin assignment for task ${task.taskNumber}: User ${nextUser.id}`,
       );
 
       return nextUser;
@@ -165,17 +167,17 @@ export class TaskAssignmentService {
    */
   async findByPriority(task: Task): Promise<User | null> {
     const availableUsers = await this.getAvailableUsers();
-    
+
     // For high-priority tasks, find users with fewer urgent tasks
     const userPriorities = [];
 
     for (const user of availableUsers) {
       const urgentTasks = await this.getUserUrgentTasks(user.id);
       const activeTasks = await this.getUserWorkload(user.id);
-      
+
       // Calculate priority score (lower is better for high-priority assignment)
       const priorityScore = urgentTasks * 10 + activeTasks;
-      
+
       userPriorities.push({
         user,
         priorityScore,
@@ -191,7 +193,7 @@ export class TaskAssignmentService {
       const selected = userPriorities[0];
       if (selected) {
         this.logger.log(
-          `Priority-based assignment for task ${task.taskNumber}: User ${selected.user.id} with priority score ${selected.priorityScore}`
+          `Priority-based assignment for task ${task.taskNumber}: User ${selected.user.id} with priority score ${selected.priorityScore}`,
         );
         return selected.user;
       }
@@ -219,12 +221,12 @@ export class TaskAssignmentService {
     // This would typically use geolocation or assigned work centers
     // For now, returning first available user
     const availableUsers = await this.getAvailableUsers();
-    
+
     if (availableUsers.length > 0) {
       const firstUser = availableUsers[0];
       if (firstUser) {
         this.logger.log(
-          `Location-based assignment for task ${task.taskNumber}: User ${firstUser.id}`
+          `Location-based assignment for task ${task.taskNumber}: User ${firstUser.id}`,
         );
         return firstUser;
       }
@@ -313,7 +315,7 @@ export class TaskAssignmentService {
     // - Users with appropriate roles
     // - Users not on leave
     // - Users within shift hours
-    
+
     const users = await this.userRepository.find({
       where: {
         tenantId: this.getTenantId(),
@@ -325,7 +327,8 @@ export class TaskAssignmentService {
     const availableUsers = [];
     for (const user of users) {
       const workload = await this.getUserWorkload(user.id);
-      if (workload < 10) { // Max 10 active tasks per user
+      if (workload < 10) {
+        // Max 10 active tasks per user
         availableUsers.push(user);
       }
     }
@@ -361,9 +364,14 @@ export class TaskAssignmentService {
       .addSelect('assignment.assignmentMethod', 'method')
       .addSelect('assignment.userId', 'userId')
       .addSelect('COUNT(*)', 'count')
-      .addSelect('AVG(EXTRACT(EPOCH FROM (assignment.completedAt - assignment.startedAt)))', 'avgTime')
+      .addSelect(
+        'AVG(EXTRACT(EPOCH FROM (assignment.completedAt - assignment.startedAt)))',
+        'avgTime',
+      )
       .where('assignment.tenantId = :tenantId', { tenantId })
-      .groupBy('assignment.status, assignment.assignmentMethod, assignment.userId')
+      .groupBy(
+        'assignment.status, assignment.assignmentMethod, assignment.userId',
+      )
       .getRawMany();
 
     const result = {
@@ -378,7 +386,7 @@ export class TaskAssignmentService {
     let totalTime = 0;
     let completedCount = 0;
 
-    stats.forEach(stat => {
+    stats.forEach((stat) => {
       const count = parseInt(stat.count);
       result.totalAssignments += count;
 
@@ -393,7 +401,8 @@ export class TaskAssignmentService {
       }
 
       if (stat.method) {
-        result.byMethod[stat.method] = (result.byMethod[stat.method] || 0) + count;
+        result.byMethod[stat.method] =
+          (result.byMethod[stat.method] || 0) + count;
       }
 
       if (stat.userId) {
@@ -402,7 +411,9 @@ export class TaskAssignmentService {
     });
 
     if (completedCount > 0) {
-      result.averageCompletionTime = Math.round(totalTime / completedCount / 3600); // Convert to hours
+      result.averageCompletionTime = Math.round(
+        totalTime / completedCount / 3600,
+      ); // Convert to hours
     }
 
     return result;
@@ -418,15 +429,21 @@ export class TaskAssignmentService {
     const underloadedUsers = await this.getUnderloadedUsers();
 
     for (const overloadedUser of overloadedUsers) {
-      const tasksToReassign = await this.getReassignableTasks(overloadedUser.id);
-      
+      const tasksToReassign = await this.getReassignableTasks(
+        overloadedUser.id,
+      );
+
       for (const task of tasksToReassign) {
         if (underloadedUsers.length > 0) {
           const targetUser = underloadedUsers[0];
           if (targetUser) {
             // Reassign task
-            await this.reassignTaskToUser(task, targetUser.id, 'Workload rebalancing');
-            
+            await this.reassignTaskToUser(
+              task,
+              targetUser.id,
+              'Workload rebalancing',
+            );
+
             // Update workload tracking
             const targetWorkload = await this.getUserWorkload(targetUser.id);
             if (targetWorkload >= 8) {
@@ -506,7 +523,11 @@ export class TaskAssignmentService {
   /**
    * Reassign task to user
    */
-  private async reassignTaskToUser(task: Task, newUserId: string, reason: string): Promise<void> {
+  private async reassignTaskToUser(
+    task: Task,
+    newUserId: string,
+    reason: string,
+  ): Promise<void> {
     // Update task
     task.assignedToId = newUserId;
     await this.taskRepository.save(task);
@@ -515,7 +536,9 @@ export class TaskAssignmentService {
     const currentAssignment = await this.assignmentRepository.findOne({
       where: {
         taskId: task.id,
-        status: Not(In([AssignmentStatus.COMPLETED, AssignmentStatus.REASSIGNED])),
+        status: Not(
+          In([AssignmentStatus.COMPLETED, AssignmentStatus.REASSIGNED]),
+        ),
       },
     });
 
@@ -536,7 +559,9 @@ export class TaskAssignmentService {
 
     await this.assignmentRepository.save(newAssignment);
 
-    this.logger.log(`Task ${task.taskNumber} reassigned from ${currentAssignment?.userId} to ${newUserId}: ${reason}`);
+    this.logger.log(
+      `Task ${task.taskNumber} reassigned from ${currentAssignment?.userId} to ${newUserId}: ${reason}`,
+    );
   }
 
   private getTenantId(): string {

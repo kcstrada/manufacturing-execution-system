@@ -38,7 +38,9 @@ export class TaskSplitReassignController {
 
   @Post('split')
   @Roles({ roles: ['admin', 'executive', 'sales'] })
-  @ApiOperation({ summary: 'Split a task into subtasks with optional assignments' })
+  @ApiOperation({
+    summary: 'Split a task into subtasks with optional assignments',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Task split successfully',
@@ -76,13 +78,16 @@ export class TaskSplitReassignController {
       priority: dto.priority,
     });
 
-    return results[0] || {
-      taskId,
-      newAssignee: { id: dto.toUserId },
-      reason: dto.reason,
-      success: false,
-      error: 'Task not found or could not be reassigned',
-    } as TaskReassignmentResultDto;
+    return (
+      results[0] ||
+      ({
+        taskId,
+        newAssignee: { id: dto.toUserId },
+        reason: dto.reason,
+        success: false,
+        error: 'Task not found or could not be reassigned',
+      } as TaskReassignmentResultDto)
+    );
   }
 
   @Post('bulk-reassign')
@@ -101,7 +106,9 @@ export class TaskSplitReassignController {
 
   @Post('worker-unavailable')
   @Roles({ roles: ['admin', 'executive'] })
-  @ApiOperation({ summary: 'Handle worker unavailability and redistribute tasks' })
+  @ApiOperation({
+    summary: 'Handle worker unavailability and redistribute tasks',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Tasks redistributed',

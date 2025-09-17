@@ -7,8 +7,17 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { TaskAssignmentService } from './task-assignment.service';
 import { TaskDependencyService } from './task-dependency.service';
-import { Task, TaskStatus, TaskPriority, TaskType } from '../../../entities/task.entity';
-import { TaskAssignment, AssignmentStatus, AssignmentMethod } from '../../../entities/task-assignment.entity';
+import {
+  Task,
+  TaskStatus,
+  TaskPriority,
+  TaskType,
+} from '../../../entities/task.entity';
+import {
+  TaskAssignment,
+  AssignmentStatus,
+  AssignmentMethod,
+} from '../../../entities/task-assignment.entity';
 import { User } from '../../../entities/user.entity';
 import { WorkCenter } from '../../../entities/work-center.entity';
 
@@ -129,10 +138,12 @@ describe('TaskService', () => {
     service = module.get<TaskService>(TaskService);
     taskRepository = module.get<Repository<Task>>(getRepositoryToken(Task));
     assignmentRepository = module.get<Repository<TaskAssignment>>(
-      getRepositoryToken(TaskAssignment)
+      getRepositoryToken(TaskAssignment),
     );
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
-    assignmentService = module.get<TaskAssignmentService>(TaskAssignmentService);
+    assignmentService = module.get<TaskAssignmentService>(
+      TaskAssignmentService,
+    );
     eventEmitter = module.get<EventEmitter2>(EventEmitter2);
   });
 
@@ -161,7 +172,9 @@ describe('TaskService', () => {
         taskNumber: 'TSK-000001',
         status: TaskStatus.PENDING,
       });
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.created', { task: mockTask });
+      expect(eventEmitter.emit).toHaveBeenCalledWith('task.created', {
+        task: mockTask,
+      });
     });
 
     it('should auto-assign task if configured', async () => {
@@ -179,9 +192,15 @@ describe('TaskService', () => {
       jest.spyOn(taskRepository, 'count').mockResolvedValue(0);
       jest.spyOn(taskRepository, 'create').mockReturnValue(mockTask as Task);
       jest.spyOn(taskRepository, 'save').mockResolvedValue(mockTask as Task);
-      jest.spyOn(assignmentService, 'findLeastLoadedUser').mockResolvedValue(mockUser as User);
-      jest.spyOn(assignmentRepository, 'create').mockReturnValue(mockAssignment as TaskAssignment);
-      jest.spyOn(assignmentRepository, 'save').mockResolvedValue(mockAssignment as TaskAssignment);
+      jest
+        .spyOn(assignmentService, 'findLeastLoadedUser')
+        .mockResolvedValue(mockUser as User);
+      jest
+        .spyOn(assignmentRepository, 'create')
+        .mockReturnValue(mockAssignment as TaskAssignment);
+      jest
+        .spyOn(assignmentRepository, 'save')
+        .mockResolvedValue(mockAssignment as TaskAssignment);
 
       await service.create(createDto);
 
@@ -206,21 +225,29 @@ describe('TaskService', () => {
 
       expect(result.name).toBe('Updated Task');
       expect(result.priority).toBe(TaskPriority.URGENT);
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.updated', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'task.updated',
+        expect.any(Object),
+      );
     });
 
     it('should validate status transition', async () => {
-      const completedTask = { ...mockTask, status: TaskStatus.COMPLETED } as Task;
+      const completedTask = {
+        ...mockTask,
+        status: TaskStatus.COMPLETED,
+      } as Task;
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(completedTask);
 
       await expect(
-        service.update('task-1', { status: TaskStatus.IN_PROGRESS })
+        service.update('task-1', { status: TaskStatus.IN_PROGRESS }),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should update progress percentage based on quantities', async () => {
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(mockTask as Task);
-      jest.spyOn(taskRepository, 'save').mockImplementation(task => Promise.resolve(task as Task));
+      jest
+        .spyOn(taskRepository, 'save')
+        .mockImplementation((task) => Promise.resolve(task as Task));
 
       const result = await service.update('task-1', { completedQuantity: 50 });
 
@@ -239,8 +266,12 @@ describe('TaskService', () => {
 
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(mockTask as Task);
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockUser as User);
-      jest.spyOn(assignmentRepository, 'create').mockReturnValue(mockAssignment as TaskAssignment);
-      jest.spyOn(assignmentRepository, 'save').mockResolvedValue(mockAssignment as TaskAssignment);
+      jest
+        .spyOn(assignmentRepository, 'create')
+        .mockReturnValue(mockAssignment as TaskAssignment);
+      jest
+        .spyOn(assignmentRepository, 'save')
+        .mockResolvedValue(mockAssignment as TaskAssignment);
       jest.spyOn(taskRepository, 'save').mockResolvedValue({
         ...mockTask,
         assignedToId: 'user-1',
@@ -255,9 +286,12 @@ describe('TaskService', () => {
           userId: 'user-1',
           status: AssignmentStatus.PENDING,
           assignmentMethod: AssignmentMethod.MANUAL,
-        })
+        }),
       );
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.assigned', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'task.assigned',
+        expect.any(Object),
+      );
     });
 
     it('should throw error if user not found', async () => {
@@ -265,7 +299,7 @@ describe('TaskService', () => {
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
 
       await expect(
-        service.assignTask('task-1', { userId: 'invalid-user' })
+        service.assignTask('task-1', { userId: 'invalid-user' }),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -277,11 +311,19 @@ describe('TaskService', () => {
         requiredSkills: ['welding', 'assembly'],
       } as Task;
 
-      jest.spyOn(assignmentService, 'findBestSkillMatch').mockResolvedValue(mockUser as User);
-      jest.spyOn(assignmentService, 'calculateSkillMatch').mockResolvedValue(85);
+      jest
+        .spyOn(assignmentService, 'findBestSkillMatch')
+        .mockResolvedValue(mockUser as User);
+      jest
+        .spyOn(assignmentService, 'calculateSkillMatch')
+        .mockResolvedValue(85);
       jest.spyOn(assignmentService, 'getUserWorkload').mockResolvedValue(3);
-      jest.spyOn(assignmentRepository, 'create').mockReturnValue(mockAssignment as TaskAssignment);
-      jest.spyOn(assignmentRepository, 'save').mockResolvedValue(mockAssignment as TaskAssignment);
+      jest
+        .spyOn(assignmentRepository, 'create')
+        .mockReturnValue(mockAssignment as TaskAssignment);
+      jest
+        .spyOn(assignmentRepository, 'save')
+        .mockResolvedValue(mockAssignment as TaskAssignment);
       jest.spyOn(taskRepository, 'save').mockResolvedValue(taskWithSkills);
 
       const result = await service.autoAssignTask(taskWithSkills);
@@ -294,11 +336,16 @@ describe('TaskService', () => {
         }),
       );
       expect(result).toEqual(mockAssignment);
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.auto-assigned', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'task.auto-assigned',
+        expect.any(Object),
+      );
     });
 
     it('should return null if no suitable user found', async () => {
-      jest.spyOn(assignmentService, 'findLeastLoadedUser').mockResolvedValue(null);
+      jest
+        .spyOn(assignmentService, 'findLeastLoadedUser')
+        .mockResolvedValue(null);
 
       const result = await service.autoAssignTask(mockTask as Task);
 
@@ -308,7 +355,11 @@ describe('TaskService', () => {
 
   describe('startTask', () => {
     it('should start a task', async () => {
-      const readyTask = { ...mockTask, status: TaskStatus.READY, dependencies: [] } as unknown as Task;
+      const readyTask = {
+        ...mockTask,
+        status: TaskStatus.READY,
+        dependencies: [],
+      } as unknown as Task;
       const assignment = {
         ...mockAssignment,
         status: AssignmentStatus.PENDING,
@@ -331,7 +382,10 @@ describe('TaskService', () => {
 
       expect(result.status).toBe(TaskStatus.IN_PROGRESS);
       expect(result.actualStartDate).toBeDefined();
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.started', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'task.started',
+        expect.any(Object),
+      );
     });
 
     it('should throw error if task has incomplete dependencies', async () => {
@@ -343,7 +397,9 @@ describe('TaskService', () => {
 
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(taskWithDeps);
 
-      await expect(service.startTask('task-1', 'user-1')).rejects.toThrow(BadRequestException);
+      await expect(service.startTask('task-1', 'user-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -372,41 +428,57 @@ describe('TaskService', () => {
         actualEndDate: new Date(),
         progressPercentage: 100,
       } as Task);
-      jest.spyOn(taskRepository, 'find').mockResolvedValue([inProgressTask] as Task[]);
+      jest
+        .spyOn(taskRepository, 'find')
+        .mockResolvedValue([inProgressTask] as Task[]);
 
-      const result = await service.completeTask('task-1', 'user-1', 'Task completed');
+      const result = await service.completeTask(
+        'task-1',
+        'user-1',
+        'Task completed',
+      );
 
       expect(result.status).toBe(TaskStatus.COMPLETED);
       expect(result.progressPercentage).toBe(100);
       expect(result.actualEndDate).toBeDefined();
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.completed', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'task.completed',
+        expect.any(Object),
+      );
     });
 
     it('should throw error if task not in progress', async () => {
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(mockTask as Task);
 
-      await expect(
-        service.completeTask('task-1', 'user-1')
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.completeTask('task-1', 'user-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
   describe('updateProgress', () => {
     it('should update task progress', async () => {
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(mockTask as Task);
-      jest.spyOn(taskRepository, 'save').mockImplementation(task => Promise.resolve(task as Task));
+      jest
+        .spyOn(taskRepository, 'save')
+        .mockImplementation((task) => Promise.resolve(task as Task));
 
       const result = await service.updateProgress('task-1', 75, 5);
 
       expect(result.completedQuantity).toBe(75);
       expect(result.rejectedQuantity).toBe(5);
       expect(result.progressPercentage).toBe(75);
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.progress-updated', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'task.progress-updated',
+        expect.any(Object),
+      );
     });
 
     it('should auto-complete task at 100% progress', async () => {
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(mockTask as Task);
-      jest.spyOn(taskRepository, 'save').mockImplementation(task => Promise.resolve(task as Task));
+      jest
+        .spyOn(taskRepository, 'save')
+        .mockImplementation((task) => Promise.resolve(task as Task));
 
       const result = await service.updateProgress('task-1', 100);
 
@@ -426,14 +498,19 @@ describe('TaskService', () => {
         getMany: jest.fn().mockResolvedValue([mockTask]),
       };
 
-      jest.spyOn(taskRepository, 'createQueryBuilder').mockReturnValue(mockQueryBuilder as any);
+      jest
+        .spyOn(taskRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
 
-      const result = await service.getUserTasks('user-1', TaskStatus.IN_PROGRESS);
+      const result = await service.getUserTasks(
+        'user-1',
+        TaskStatus.IN_PROGRESS,
+      );
 
       expect(result).toEqual([mockTask]);
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'task.assignedToId = :userId',
-        { userId: 'user-1' }
+        { userId: 'user-1' },
       );
     });
   });
@@ -455,7 +532,7 @@ describe('TaskService', () => {
           where: expect.objectContaining({
             dueDate: expect.any(Object),
           }),
-        })
+        }),
       );
     });
   });

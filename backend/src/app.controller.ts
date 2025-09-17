@@ -13,14 +13,14 @@ export class AppController {
   @Get()
   @Public()
   @PublicRateLimit() // Relaxed rate limit for public endpoint
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get API welcome message',
-    description: 'Returns a welcome message from the API'
+    description: 'Returns a welcome message from the API',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Welcome message returned successfully',
-    type: String
+    type: String,
   })
   getHello(): string {
     return this.appService.getHello();
@@ -29,21 +29,24 @@ export class AppController {
   @Get('health')
   @Public()
   @SkipThrottle() // No rate limiting for health checks
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Basic health check',
-    description: 'Simple health check endpoint for load balancers'
+    description: 'Simple health check endpoint for load balancers',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Service is healthy',
     schema: {
       type: 'object',
       properties: {
         status: { type: 'string', example: 'healthy' },
         timestamp: { type: 'string', example: '2024-01-01T00:00:00.000Z' },
-        service: { type: 'string', example: 'Manufacturing Execution System API' }
-      }
-    }
+        service: {
+          type: 'string',
+          example: 'Manufacturing Execution System API',
+        },
+      },
+    },
   })
   healthCheck() {
     return {

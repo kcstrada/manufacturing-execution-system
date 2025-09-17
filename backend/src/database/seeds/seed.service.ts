@@ -5,9 +5,7 @@ import { DataSource } from 'typeorm';
 export class SeedService {
   private readonly logger = new Logger(SeedService.name);
 
-  constructor(
-    private dataSource: DataSource,
-  ) {}
+  constructor(private dataSource: DataSource) {}
 
   async seed() {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -16,7 +14,9 @@ export class SeedService {
 
     try {
       // Check if data already exists
-      const existingTenants = await queryRunner.query('SELECT COUNT(*) FROM tenants');
+      const existingTenants = await queryRunner.query(
+        'SELECT COUNT(*) FROM tenants',
+      );
       if (existingTenants[0].count > 0) {
         this.logger.warn('Seed data already exists. Skipping...');
         await queryRunner.commitTransaction();
@@ -33,37 +33,49 @@ export class SeedService {
       `);
 
       // 2. Create basic departments
-      await queryRunner.query(`
+      await queryRunner.query(
+        `
         INSERT INTO departments (tenant_id, code, name, is_active, version)
         VALUES 
         ($1, 'PROD', 'Production', true, 1),
         ($1, 'QA', 'Quality', true, 1),
         ($1, 'WHSE', 'Warehouse', true, 1)
-      `, [tenant1.id]);
+      `,
+        [tenant1.id],
+      );
 
       // 3. Create basic roles
-      await queryRunner.query(`
+      await queryRunner.query(
+        `
         INSERT INTO roles (tenant_id, name, code, description, permissions, is_active, version)
         VALUES 
         ($1, 'Administrator', 'ADMIN', 'Full access', '{"all": true}', true, 1),
         ($1, 'Operator', 'OPERATOR', 'Basic access', '{"read": true}', true, 1)
-      `, [tenant1.id]);
+      `,
+        [tenant1.id],
+      );
 
       // 4. Create basic units of measure
-      await queryRunner.query(`
+      await queryRunner.query(
+        `
         INSERT INTO units_of_measure (tenant_id, name, code, symbol, category, is_active, version)
         VALUES 
         ($1, 'Pieces', 'PCS', 'pcs', 'quantity', true, 1),
         ($1, 'Kilogram', 'KG', 'kg', 'weight', true, 1)
-      `, [tenant1.id]);
+      `,
+        [tenant1.id],
+      );
 
       // 5. Create basic product categories
-      await queryRunner.query(`
+      await queryRunner.query(
+        `
         INSERT INTO product_categories (tenant_id, name, code, is_active, version)
         VALUES 
         ($1, 'Finished Goods', 'FIN', true, 1),
         ($1, 'Raw Materials', 'RAW', true, 1)
-      `, [tenant1.id]);
+      `,
+        [tenant1.id],
+      );
 
       await queryRunner.commitTransaction();
       this.logger.log('Basic seed data created successfully');
@@ -110,7 +122,7 @@ export class SeedService {
         'roles',
         'users',
         'departments',
-        'tenants'
+        'tenants',
       ];
 
       for (const table of tables) {
@@ -121,7 +133,7 @@ export class SeedService {
       this.logger.log('Data cleared successfully');
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error('Failed to clear data', (error as any).stack);
+      this.logger.error('Failed to clear data', error.stack);
       throw error;
     } finally {
       await queryRunner.release();

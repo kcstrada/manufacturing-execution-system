@@ -1,6 +1,14 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PERMISSIONS_KEY, PermissionRequirement } from '../decorators/permissions.decorator';
+import {
+  PERMISSIONS_KEY,
+  PermissionRequirement,
+} from '../decorators/permissions.decorator';
 import { PermissionsService } from '../../permissions/permissions.service';
 
 @Injectable()
@@ -11,10 +19,9 @@ export class PermissionsGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermissions = this.reflector.getAllAndOverride<PermissionRequirement[]>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredPermissions = this.reflector.getAllAndOverride<
+      PermissionRequirement[]
+    >(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
@@ -29,8 +36,12 @@ export class PermissionsGuard implements CanActivate {
 
     // Check each required permission
     for (const permission of requiredPermissions) {
-      const hasPermission = await this.checkPermission(user, permission, request);
-      
+      const hasPermission = await this.checkPermission(
+        user,
+        permission,
+        request,
+      );
+
       if (!hasPermission) {
         throw new ForbiddenException(
           `Missing required permission: ${permission.action} on ${permission.resource}`,
@@ -47,10 +58,11 @@ export class PermissionsGuard implements CanActivate {
     request: any,
   ): Promise<boolean> {
     const userId = `user:${user.sub || user.userId || user.id}`;
-    
+
     // Get resource ID from request params or body
-    let resourceId = request.params?.id || request.params?.[`${permission.resource}Id`];
-    
+    let resourceId =
+      request.params?.id || request.params?.[`${permission.resource}Id`];
+
     if (!resourceId && request.body) {
       resourceId = request.body.id || request.body[`${permission.resource}Id`];
     }

@@ -8,7 +8,10 @@ import {
   Unique,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { NotificationType, NotificationChannel } from '../types/notification.types';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../types/notification.types';
 
 @Entity('notification_templates')
 @Unique(['tenantId', 'code'])

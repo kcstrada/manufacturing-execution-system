@@ -6,15 +6,15 @@ import { HelmetOptions } from 'helmet';
  */
 export const getCorsConfig = (origins: string): CorsOptions => {
   // Parse origins from environment variable
-  const allowedOrigins = origins.split(',').map(origin => origin.trim());
-  
+  const allowedOrigins = origins.split(',').map((origin) => origin.trim());
+
   return {
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or Postman)
       if (!origin) {
         return callback(null, true);
       }
-      
+
       // Check if origin is in the allowed list
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -56,15 +56,23 @@ export const getCorsConfig = (origins: string): CorsOptions => {
  */
 export const getHelmetConfig = (): HelmetOptions => {
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   return {
     // Content Security Policy
     contentSecurityPolicy: isProduction
       ? {
           directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-            styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+            scriptSrc: [
+              "'self'",
+              "'unsafe-inline'",
+              'https://cdn.jsdelivr.net',
+            ],
+            styleSrc: [
+              "'self'",
+              "'unsafe-inline'",
+              'https://fonts.googleapis.com',
+            ],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'https:'],
             connectSrc: ["'self'"],
@@ -75,22 +83,22 @@ export const getHelmetConfig = (): HelmetOptions => {
           },
         }
       : false, // Disable CSP in development for easier debugging
-    
+
     // DNS Prefetch Control
     dnsPrefetchControl: {
       allow: false,
     },
-    
+
     // Expect-CT is deprecated, removing it
-    
+
     // Frameguard - Prevent clickjacking
     frameguard: {
       action: 'deny',
     },
-    
+
     // Hide Powered-By header
     hidePoweredBy: true,
-    
+
     // HSTS - HTTP Strict Transport Security
     hsts: isProduction
       ? {
@@ -99,24 +107,24 @@ export const getHelmetConfig = (): HelmetOptions => {
           preload: true,
         }
       : false, // Disable in development
-    
+
     // IE No Open
     ieNoOpen: true,
-    
+
     // No Sniff - Prevent MIME type sniffing
     noSniff: true,
-    
+
     // Origin Agent Cluster
     originAgentCluster: true,
-    
+
     // Permitted Cross-Domain Policies
     permittedCrossDomainPolicies: false,
-    
+
     // Referrer Policy
     referrerPolicy: {
       policy: 'strict-origin-when-cross-origin',
     },
-    
+
     // XSS Filter
     xssFilter: true,
   };
@@ -139,28 +147,28 @@ export const getRateLimitConfig = (): Record<string, RateLimitConfig> => ({
     max: 100, // 100 requests per minute
     message: 'Too many requests from this IP, please try again later.',
   },
-  
+
   // Strict rate limit for auth endpoints
   auth: {
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // 5 requests per 15 minutes
     message: 'Too many authentication attempts, please try again later.',
   },
-  
+
   // Rate limit for API endpoints
   api: {
     windowMs: 60 * 1000, // 1 minute
     max: 60, // 60 requests per minute
     message: 'API rate limit exceeded, please slow down.',
   },
-  
+
   // Rate limit for file uploads
   upload: {
     windowMs: 60 * 1000, // 1 minute
     max: 10, // 10 uploads per minute
     message: 'Too many file uploads, please try again later.',
   },
-  
+
   // Rate limit for reports/exports
   export: {
     windowMs: 60 * 1000, // 1 minute

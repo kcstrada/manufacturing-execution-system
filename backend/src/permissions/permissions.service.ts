@@ -9,7 +9,10 @@ export class PermissionsService {
   private storeId: string;
 
   constructor(private readonly configService: ConfigService) {
-    const apiUrl = this.configService.get<string>('OPENFGA_API_URL', 'http://localhost:8081');
+    const apiUrl = this.configService.get<string>(
+      'OPENFGA_API_URL',
+      'http://localhost:8081',
+    );
     this.storeId = this.configService.get<string>('OPENFGA_STORE_ID', '');
 
     // Use no credentials for now, as API token auth requires proper setup
@@ -36,7 +39,9 @@ export class PermissionsService {
         object,
       });
 
-      this.logger.debug(`Permission check: ${user} ${relation} ${object} = ${allowed}`);
+      this.logger.debug(
+        `Permission check: ${user} ${relation} ${object} = ${allowed}`,
+      );
       return allowed ?? false;
     } catch (error: any) {
       this.logger.error(`Permission check failed: ${error?.message || error}`);
@@ -44,11 +49,7 @@ export class PermissionsService {
     }
   }
 
-  async write(
-    user: string,
-    relation: string,
-    object: string,
-  ): Promise<void> {
+  async write(user: string, relation: string, object: string): Promise<void> {
     try {
       await this.client.write({
         writes: [
@@ -67,11 +68,7 @@ export class PermissionsService {
     }
   }
 
-  async delete(
-    user: string,
-    relation: string,
-    object: string,
-  ): Promise<void> {
+  async delete(user: string, relation: string, object: string): Promise<void> {
     try {
       await this.client.write({
         deletes: [
@@ -149,7 +146,11 @@ export class PermissionsService {
     organizationId: string,
     permission: 'viewer' | 'editor',
   ): Promise<boolean> {
-    return this.check(`user:${userId}`, permission, `organization:${organizationId}`);
+    return this.check(
+      `user:${userId}`,
+      permission,
+      `organization:${organizationId}`,
+    );
   }
 
   async assignOrderToUser(
@@ -168,10 +169,7 @@ export class PermissionsService {
     return this.check(`user:${userId}`, permission, `order:${orderId}`);
   }
 
-  async assignTaskToUser(
-    taskId: string,
-    userId: string,
-  ): Promise<void> {
+  async assignTaskToUser(taskId: string, userId: string): Promise<void> {
     await this.write(`user:${userId}`, 'assigned', `task:${taskId}`);
   }
 
@@ -187,13 +185,14 @@ export class PermissionsService {
     orderId: string,
     organizationId: string,
   ): Promise<void> {
-    await this.write(`organization:${organizationId}`, 'organization', `order:${orderId}`);
+    await this.write(
+      `organization:${organizationId}`,
+      'organization',
+      `order:${orderId}`,
+    );
   }
 
-  async linkTaskToOrder(
-    taskId: string,
-    orderId: string,
-  ): Promise<void> {
+  async linkTaskToOrder(taskId: string, orderId: string): Promise<void> {
     await this.write(`order:${orderId}`, 'order', `task:${taskId}`);
   }
 }

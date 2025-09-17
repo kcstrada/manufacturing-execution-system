@@ -1,351 +1,982 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddMissingEntities1757520291019 implements MigrationInterface {
-    name = 'AddMissingEntities1757520291019'
+  name = 'AddMissingEntities1757520291019';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "production_step_dependencies" DROP CONSTRAINT "fk_production_step_dependencies_depends_on_step_id_production_s"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_bom_active_version"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_inventory_available_quantity"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_inventory_expiration"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_inventory_reorder"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_products_low_stock"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_products_specifications"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_customer_orders_status_date"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_customer_orders_customer_status"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_production_orders_tenant_id_planned_start_date_planned_end_"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_production_orders_status_priority"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_production_orders_date_range"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_production_orders_product_id"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_production_orders_covering"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_tasks_worker_status"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_tasks_work_order_id"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_work_orders_production_sequence"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_work_orders_assigned_status"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_work_orders_completion"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_work_orders_product_id"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_work_orders_covering"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_workers_department_active"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_equipment_next_maintenance"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_maintenance_records_history"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_clock_out"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_clock_in"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_worker_id"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_quality_inspections_date_result"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_quality_inspections_product_type"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_quality_inspections_measurements"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_activity_logs_entity_date"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_activity_logs_user_date"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_task_dependencies_task"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_task_dependencies_depends_on"`);
-        await queryRunner.query(`ALTER TABLE "inventory" DROP CONSTRAINT "uq_inventory_tenant_id_product_id_warehouse_code_location_code_"`);
-        await queryRunner.query(`CREATE TYPE "public"."waste_records_type_enum" AS ENUM('scrap', 'rework', 'defective', 'overproduction', 'spoilage', 'trimming', 'spillage', 'other')`);
-        await queryRunner.query(`CREATE TYPE "public"."waste_records_category_enum" AS ENUM('material', 'production', 'quality', 'inventory', 'process')`);
-        await queryRunner.query(`CREATE TYPE "public"."waste_records_disposal_method_enum" AS ENUM('recycle', 'dispose', 'rework', 'resell', 'return_to_vendor', 'incinerate', 'landfill')`);
-        await queryRunner.query(`CREATE TABLE "waste_records" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "audit_action" character varying(50), "audit_changes" jsonb, "audit_reason" character varying(255), "audit_timestamp" TIMESTAMP WITH TIME ZONE, "record_number" character varying(50) NOT NULL, "record_date" TIMESTAMP NOT NULL, "type" "public"."waste_records_type_enum" NOT NULL DEFAULT 'scrap', "category" "public"."waste_records_category_enum" NOT NULL DEFAULT 'production', "product_id" uuid, "work_order_id" uuid, "equipment_id" uuid, "reported_by_id" uuid, "batch_number" character varying(100), "quantity" numeric(12,3) NOT NULL, "unit" character varying(50), "material_cost" numeric(12,2), "labor_cost" numeric(12,2), "overhead_cost" numeric(12,2), "disposal_cost" numeric(12,2), "total_cost" numeric(12,2) NOT NULL DEFAULT '0', "reason" text, "root_cause" character varying(255), "corrective_action" text, "preventive_action" text, "disposal_method" "public"."waste_records_disposal_method_enum", "disposal_date" TIMESTAMP, "disposal_reference" character varying(100), "recovered_value" numeric(12,2), "work_center" character varying(100), "shift" character varying(50), "process_step" character varying(100), "is_recurring" boolean NOT NULL DEFAULT false, "quality_inspection_id" character varying(100), "ncr_number" character varying(100), "material_details" jsonb, "environmental_impact" jsonb, "images" text, "attachments" text, "notes" text, CONSTRAINT "uq_waste_records_record_number" UNIQUE ("record_number"), CONSTRAINT "pk_waste_records_id" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_waste_records_tenant_id" ON "waste_records" ("tenant_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_waste_records_equipment_id" ON "waste_records" ("equipment_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_waste_records_work_order_id" ON "waste_records" ("work_order_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_waste_records_product_id_record_date" ON "waste_records" ("product_id", "record_date") `);
-        await queryRunner.query(`CREATE INDEX "idx_waste_records_record_date_type" ON "waste_records" ("record_date", "type") `);
-        await queryRunner.query(`CREATE TYPE "public"."time_clock_sessions_status_enum" AS ENUM('open', 'closed', 'approved', 'disputed', 'corrected')`);
-        await queryRunner.query(`CREATE TABLE "time_clock_sessions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "worker_id" uuid NOT NULL, "session_date" date NOT NULL, "shift_assignment_id" uuid, "clock_in_time" TIMESTAMP WITH TIME ZONE, "clock_out_time" TIMESTAMP WITH TIME ZONE, "regular_hours" numeric(5,2) NOT NULL DEFAULT '0', "overtime_hours" numeric(5,2) NOT NULL DEFAULT '0', "break_minutes" numeric(5,2) NOT NULL DEFAULT '0', "lunch_minutes" numeric(5,2) NOT NULL DEFAULT '0', "total_hours" numeric(10,2) NOT NULL DEFAULT '0', "productive_hours" numeric(10,2) NOT NULL DEFAULT '0', "status" "public"."time_clock_sessions_status_enum" NOT NULL DEFAULT 'open', "is_late_arrival" boolean NOT NULL DEFAULT false, "is_early_departure" boolean NOT NULL DEFAULT false, "is_absent" boolean NOT NULL DEFAULT false, "late_minutes" numeric(5,2) NOT NULL DEFAULT '0', "early_departure_minutes" numeric(5,2) NOT NULL DEFAULT '0', "break_periods" jsonb, "overtime_periods" jsonb, "exceptions" jsonb, "approved_by" uuid, "approved_at" TIMESTAMP WITH TIME ZONE, "notes" character varying(500), CONSTRAINT "pk_time_clock_sessions_id" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_sessions_tenant_id" ON "time_clock_sessions" ("tenant_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_sessions_tenant_id_shift_assignment_id" ON "time_clock_sessions" ("tenant_id", "shift_assignment_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_sessions_tenant_id_status" ON "time_clock_sessions" ("tenant_id", "status") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_sessions_tenant_id_worker_id_session_date" ON "time_clock_sessions" ("tenant_id", "worker_id", "session_date") `);
-        await queryRunner.query(`CREATE TYPE "public"."time_clock_rules_rounding_direction_enum" AS ENUM('up', 'down', 'nearest')`);
-        await queryRunner.query(`CREATE TABLE "time_clock_rules" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "name" character varying(100) NOT NULL, "description" character varying(500), "grace_minutes_late" integer NOT NULL DEFAULT '15', "grace_minutes_early" integer NOT NULL DEFAULT '5', "rounding_minutes" integer NOT NULL DEFAULT '5', "rounding_direction" "public"."time_clock_rules_rounding_direction_enum" NOT NULL DEFAULT 'nearest', "standard_work_hours" numeric(5,2) NOT NULL DEFAULT '8', "standard_work_week_hours" numeric(5,2) NOT NULL DEFAULT '40', "overtime_multiplier" numeric(5,2) NOT NULL DEFAULT '1.5', "double_time_multiplier" numeric(5,2) NOT NULL DEFAULT '2', "double_time_threshold_hours" integer NOT NULL DEFAULT '12', "require_clock_out_same_day" boolean NOT NULL DEFAULT true, "require_manager_approval_for_manual_entry" boolean NOT NULL DEFAULT true, "require_manager_approval_for_overtime" boolean NOT NULL DEFAULT true, "allow_mobile_clock_in" boolean NOT NULL DEFAULT false, "require_gps_for_mobile" boolean NOT NULL DEFAULT false, "max_gps_radius" numeric(10,6), "min_break_minutes" integer NOT NULL DEFAULT '30', "min_lunch_minutes" integer NOT NULL DEFAULT '30', "max_consecutive_work_minutes" integer NOT NULL DEFAULT '240', "shift_rules" jsonb, "department_rules" jsonb, CONSTRAINT "pk_time_clock_rules_id" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_rules_tenant_id" ON "time_clock_rules" ("tenant_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_rules_tenant_id_is_active" ON "time_clock_rules" ("tenant_id", "is_active") `);
-        await queryRunner.query(`CREATE TYPE "public"."task_assignments_status_enum" AS ENUM('pending', 'accepted', 'declined', 'in_progress', 'completed', 'reassigned')`);
-        await queryRunner.query(`CREATE TYPE "public"."task_assignments_assignment_method_enum" AS ENUM('manual', 'auto_skill_based', 'auto_workload', 'auto_round_robin', 'auto_priority', 'auto_location')`);
-        await queryRunner.query(`CREATE TABLE "task_assignments" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "task_id" uuid NOT NULL, "user_id" uuid NOT NULL, "status" "public"."task_assignments_status_enum" NOT NULL DEFAULT 'pending', "assignment_method" "public"."task_assignments_assignment_method_enum" NOT NULL DEFAULT 'manual', "priority" integer NOT NULL DEFAULT '0', "assigned_at" TIMESTAMP WITH TIME ZONE NOT NULL, "assigned_by_id" uuid, "accepted_at" TIMESTAMP WITH TIME ZONE, "declined_at" TIMESTAMP WITH TIME ZONE, "decline_reason" text, "started_at" TIMESTAMP WITH TIME ZONE, "completed_at" TIMESTAMP WITH TIME ZONE, "estimated_hours" numeric(10,2), "actual_hours" numeric(10,2), "completion_percentage" integer NOT NULL DEFAULT '0', "skill_match_score" integer, "user_workload" integer, "distance_from_work_center" numeric(10,2), "work_center_id" uuid, "assignment_criteria" jsonb, "notes" text, "performance_metrics" jsonb, "due_date" TIMESTAMP WITH TIME ZONE, "is_overdue" boolean NOT NULL DEFAULT false, "is_urgent" boolean NOT NULL DEFAULT false, "reassignment_history" jsonb, CONSTRAINT "uq_task_assignments_tenant_id_task_id_user_id_assigned_at" UNIQUE ("tenant_id", "task_id", "user_id", "assigned_at"), CONSTRAINT "pk_task_assignments_id" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_task_assignments_tenant_id" ON "task_assignments" ("tenant_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_task_assignments_tenant_id_priority" ON "task_assignments" ("tenant_id", "priority") `);
-        await queryRunner.query(`CREATE INDEX "idx_task_assignments_tenant_id_assigned_at" ON "task_assignments" ("tenant_id", "assigned_at") `);
-        await queryRunner.query(`CREATE INDEX "idx_task_assignments_tenant_id_status" ON "task_assignments" ("tenant_id", "status") `);
-        await queryRunner.query(`CREATE INDEX "idx_task_assignments_tenant_id_user_id" ON "task_assignments" ("tenant_id", "user_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_task_assignments_tenant_id_task_id" ON "task_assignments" ("tenant_id", "task_id") `);
-        await queryRunner.query(`CREATE TYPE "public"."stock_alerts_severity_enum" AS ENUM('critical', 'high', 'medium', 'warning', 'low')`);
-        await queryRunner.query(`CREATE TYPE "public"."stock_alerts_status_enum" AS ENUM('active', 'acknowledged', 'resolved', 'expired')`);
-        await queryRunner.query(`CREATE TABLE "stock_alerts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "product_id" uuid NOT NULL, "warehouse_code" character varying(50), "severity" "public"."stock_alerts_severity_enum" NOT NULL DEFAULT 'warning', "status" "public"."stock_alerts_status_enum" NOT NULL DEFAULT 'active', "current_stock" numeric(15,3) NOT NULL, "min_stock_level" numeric(15,3) NOT NULL, "message" text NOT NULL, "alerted_at" TIMESTAMP NOT NULL, "acknowledged_by_id" uuid, "acknowledged_at" TIMESTAMP, "resolved_by_id" uuid, "resolved_at" TIMESTAMP, "resolution" text, "notes" text, CONSTRAINT "pk_stock_alerts_id" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_stock_alerts_tenant_id" ON "stock_alerts" ("tenant_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_stock_alerts_tenant_id_alerted_at" ON "stock_alerts" ("tenant_id", "alerted_at") `);
-        await queryRunner.query(`CREATE INDEX "idx_stock_alerts_tenant_id_severity_status" ON "stock_alerts" ("tenant_id", "severity", "status") `);
-        await queryRunner.query(`CREATE INDEX "idx_stock_alerts_tenant_id_warehouse_code_status" ON "stock_alerts" ("tenant_id", "warehouse_code", "status") `);
-        await queryRunner.query(`CREATE INDEX "idx_stock_alerts_tenant_id_product_id_status" ON "stock_alerts" ("tenant_id", "product_id", "status") `);
-        await queryRunner.query(`CREATE TYPE "public"."order_state_transitions_from_state_enum" AS ENUM('draft', 'pending', 'confirmed', 'in_production', 'quality_control', 'qc_passed', 'qc_failed', 'partially_shipped', 'shipped', 'delivered', 'on_hold', 'cancelled')`);
-        await queryRunner.query(`CREATE TYPE "public"."order_state_transitions_to_state_enum" AS ENUM('draft', 'pending', 'confirmed', 'in_production', 'quality_control', 'qc_passed', 'qc_failed', 'partially_shipped', 'shipped', 'delivered', 'on_hold', 'cancelled')`);
-        await queryRunner.query(`CREATE TABLE "order_state_transitions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "customer_order_id" uuid NOT NULL, "from_state" "public"."order_state_transitions_from_state_enum" NOT NULL, "to_state" "public"."order_state_transitions_to_state_enum" NOT NULL, "event" character varying(50) NOT NULL, "reason" text, "notes" text, "user_id" uuid, "transition_metadata" jsonb, "transitioned_at" TIMESTAMP NOT NULL DEFAULT now(), "success" boolean NOT NULL DEFAULT true, "error_message" text, CONSTRAINT "pk_order_state_transitions_id" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_order_state_transitions_tenant_id" ON "order_state_transitions" ("tenant_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_order_state_transitions_tenant_id_created_at" ON "order_state_transitions" ("tenant_id", "created_at") `);
-        await queryRunner.query(`CREATE INDEX "idx_order_state_transitions_tenant_id_customer_order_id" ON "order_state_transitions" ("tenant_id", "customer_order_id") `);
-        await queryRunner.query(`CREATE TYPE "public"."inventory_transactions_transaction_type_enum" AS ENUM('receipt', 'issue', 'transfer', 'adjustment', 'return', 'scrap', 'cycle_count', 'reservation', 'release')`);
-        await queryRunner.query(`CREATE TABLE "inventory_transactions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "transaction_number" character varying(50) NOT NULL, "transaction_type" "public"."inventory_transactions_transaction_type_enum" NOT NULL, "transaction_date" TIMESTAMP WITH TIME ZONE NOT NULL, "warehouse_code" character varying(50) NOT NULL, "from_location" character varying(50), "to_location" character varying(50), "quantity" numeric(15,3) NOT NULL, "unit_cost" numeric(15,2) NOT NULL DEFAULT '0', "total_cost" numeric(15,2) NOT NULL DEFAULT '0', "lot_number" character varying(100), "serial_number" character varying(100), "reference_type" character varying(50), "reference_id" uuid, "reference_number" character varying(100), "reason" text, "notes" text, "product_id" uuid NOT NULL, "performed_by_id" uuid, "performed_by" uuid, CONSTRAINT "pk_inventory_transactions_id" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_inventory_transactions_tenant_id" ON "inventory_transactions" ("tenant_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_inventory_transactions_tenant_id_reference_type_reference_id" ON "inventory_transactions" ("tenant_id", "reference_type", "reference_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_inventory_transactions_tenant_id_transaction_date" ON "inventory_transactions" ("tenant_id", "transaction_date") `);
-        await queryRunner.query(`CREATE INDEX "idx_inventory_transactions_tenant_id_transaction_type" ON "inventory_transactions" ("tenant_id", "transaction_type") `);
-        await queryRunner.query(`CREATE INDEX "idx_inventory_transactions_tenant_id_product_id" ON "inventory_transactions" ("tenant_id", "product_id") `);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clock_in"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clock_out"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "hours_worked"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "regular_hours"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "overtime_hours"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "break_minutes"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "shift_name"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clock_in_location"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clock_out_location"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clock_in" TIMESTAMP WITH TIME ZONE NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clock_out" TIMESTAMP WITH TIME ZONE`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "hours_worked" numeric(10,2) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "regular_hours" numeric(10,2) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "overtime_hours" numeric(10,2) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "break_minutes" numeric(10,2) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "shift_name" character varying(100)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clock_in_location" character varying(45)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clock_out_location" character varying(45)`);
-        await queryRunner.query(`CREATE TYPE "public"."time_clock_entries_event_type_enum" AS ENUM('clock_in', 'clock_out', 'break_start', 'break_end', 'lunch_start', 'lunch_end', 'overtime_start', 'overtime_end')`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "event_type" "public"."time_clock_entries_event_type_enum" NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clocked_at" TIMESTAMP WITH TIME ZONE NOT NULL`);
-        await queryRunner.query(`CREATE TYPE "public"."time_clock_entries_method_enum" AS ENUM('manual', 'biometric', 'card', 'mobile', 'web', 'kiosk')`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "method" "public"."time_clock_entries_method_enum" NOT NULL DEFAULT 'manual'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "work_center_id" uuid`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "shift_assignment_id" uuid`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "task_id" uuid`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "gps_location" point`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "ip_address" character varying(45)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "device_id" character varying(500)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "approval_notes" character varying(500)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "is_overtime" boolean NOT NULL DEFAULT false`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "is_exception" boolean NOT NULL DEFAULT false`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "exception_reason" character varying(500)`);
-        await queryRunner.query(`DROP INDEX "public"."idx_customer_orders_tenant_id_status"`);
-        await queryRunner.query(`ALTER TYPE "public"."customer_orders_status_enum" RENAME TO "customer_orders_status_enum_old"`);
-        await queryRunner.query(`CREATE TYPE "public"."customer_orders_status_enum" AS ENUM('draft', 'pending', 'confirmed', 'in_production', 'quality_control', 'qc_passed', 'qc_failed', 'partially_shipped', 'shipped', 'delivered', 'on_hold', 'cancelled')`);
-        await queryRunner.query(`ALTER TABLE "customer_orders" ALTER COLUMN "status" DROP DEFAULT`);
-        await queryRunner.query(`ALTER TABLE "customer_orders" ALTER COLUMN "status" TYPE "public"."customer_orders_status_enum" USING "status"::"text"::"public"."customer_orders_status_enum"`);
-        await queryRunner.query(`ALTER TABLE "customer_orders" ALTER COLUMN "status" SET DEFAULT 'draft'`);
-        await queryRunner.query(`DROP TYPE "public"."customer_orders_status_enum_old"`);
-        await queryRunner.query(`ALTER TABLE "work_centers" ALTER COLUMN "version" SET DEFAULT '1'`);
-        await queryRunner.query(`ALTER TABLE "departments" ALTER COLUMN "version" SET DEFAULT '1'`);
-        await queryRunner.query(`ALTER TABLE "roles" ALTER COLUMN "version" SET DEFAULT '1'`);
-        await queryRunner.query(`ALTER TABLE "user_roles" ALTER COLUMN "version" SET DEFAULT '1'`);
-        await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "version" SET DEFAULT '1'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_worker_id_workers"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "notes"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "notes" character varying(500)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ALTER COLUMN "worker_id" DROP NOT NULL`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_sessions_tenant_id_worker_id_session_date"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_sessions" ALTER COLUMN "worker_id" DROP NOT NULL`);
-        await queryRunner.query(`CREATE INDEX "idx_customer_orders_tenant_id_status" ON "customer_orders" ("tenant_id", "status") `);
-        await queryRunner.query(`CREATE INDEX "idx_production_orders_tenant_id_planned_start_date_planned_end_date" ON "production_orders" ("tenant_id", "planned_start_date", "planned_end_date") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_clock_out" ON "time_clock_entries" ("tenant_id", "clock_out") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_clock_in" ON "time_clock_entries" ("tenant_id", "clock_in") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_worker_id" ON "time_clock_entries" ("tenant_id", "worker_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_shift_assignment_id" ON "time_clock_entries" ("tenant_id", "shift_assignment_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_work_center_id_clocked_at" ON "time_clock_entries" ("tenant_id", "work_center_id", "clocked_at") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_event_type_clocked_at" ON "time_clock_entries" ("tenant_id", "event_type", "clocked_at") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_worker_id_clocked_at" ON "time_clock_entries" ("tenant_id", "worker_id", "clocked_at") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_sessions_tenant_id_worker_id_session_date" ON "time_clock_sessions" ("tenant_id", "worker_id", "session_date") `);
-        await queryRunner.query(`ALTER TABLE "inventory" ADD CONSTRAINT "uq_inventory_tenant_id_product_id_warehouse_code_location_code_lot_number" UNIQUE ("tenant_id", "product_id", "warehouse_code", "location_code", "lot_number")`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_worker_id_workers" FOREIGN KEY ("worker_id") REFERENCES "workers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "waste_records" ADD CONSTRAINT "fk_waste_records_product_id_products" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "waste_records" ADD CONSTRAINT "fk_waste_records_work_order_id_customer_orders" FOREIGN KEY ("work_order_id") REFERENCES "customer_orders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "waste_records" ADD CONSTRAINT "fk_waste_records_equipment_id_equipment" FOREIGN KEY ("equipment_id") REFERENCES "equipment"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "waste_records" ADD CONSTRAINT "fk_waste_records_reported_by_id_workers" FOREIGN KEY ("reported_by_id") REFERENCES "workers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_work_center_id_work_centers" FOREIGN KEY ("work_center_id") REFERENCES "work_centers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_shift_assignment_id_shift_assignments" FOREIGN KEY ("shift_assignment_id") REFERENCES "shift_assignments"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_task_id_tasks" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "time_clock_sessions" ADD CONSTRAINT "fk_time_clock_sessions_worker_id_workers" FOREIGN KEY ("worker_id") REFERENCES "workers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "time_clock_sessions" ADD CONSTRAINT "fk_time_clock_sessions_shift_assignment_id_shift_assignments" FOREIGN KEY ("shift_assignment_id") REFERENCES "shift_assignments"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "task_assignments" ADD CONSTRAINT "fk_task_assignments_task_id_tasks" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "task_assignments" ADD CONSTRAINT "fk_task_assignments_user_id_users" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "task_assignments" ADD CONSTRAINT "fk_task_assignments_assigned_by_id_users" FOREIGN KEY ("assigned_by_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "task_assignments" ADD CONSTRAINT "fk_task_assignments_work_center_id_work_centers" FOREIGN KEY ("work_center_id") REFERENCES "work_centers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "stock_alerts" ADD CONSTRAINT "fk_stock_alerts_product_id_products" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "stock_alerts" ADD CONSTRAINT "fk_stock_alerts_acknowledged_by_id_users" FOREIGN KEY ("acknowledged_by_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "stock_alerts" ADD CONSTRAINT "fk_stock_alerts_resolved_by_id_users" FOREIGN KEY ("resolved_by_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "order_state_transitions" ADD CONSTRAINT "fk_order_state_transitions_customer_order_id_customer_orders" FOREIGN KEY ("customer_order_id") REFERENCES "customer_orders"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "order_state_transitions" ADD CONSTRAINT "fk_order_state_transitions_user_id_users" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "inventory_transactions" ADD CONSTRAINT "fk_inventory_transactions_product_id_products" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "inventory_transactions" ADD CONSTRAINT "fk_inventory_transactions_performed_by_users" FOREIGN KEY ("performed_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "production_step_dependencies" ADD CONSTRAINT "fk_production_step_dependencies_depends_on_step_id_production_steps" FOREIGN KEY ("depends_on_step_id") REFERENCES "production_steps"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
-    }
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `ALTER TABLE "production_step_dependencies" DROP CONSTRAINT "fk_production_step_dependencies_depends_on_step_id_production_s"`,
+    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_bom_active_version"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_inventory_available_quantity"`,
+    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_inventory_expiration"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_inventory_reorder"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_products_low_stock"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_products_specifications"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_customer_orders_status_date"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_customer_orders_customer_status"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_production_orders_tenant_id_planned_start_date_planned_end_"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_production_orders_status_priority"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_production_orders_date_range"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_production_orders_product_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_production_orders_covering"`,
+    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_tasks_worker_status"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_tasks_work_order_id"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_work_orders_production_sequence"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_work_orders_assigned_status"`,
+    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_work_orders_completion"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_work_orders_product_id"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_work_orders_covering"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_workers_department_active"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_equipment_next_maintenance"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_maintenance_records_history"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_clock_out"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_clock_in"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_worker_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_quality_inspections_date_result"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_quality_inspections_product_type"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_quality_inspections_measurements"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_activity_logs_entity_date"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_activity_logs_user_date"`,
+    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_task_dependencies_task"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_task_dependencies_depends_on"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "inventory" DROP CONSTRAINT "uq_inventory_tenant_id_product_id_warehouse_code_location_code_"`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."waste_records_type_enum" AS ENUM('scrap', 'rework', 'defective', 'overproduction', 'spoilage', 'trimming', 'spillage', 'other')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."waste_records_category_enum" AS ENUM('material', 'production', 'quality', 'inventory', 'process')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."waste_records_disposal_method_enum" AS ENUM('recycle', 'dispose', 'rework', 'resell', 'return_to_vendor', 'incinerate', 'landfill')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "waste_records" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "audit_action" character varying(50), "audit_changes" jsonb, "audit_reason" character varying(255), "audit_timestamp" TIMESTAMP WITH TIME ZONE, "record_number" character varying(50) NOT NULL, "record_date" TIMESTAMP NOT NULL, "type" "public"."waste_records_type_enum" NOT NULL DEFAULT 'scrap', "category" "public"."waste_records_category_enum" NOT NULL DEFAULT 'production', "product_id" uuid, "work_order_id" uuid, "equipment_id" uuid, "reported_by_id" uuid, "batch_number" character varying(100), "quantity" numeric(12,3) NOT NULL, "unit" character varying(50), "material_cost" numeric(12,2), "labor_cost" numeric(12,2), "overhead_cost" numeric(12,2), "disposal_cost" numeric(12,2), "total_cost" numeric(12,2) NOT NULL DEFAULT '0', "reason" text, "root_cause" character varying(255), "corrective_action" text, "preventive_action" text, "disposal_method" "public"."waste_records_disposal_method_enum", "disposal_date" TIMESTAMP, "disposal_reference" character varying(100), "recovered_value" numeric(12,2), "work_center" character varying(100), "shift" character varying(50), "process_step" character varying(100), "is_recurring" boolean NOT NULL DEFAULT false, "quality_inspection_id" character varying(100), "ncr_number" character varying(100), "material_details" jsonb, "environmental_impact" jsonb, "images" text, "attachments" text, "notes" text, CONSTRAINT "uq_waste_records_record_number" UNIQUE ("record_number"), CONSTRAINT "pk_waste_records_id" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_waste_records_tenant_id" ON "waste_records" ("tenant_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_waste_records_equipment_id" ON "waste_records" ("equipment_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_waste_records_work_order_id" ON "waste_records" ("work_order_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_waste_records_product_id_record_date" ON "waste_records" ("product_id", "record_date") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_waste_records_record_date_type" ON "waste_records" ("record_date", "type") `,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."time_clock_sessions_status_enum" AS ENUM('open', 'closed', 'approved', 'disputed', 'corrected')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "time_clock_sessions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "worker_id" uuid NOT NULL, "session_date" date NOT NULL, "shift_assignment_id" uuid, "clock_in_time" TIMESTAMP WITH TIME ZONE, "clock_out_time" TIMESTAMP WITH TIME ZONE, "regular_hours" numeric(5,2) NOT NULL DEFAULT '0', "overtime_hours" numeric(5,2) NOT NULL DEFAULT '0', "break_minutes" numeric(5,2) NOT NULL DEFAULT '0', "lunch_minutes" numeric(5,2) NOT NULL DEFAULT '0', "total_hours" numeric(10,2) NOT NULL DEFAULT '0', "productive_hours" numeric(10,2) NOT NULL DEFAULT '0', "status" "public"."time_clock_sessions_status_enum" NOT NULL DEFAULT 'open', "is_late_arrival" boolean NOT NULL DEFAULT false, "is_early_departure" boolean NOT NULL DEFAULT false, "is_absent" boolean NOT NULL DEFAULT false, "late_minutes" numeric(5,2) NOT NULL DEFAULT '0', "early_departure_minutes" numeric(5,2) NOT NULL DEFAULT '0', "break_periods" jsonb, "overtime_periods" jsonb, "exceptions" jsonb, "approved_by" uuid, "approved_at" TIMESTAMP WITH TIME ZONE, "notes" character varying(500), CONSTRAINT "pk_time_clock_sessions_id" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_sessions_tenant_id" ON "time_clock_sessions" ("tenant_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_sessions_tenant_id_shift_assignment_id" ON "time_clock_sessions" ("tenant_id", "shift_assignment_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_sessions_tenant_id_status" ON "time_clock_sessions" ("tenant_id", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_sessions_tenant_id_worker_id_session_date" ON "time_clock_sessions" ("tenant_id", "worker_id", "session_date") `,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."time_clock_rules_rounding_direction_enum" AS ENUM('up', 'down', 'nearest')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "time_clock_rules" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "name" character varying(100) NOT NULL, "description" character varying(500), "grace_minutes_late" integer NOT NULL DEFAULT '15', "grace_minutes_early" integer NOT NULL DEFAULT '5', "rounding_minutes" integer NOT NULL DEFAULT '5', "rounding_direction" "public"."time_clock_rules_rounding_direction_enum" NOT NULL DEFAULT 'nearest', "standard_work_hours" numeric(5,2) NOT NULL DEFAULT '8', "standard_work_week_hours" numeric(5,2) NOT NULL DEFAULT '40', "overtime_multiplier" numeric(5,2) NOT NULL DEFAULT '1.5', "double_time_multiplier" numeric(5,2) NOT NULL DEFAULT '2', "double_time_threshold_hours" integer NOT NULL DEFAULT '12', "require_clock_out_same_day" boolean NOT NULL DEFAULT true, "require_manager_approval_for_manual_entry" boolean NOT NULL DEFAULT true, "require_manager_approval_for_overtime" boolean NOT NULL DEFAULT true, "allow_mobile_clock_in" boolean NOT NULL DEFAULT false, "require_gps_for_mobile" boolean NOT NULL DEFAULT false, "max_gps_radius" numeric(10,6), "min_break_minutes" integer NOT NULL DEFAULT '30', "min_lunch_minutes" integer NOT NULL DEFAULT '30', "max_consecutive_work_minutes" integer NOT NULL DEFAULT '240', "shift_rules" jsonb, "department_rules" jsonb, CONSTRAINT "pk_time_clock_rules_id" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_rules_tenant_id" ON "time_clock_rules" ("tenant_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_rules_tenant_id_is_active" ON "time_clock_rules" ("tenant_id", "is_active") `,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."task_assignments_status_enum" AS ENUM('pending', 'accepted', 'declined', 'in_progress', 'completed', 'reassigned')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."task_assignments_assignment_method_enum" AS ENUM('manual', 'auto_skill_based', 'auto_workload', 'auto_round_robin', 'auto_priority', 'auto_location')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "task_assignments" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "task_id" uuid NOT NULL, "user_id" uuid NOT NULL, "status" "public"."task_assignments_status_enum" NOT NULL DEFAULT 'pending', "assignment_method" "public"."task_assignments_assignment_method_enum" NOT NULL DEFAULT 'manual', "priority" integer NOT NULL DEFAULT '0', "assigned_at" TIMESTAMP WITH TIME ZONE NOT NULL, "assigned_by_id" uuid, "accepted_at" TIMESTAMP WITH TIME ZONE, "declined_at" TIMESTAMP WITH TIME ZONE, "decline_reason" text, "started_at" TIMESTAMP WITH TIME ZONE, "completed_at" TIMESTAMP WITH TIME ZONE, "estimated_hours" numeric(10,2), "actual_hours" numeric(10,2), "completion_percentage" integer NOT NULL DEFAULT '0', "skill_match_score" integer, "user_workload" integer, "distance_from_work_center" numeric(10,2), "work_center_id" uuid, "assignment_criteria" jsonb, "notes" text, "performance_metrics" jsonb, "due_date" TIMESTAMP WITH TIME ZONE, "is_overdue" boolean NOT NULL DEFAULT false, "is_urgent" boolean NOT NULL DEFAULT false, "reassignment_history" jsonb, CONSTRAINT "uq_task_assignments_tenant_id_task_id_user_id_assigned_at" UNIQUE ("tenant_id", "task_id", "user_id", "assigned_at"), CONSTRAINT "pk_task_assignments_id" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_task_assignments_tenant_id" ON "task_assignments" ("tenant_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_task_assignments_tenant_id_priority" ON "task_assignments" ("tenant_id", "priority") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_task_assignments_tenant_id_assigned_at" ON "task_assignments" ("tenant_id", "assigned_at") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_task_assignments_tenant_id_status" ON "task_assignments" ("tenant_id", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_task_assignments_tenant_id_user_id" ON "task_assignments" ("tenant_id", "user_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_task_assignments_tenant_id_task_id" ON "task_assignments" ("tenant_id", "task_id") `,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."stock_alerts_severity_enum" AS ENUM('critical', 'high', 'medium', 'warning', 'low')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."stock_alerts_status_enum" AS ENUM('active', 'acknowledged', 'resolved', 'expired')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "stock_alerts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "product_id" uuid NOT NULL, "warehouse_code" character varying(50), "severity" "public"."stock_alerts_severity_enum" NOT NULL DEFAULT 'warning', "status" "public"."stock_alerts_status_enum" NOT NULL DEFAULT 'active', "current_stock" numeric(15,3) NOT NULL, "min_stock_level" numeric(15,3) NOT NULL, "message" text NOT NULL, "alerted_at" TIMESTAMP NOT NULL, "acknowledged_by_id" uuid, "acknowledged_at" TIMESTAMP, "resolved_by_id" uuid, "resolved_at" TIMESTAMP, "resolution" text, "notes" text, CONSTRAINT "pk_stock_alerts_id" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_stock_alerts_tenant_id" ON "stock_alerts" ("tenant_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_stock_alerts_tenant_id_alerted_at" ON "stock_alerts" ("tenant_id", "alerted_at") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_stock_alerts_tenant_id_severity_status" ON "stock_alerts" ("tenant_id", "severity", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_stock_alerts_tenant_id_warehouse_code_status" ON "stock_alerts" ("tenant_id", "warehouse_code", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_stock_alerts_tenant_id_product_id_status" ON "stock_alerts" ("tenant_id", "product_id", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."order_state_transitions_from_state_enum" AS ENUM('draft', 'pending', 'confirmed', 'in_production', 'quality_control', 'qc_passed', 'qc_failed', 'partially_shipped', 'shipped', 'delivered', 'on_hold', 'cancelled')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."order_state_transitions_to_state_enum" AS ENUM('draft', 'pending', 'confirmed', 'in_production', 'quality_control', 'qc_passed', 'qc_failed', 'partially_shipped', 'shipped', 'delivered', 'on_hold', 'cancelled')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "order_state_transitions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "customer_order_id" uuid NOT NULL, "from_state" "public"."order_state_transitions_from_state_enum" NOT NULL, "to_state" "public"."order_state_transitions_to_state_enum" NOT NULL, "event" character varying(50) NOT NULL, "reason" text, "notes" text, "user_id" uuid, "transition_metadata" jsonb, "transitioned_at" TIMESTAMP NOT NULL DEFAULT now(), "success" boolean NOT NULL DEFAULT true, "error_message" text, CONSTRAINT "pk_order_state_transitions_id" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_order_state_transitions_tenant_id" ON "order_state_transitions" ("tenant_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_order_state_transitions_tenant_id_created_at" ON "order_state_transitions" ("tenant_id", "created_at") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_order_state_transitions_tenant_id_customer_order_id" ON "order_state_transitions" ("tenant_id", "customer_order_id") `,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."inventory_transactions_transaction_type_enum" AS ENUM('receipt', 'issue', 'transfer', 'adjustment', 'return', 'scrap', 'cycle_count', 'reservation', 'release')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "inventory_transactions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL DEFAULT '1', "is_active" boolean NOT NULL DEFAULT true, "metadata" jsonb, "tenant_id" uuid NOT NULL, "transaction_number" character varying(50) NOT NULL, "transaction_type" "public"."inventory_transactions_transaction_type_enum" NOT NULL, "transaction_date" TIMESTAMP WITH TIME ZONE NOT NULL, "warehouse_code" character varying(50) NOT NULL, "from_location" character varying(50), "to_location" character varying(50), "quantity" numeric(15,3) NOT NULL, "unit_cost" numeric(15,2) NOT NULL DEFAULT '0', "total_cost" numeric(15,2) NOT NULL DEFAULT '0', "lot_number" character varying(100), "serial_number" character varying(100), "reference_type" character varying(50), "reference_id" uuid, "reference_number" character varying(100), "reason" text, "notes" text, "product_id" uuid NOT NULL, "performed_by_id" uuid, "performed_by" uuid, CONSTRAINT "pk_inventory_transactions_id" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_inventory_transactions_tenant_id" ON "inventory_transactions" ("tenant_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_inventory_transactions_tenant_id_reference_type_reference_id" ON "inventory_transactions" ("tenant_id", "reference_type", "reference_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_inventory_transactions_tenant_id_transaction_date" ON "inventory_transactions" ("tenant_id", "transaction_date") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_inventory_transactions_tenant_id_transaction_type" ON "inventory_transactions" ("tenant_id", "transaction_type") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_inventory_transactions_tenant_id_product_id" ON "inventory_transactions" ("tenant_id", "product_id") `,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clock_in"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clock_out"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "hours_worked"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "regular_hours"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "overtime_hours"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "break_minutes"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "shift_name"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clock_in_location"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clock_out_location"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clock_in" TIMESTAMP WITH TIME ZONE NOT NULL`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clock_out" TIMESTAMP WITH TIME ZONE`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "hours_worked" numeric(10,2) NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "regular_hours" numeric(10,2) NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "overtime_hours" numeric(10,2) NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "break_minutes" numeric(10,2) NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "shift_name" character varying(100)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clock_in_location" character varying(45)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clock_out_location" character varying(45)`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."time_clock_entries_event_type_enum" AS ENUM('clock_in', 'clock_out', 'break_start', 'break_end', 'lunch_start', 'lunch_end', 'overtime_start', 'overtime_end')`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "event_type" "public"."time_clock_entries_event_type_enum" NOT NULL`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clocked_at" TIMESTAMP WITH TIME ZONE NOT NULL`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."time_clock_entries_method_enum" AS ENUM('manual', 'biometric', 'card', 'mobile', 'web', 'kiosk')`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "method" "public"."time_clock_entries_method_enum" NOT NULL DEFAULT 'manual'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "work_center_id" uuid`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "shift_assignment_id" uuid`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "task_id" uuid`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "gps_location" point`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "ip_address" character varying(45)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "device_id" character varying(500)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "approval_notes" character varying(500)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "is_overtime" boolean NOT NULL DEFAULT false`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "is_exception" boolean NOT NULL DEFAULT false`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "exception_reason" character varying(500)`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_customer_orders_tenant_id_status"`,
+    );
+    await queryRunner.query(
+      `ALTER TYPE "public"."customer_orders_status_enum" RENAME TO "customer_orders_status_enum_old"`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."customer_orders_status_enum" AS ENUM('draft', 'pending', 'confirmed', 'in_production', 'quality_control', 'qc_passed', 'qc_failed', 'partially_shipped', 'shipped', 'delivered', 'on_hold', 'cancelled')`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "customer_orders" ALTER COLUMN "status" DROP DEFAULT`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "customer_orders" ALTER COLUMN "status" TYPE "public"."customer_orders_status_enum" USING "status"::"text"::"public"."customer_orders_status_enum"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "customer_orders" ALTER COLUMN "status" SET DEFAULT 'draft'`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."customer_orders_status_enum_old"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_centers" ALTER COLUMN "version" SET DEFAULT '1'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "departments" ALTER COLUMN "version" SET DEFAULT '1'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "roles" ALTER COLUMN "version" SET DEFAULT '1'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_roles" ALTER COLUMN "version" SET DEFAULT '1'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" ALTER COLUMN "version" SET DEFAULT '1'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_worker_id_workers"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "notes"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "notes" character varying(500)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ALTER COLUMN "worker_id" DROP NOT NULL`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_sessions_tenant_id_worker_id_session_date"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_sessions" ALTER COLUMN "worker_id" DROP NOT NULL`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_customer_orders_tenant_id_status" ON "customer_orders" ("tenant_id", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_production_orders_tenant_id_planned_start_date_planned_end_date" ON "production_orders" ("tenant_id", "planned_start_date", "planned_end_date") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_clock_out" ON "time_clock_entries" ("tenant_id", "clock_out") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_clock_in" ON "time_clock_entries" ("tenant_id", "clock_in") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_worker_id" ON "time_clock_entries" ("tenant_id", "worker_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_shift_assignment_id" ON "time_clock_entries" ("tenant_id", "shift_assignment_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_work_center_id_clocked_at" ON "time_clock_entries" ("tenant_id", "work_center_id", "clocked_at") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_event_type_clocked_at" ON "time_clock_entries" ("tenant_id", "event_type", "clocked_at") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_worker_id_clocked_at" ON "time_clock_entries" ("tenant_id", "worker_id", "clocked_at") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_sessions_tenant_id_worker_id_session_date" ON "time_clock_sessions" ("tenant_id", "worker_id", "session_date") `,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "inventory" ADD CONSTRAINT "uq_inventory_tenant_id_product_id_warehouse_code_location_code_lot_number" UNIQUE ("tenant_id", "product_id", "warehouse_code", "location_code", "lot_number")`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_worker_id_workers" FOREIGN KEY ("worker_id") REFERENCES "workers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "waste_records" ADD CONSTRAINT "fk_waste_records_product_id_products" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "waste_records" ADD CONSTRAINT "fk_waste_records_work_order_id_customer_orders" FOREIGN KEY ("work_order_id") REFERENCES "customer_orders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "waste_records" ADD CONSTRAINT "fk_waste_records_equipment_id_equipment" FOREIGN KEY ("equipment_id") REFERENCES "equipment"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "waste_records" ADD CONSTRAINT "fk_waste_records_reported_by_id_workers" FOREIGN KEY ("reported_by_id") REFERENCES "workers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_work_center_id_work_centers" FOREIGN KEY ("work_center_id") REFERENCES "work_centers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_shift_assignment_id_shift_assignments" FOREIGN KEY ("shift_assignment_id") REFERENCES "shift_assignments"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_task_id_tasks" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_sessions" ADD CONSTRAINT "fk_time_clock_sessions_worker_id_workers" FOREIGN KEY ("worker_id") REFERENCES "workers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_sessions" ADD CONSTRAINT "fk_time_clock_sessions_shift_assignment_id_shift_assignments" FOREIGN KEY ("shift_assignment_id") REFERENCES "shift_assignments"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "task_assignments" ADD CONSTRAINT "fk_task_assignments_task_id_tasks" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "task_assignments" ADD CONSTRAINT "fk_task_assignments_user_id_users" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "task_assignments" ADD CONSTRAINT "fk_task_assignments_assigned_by_id_users" FOREIGN KEY ("assigned_by_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "task_assignments" ADD CONSTRAINT "fk_task_assignments_work_center_id_work_centers" FOREIGN KEY ("work_center_id") REFERENCES "work_centers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "stock_alerts" ADD CONSTRAINT "fk_stock_alerts_product_id_products" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "stock_alerts" ADD CONSTRAINT "fk_stock_alerts_acknowledged_by_id_users" FOREIGN KEY ("acknowledged_by_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "stock_alerts" ADD CONSTRAINT "fk_stock_alerts_resolved_by_id_users" FOREIGN KEY ("resolved_by_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "order_state_transitions" ADD CONSTRAINT "fk_order_state_transitions_customer_order_id_customer_orders" FOREIGN KEY ("customer_order_id") REFERENCES "customer_orders"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "order_state_transitions" ADD CONSTRAINT "fk_order_state_transitions_user_id_users" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "inventory_transactions" ADD CONSTRAINT "fk_inventory_transactions_product_id_products" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "inventory_transactions" ADD CONSTRAINT "fk_inventory_transactions_performed_by_users" FOREIGN KEY ("performed_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "production_step_dependencies" ADD CONSTRAINT "fk_production_step_dependencies_depends_on_step_id_production_steps" FOREIGN KEY ("depends_on_step_id") REFERENCES "production_steps"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "production_step_dependencies" DROP CONSTRAINT "fk_production_step_dependencies_depends_on_step_id_production_steps"`);
-        await queryRunner.query(`ALTER TABLE "inventory_transactions" DROP CONSTRAINT "fk_inventory_transactions_performed_by_users"`);
-        await queryRunner.query(`ALTER TABLE "inventory_transactions" DROP CONSTRAINT "fk_inventory_transactions_product_id_products"`);
-        await queryRunner.query(`ALTER TABLE "order_state_transitions" DROP CONSTRAINT "fk_order_state_transitions_user_id_users"`);
-        await queryRunner.query(`ALTER TABLE "order_state_transitions" DROP CONSTRAINT "fk_order_state_transitions_customer_order_id_customer_orders"`);
-        await queryRunner.query(`ALTER TABLE "stock_alerts" DROP CONSTRAINT "fk_stock_alerts_resolved_by_id_users"`);
-        await queryRunner.query(`ALTER TABLE "stock_alerts" DROP CONSTRAINT "fk_stock_alerts_acknowledged_by_id_users"`);
-        await queryRunner.query(`ALTER TABLE "stock_alerts" DROP CONSTRAINT "fk_stock_alerts_product_id_products"`);
-        await queryRunner.query(`ALTER TABLE "task_assignments" DROP CONSTRAINT "fk_task_assignments_work_center_id_work_centers"`);
-        await queryRunner.query(`ALTER TABLE "task_assignments" DROP CONSTRAINT "fk_task_assignments_assigned_by_id_users"`);
-        await queryRunner.query(`ALTER TABLE "task_assignments" DROP CONSTRAINT "fk_task_assignments_user_id_users"`);
-        await queryRunner.query(`ALTER TABLE "task_assignments" DROP CONSTRAINT "fk_task_assignments_task_id_tasks"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_sessions" DROP CONSTRAINT "fk_time_clock_sessions_shift_assignment_id_shift_assignments"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_sessions" DROP CONSTRAINT "fk_time_clock_sessions_worker_id_workers"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_task_id_tasks"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_shift_assignment_id_shift_assignments"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_work_center_id_work_centers"`);
-        await queryRunner.query(`ALTER TABLE "waste_records" DROP CONSTRAINT "fk_waste_records_reported_by_id_workers"`);
-        await queryRunner.query(`ALTER TABLE "waste_records" DROP CONSTRAINT "fk_waste_records_equipment_id_equipment"`);
-        await queryRunner.query(`ALTER TABLE "waste_records" DROP CONSTRAINT "fk_waste_records_work_order_id_customer_orders"`);
-        await queryRunner.query(`ALTER TABLE "waste_records" DROP CONSTRAINT "fk_waste_records_product_id_products"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_worker_id_workers"`);
-        await queryRunner.query(`ALTER TABLE "inventory" DROP CONSTRAINT "uq_inventory_tenant_id_product_id_warehouse_code_location_code_lot_number"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_sessions_tenant_id_worker_id_session_date"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_worker_id_clocked_at"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_event_type_clocked_at"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_work_center_id_clocked_at"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_shift_assignment_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_worker_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_clock_in"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_entries_tenant_id_clock_out"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_production_orders_tenant_id_planned_start_date_planned_end_date"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_customer_orders_tenant_id_status"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_sessions" ALTER COLUMN "worker_id" SET NOT NULL`);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_sessions_tenant_id_worker_id_session_date" ON "time_clock_sessions" ("tenant_id", "worker_id", "session_date") `);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ALTER COLUMN "worker_id" SET NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "notes"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "notes" text`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_worker_id_workers" FOREIGN KEY ("worker_id") REFERENCES "workers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "version" DROP DEFAULT`);
-        await queryRunner.query(`ALTER TABLE "user_roles" ALTER COLUMN "version" DROP DEFAULT`);
-        await queryRunner.query(`ALTER TABLE "roles" ALTER COLUMN "version" DROP DEFAULT`);
-        await queryRunner.query(`ALTER TABLE "departments" ALTER COLUMN "version" DROP DEFAULT`);
-        await queryRunner.query(`ALTER TABLE "work_centers" ALTER COLUMN "version" DROP DEFAULT`);
-        await queryRunner.query(`CREATE TYPE "public"."customer_orders_status_enum_old" AS ENUM('draft', 'confirmed', 'in_production', 'partially_shipped', 'shipped', 'delivered', 'cancelled')`);
-        await queryRunner.query(`ALTER TABLE "customer_orders" ALTER COLUMN "status" DROP DEFAULT`);
-        await queryRunner.query(`ALTER TABLE "customer_orders" ALTER COLUMN "status" TYPE "public"."customer_orders_status_enum_old" USING "status"::"text"::"public"."customer_orders_status_enum_old"`);
-        await queryRunner.query(`ALTER TABLE "customer_orders" ALTER COLUMN "status" SET DEFAULT 'draft'`);
-        await queryRunner.query(`DROP TYPE "public"."customer_orders_status_enum"`);
-        await queryRunner.query(`ALTER TYPE "public"."customer_orders_status_enum_old" RENAME TO "customer_orders_status_enum"`);
-        await queryRunner.query(`CREATE INDEX "idx_customer_orders_tenant_id_status" ON "customer_orders" ("tenant_id", "status") `);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "task_id"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "shift_assignment_id"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "work_center_id"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "exception_reason"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "is_exception"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "is_overtime"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "approval_notes"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "device_id"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "ip_address"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "gps_location"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "task_id"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "shift_assignment_id"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "work_center_id"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "method"`);
-        await queryRunner.query(`DROP TYPE "public"."time_clock_entries_method_enum"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clocked_at"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "event_type"`);
-        await queryRunner.query(`DROP TYPE "public"."time_clock_entries_event_type_enum"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clock_out_location"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clock_in_location"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "shift_name"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "break_minutes"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "overtime_hours"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "regular_hours"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "hours_worked"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clock_out"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" DROP COLUMN "clock_in"`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clock_out_location" character varying(45)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clock_in_location" character varying(45)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "shift_name" character varying(100)`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "break_minutes" numeric(10,2) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "overtime_hours" numeric(10,2) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "regular_hours" numeric(10,2) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "hours_worked" numeric(10,2) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clock_out" TIMESTAMP WITH TIME ZONE`);
-        await queryRunner.query(`ALTER TABLE "time_clock_entries" ADD "clock_in" TIMESTAMP WITH TIME ZONE NOT NULL`);
-        await queryRunner.query(`DROP INDEX "public"."idx_inventory_transactions_tenant_id_product_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_inventory_transactions_tenant_id_transaction_type"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_inventory_transactions_tenant_id_transaction_date"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_inventory_transactions_tenant_id_reference_type_reference_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_inventory_transactions_tenant_id"`);
-        await queryRunner.query(`DROP TABLE "inventory_transactions"`);
-        await queryRunner.query(`DROP TYPE "public"."inventory_transactions_transaction_type_enum"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_order_state_transitions_tenant_id_customer_order_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_order_state_transitions_tenant_id_created_at"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_order_state_transitions_tenant_id"`);
-        await queryRunner.query(`DROP TABLE "order_state_transitions"`);
-        await queryRunner.query(`DROP TYPE "public"."order_state_transitions_to_state_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."order_state_transitions_from_state_enum"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_stock_alerts_tenant_id_product_id_status"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_stock_alerts_tenant_id_warehouse_code_status"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_stock_alerts_tenant_id_severity_status"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_stock_alerts_tenant_id_alerted_at"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_stock_alerts_tenant_id"`);
-        await queryRunner.query(`DROP TABLE "stock_alerts"`);
-        await queryRunner.query(`DROP TYPE "public"."stock_alerts_status_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."stock_alerts_severity_enum"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_task_assignments_tenant_id_task_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_task_assignments_tenant_id_user_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_task_assignments_tenant_id_status"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_task_assignments_tenant_id_assigned_at"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_task_assignments_tenant_id_priority"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_task_assignments_tenant_id"`);
-        await queryRunner.query(`DROP TABLE "task_assignments"`);
-        await queryRunner.query(`DROP TYPE "public"."task_assignments_assignment_method_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."task_assignments_status_enum"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_rules_tenant_id_is_active"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_rules_tenant_id"`);
-        await queryRunner.query(`DROP TABLE "time_clock_rules"`);
-        await queryRunner.query(`DROP TYPE "public"."time_clock_rules_rounding_direction_enum"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_sessions_tenant_id_worker_id_session_date"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_sessions_tenant_id_status"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_sessions_tenant_id_shift_assignment_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_time_clock_sessions_tenant_id"`);
-        await queryRunner.query(`DROP TABLE "time_clock_sessions"`);
-        await queryRunner.query(`DROP TYPE "public"."time_clock_sessions_status_enum"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_waste_records_record_date_type"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_waste_records_product_id_record_date"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_waste_records_work_order_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_waste_records_equipment_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_waste_records_tenant_id"`);
-        await queryRunner.query(`DROP TABLE "waste_records"`);
-        await queryRunner.query(`DROP TYPE "public"."waste_records_disposal_method_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."waste_records_category_enum"`);
-        await queryRunner.query(`DROP TYPE "public"."waste_records_type_enum"`);
-        await queryRunner.query(`ALTER TABLE "inventory" ADD CONSTRAINT "uq_inventory_tenant_id_product_id_warehouse_code_location_code_" UNIQUE ("tenant_id", "warehouse_code", "location_code", "lot_number", "product_id")`);
-        await queryRunner.query(`CREATE INDEX "IDX_task_dependencies_depends_on" ON "task_dependencies" ("depends_on_task_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_task_dependencies_task" ON "task_dependencies" ("task_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_activity_logs_user_date" ON "activity_logs" ("tenant_id", "timestamp", "user_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_activity_logs_entity_date" ON "activity_logs" ("tenant_id", "timestamp", "entity_type", "entity_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_quality_inspections_measurements" ON "quality_inspections" ("measurements") WHERE (measurements IS NOT NULL)`);
-        await queryRunner.query(`CREATE INDEX "IDX_quality_inspections_product_type" ON "quality_inspections" ("tenant_id", "type", "product_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_quality_inspections_date_result" ON "quality_inspections" ("tenant_id", "inspection_date", "result") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_worker_id" ON "time_clock_entries" ("tenant_id", "worker_id") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_clock_in" ON "time_clock_entries" ("tenant_id", "clock_in") `);
-        await queryRunner.query(`CREATE INDEX "idx_time_clock_entries_tenant_id_clock_out" ON "time_clock_entries" ("tenant_id", "clock_out") `);
-        await queryRunner.query(`CREATE INDEX "IDX_maintenance_records_history" ON "maintenance_records" ("tenant_id", "start_date", "equipment_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_equipment_next_maintenance" ON "equipment" ("tenant_id", "next_maintenance_date") WHERE (status = 'operational'::equipment_status_enum)`);
-        await queryRunner.query(`CREATE INDEX "IDX_workers_department_active" ON "workers" ("is_active", "tenant_id", "department_id") WHERE (is_active = true)`);
-        await queryRunner.query(`CREATE INDEX "IDX_work_orders_covering" ON "work_orders" ("tenant_id", "work_order_number", "quantity_ordered", "quantity_completed", "scheduled_start_date", "status") `);
-        await queryRunner.query(`CREATE INDEX "IDX_work_orders_product_id" ON "work_orders" ("product_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_work_orders_completion" ON "work_orders" ("tenant_id", "actual_end_date", "status") WHERE (status = 'completed'::work_orders_status_enum)`);
-        await queryRunner.query(`CREATE INDEX "IDX_work_orders_assigned_status" ON "work_orders" ("tenant_id", "status", "assigned_to_id") WHERE (status = ANY (ARRAY['scheduled'::work_orders_status_enum, 'released'::work_orders_status_enum, 'in_progress'::work_orders_status_enum]))`);
-        await queryRunner.query(`CREATE INDEX "IDX_work_orders_production_sequence" ON "work_orders" ("tenant_id", "sequence", "production_order_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_tasks_work_order_id" ON "tasks" ("work_order_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_tasks_worker_status" ON "tasks" ("tenant_id", "status", "scheduled_start_date", "assigned_to_id") WHERE (status <> ALL (ARRAY['completed'::tasks_status_enum, 'cancelled'::tasks_status_enum]))`);
-        await queryRunner.query(`CREATE INDEX "IDX_production_orders_covering" ON "production_orders" ("tenant_id", "order_number", "quantity_ordered", "quantity_produced", "status", "priority") `);
-        await queryRunner.query(`CREATE INDEX "IDX_production_orders_product_id" ON "production_orders" ("product_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_production_orders_date_range" ON "production_orders" ("tenant_id", "planned_start_date", "planned_end_date") WHERE (status <> ALL (ARRAY['completed'::production_orders_status_enum, 'cancelled'::production_orders_status_enum]))`);
-        await queryRunner.query(`CREATE INDEX "IDX_production_orders_status_priority" ON "production_orders" ("tenant_id", "status", "priority") WHERE (is_active = true)`);
-        await queryRunner.query(`CREATE INDEX "idx_production_orders_tenant_id_planned_start_date_planned_end_" ON "production_orders" ("tenant_id", "planned_start_date", "planned_end_date") `);
-        await queryRunner.query(`CREATE INDEX "IDX_customer_orders_customer_status" ON "customer_orders" ("tenant_id", "status", "customer_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_customer_orders_status_date" ON "customer_orders" ("tenant_id", "order_date", "status") WHERE (is_active = true)`);
-        await queryRunner.query(`CREATE INDEX "IDX_products_specifications" ON "products" ("specifications") WHERE (specifications IS NOT NULL)`);
-        await queryRunner.query(`CREATE INDEX "IDX_products_low_stock" ON "products" ("tenant_id", "min_stock_level", "reorder_point") WHERE ((is_active = true) AND (reorder_point IS NOT NULL))`);
-        await queryRunner.query(`CREATE INDEX "IDX_inventory_reorder" ON "inventory" ("tenant_id", "quantity_on_hand", "product_id") `);
-        await queryRunner.query(`CREATE INDEX "IDX_inventory_expiration" ON "inventory" ("tenant_id", "expiration_date") WHERE (expiration_date IS NOT NULL)`);
-        await queryRunner.query(`CREATE INDEX "IDX_inventory_available_quantity" ON "inventory" ("tenant_id", "quantity_available", "product_id") WHERE (status = 'available'::inventory_status_enum)`);
-        await queryRunner.query(`CREATE INDEX "IDX_bom_active_version" ON "bills_of_materials" ("version", "tenant_id", "product_id") WHERE (is_active = true)`);
-        await queryRunner.query(`ALTER TABLE "production_step_dependencies" ADD CONSTRAINT "fk_production_step_dependencies_depends_on_step_id_production_s" FOREIGN KEY ("depends_on_step_id") REFERENCES "production_steps"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `ALTER TABLE "production_step_dependencies" DROP CONSTRAINT "fk_production_step_dependencies_depends_on_step_id_production_steps"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "inventory_transactions" DROP CONSTRAINT "fk_inventory_transactions_performed_by_users"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "inventory_transactions" DROP CONSTRAINT "fk_inventory_transactions_product_id_products"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "order_state_transitions" DROP CONSTRAINT "fk_order_state_transitions_user_id_users"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "order_state_transitions" DROP CONSTRAINT "fk_order_state_transitions_customer_order_id_customer_orders"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "stock_alerts" DROP CONSTRAINT "fk_stock_alerts_resolved_by_id_users"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "stock_alerts" DROP CONSTRAINT "fk_stock_alerts_acknowledged_by_id_users"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "stock_alerts" DROP CONSTRAINT "fk_stock_alerts_product_id_products"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "task_assignments" DROP CONSTRAINT "fk_task_assignments_work_center_id_work_centers"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "task_assignments" DROP CONSTRAINT "fk_task_assignments_assigned_by_id_users"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "task_assignments" DROP CONSTRAINT "fk_task_assignments_user_id_users"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "task_assignments" DROP CONSTRAINT "fk_task_assignments_task_id_tasks"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_sessions" DROP CONSTRAINT "fk_time_clock_sessions_shift_assignment_id_shift_assignments"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_sessions" DROP CONSTRAINT "fk_time_clock_sessions_worker_id_workers"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_task_id_tasks"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_shift_assignment_id_shift_assignments"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_work_center_id_work_centers"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "waste_records" DROP CONSTRAINT "fk_waste_records_reported_by_id_workers"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "waste_records" DROP CONSTRAINT "fk_waste_records_equipment_id_equipment"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "waste_records" DROP CONSTRAINT "fk_waste_records_work_order_id_customer_orders"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "waste_records" DROP CONSTRAINT "fk_waste_records_product_id_products"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP CONSTRAINT "fk_time_clock_entries_worker_id_workers"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "inventory" DROP CONSTRAINT "uq_inventory_tenant_id_product_id_warehouse_code_location_code_lot_number"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_sessions_tenant_id_worker_id_session_date"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_worker_id_clocked_at"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_event_type_clocked_at"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_work_center_id_clocked_at"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_shift_assignment_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_worker_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_clock_in"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_entries_tenant_id_clock_out"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_production_orders_tenant_id_planned_start_date_planned_end_date"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_customer_orders_tenant_id_status"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_sessions" ALTER COLUMN "worker_id" SET NOT NULL`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_sessions_tenant_id_worker_id_session_date" ON "time_clock_sessions" ("tenant_id", "worker_id", "session_date") `,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ALTER COLUMN "worker_id" SET NOT NULL`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "notes"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "notes" text`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD CONSTRAINT "fk_time_clock_entries_worker_id_workers" FOREIGN KEY ("worker_id") REFERENCES "workers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" ALTER COLUMN "version" DROP DEFAULT`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_roles" ALTER COLUMN "version" DROP DEFAULT`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "roles" ALTER COLUMN "version" DROP DEFAULT`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "departments" ALTER COLUMN "version" DROP DEFAULT`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_centers" ALTER COLUMN "version" DROP DEFAULT`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."customer_orders_status_enum_old" AS ENUM('draft', 'confirmed', 'in_production', 'partially_shipped', 'shipped', 'delivered', 'cancelled')`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "customer_orders" ALTER COLUMN "status" DROP DEFAULT`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "customer_orders" ALTER COLUMN "status" TYPE "public"."customer_orders_status_enum_old" USING "status"::"text"::"public"."customer_orders_status_enum_old"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "customer_orders" ALTER COLUMN "status" SET DEFAULT 'draft'`,
+    );
+    await queryRunner.query(`DROP TYPE "public"."customer_orders_status_enum"`);
+    await queryRunner.query(
+      `ALTER TYPE "public"."customer_orders_status_enum_old" RENAME TO "customer_orders_status_enum"`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_customer_orders_tenant_id_status" ON "customer_orders" ("tenant_id", "status") `,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "task_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "shift_assignment_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "work_center_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "exception_reason"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "is_exception"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "is_overtime"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "approval_notes"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "device_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "ip_address"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "gps_location"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "task_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "shift_assignment_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "work_center_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "method"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."time_clock_entries_method_enum"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clocked_at"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "event_type"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."time_clock_entries_event_type_enum"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clock_out_location"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clock_in_location"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "shift_name"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "break_minutes"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "overtime_hours"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "regular_hours"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "hours_worked"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clock_out"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" DROP COLUMN "clock_in"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clock_out_location" character varying(45)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clock_in_location" character varying(45)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "shift_name" character varying(100)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "break_minutes" numeric(10,2) NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "overtime_hours" numeric(10,2) NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "regular_hours" numeric(10,2) NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "hours_worked" numeric(10,2) NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clock_out" TIMESTAMP WITH TIME ZONE`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "time_clock_entries" ADD "clock_in" TIMESTAMP WITH TIME ZONE NOT NULL`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_inventory_transactions_tenant_id_product_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_inventory_transactions_tenant_id_transaction_type"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_inventory_transactions_tenant_id_transaction_date"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_inventory_transactions_tenant_id_reference_type_reference_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_inventory_transactions_tenant_id"`,
+    );
+    await queryRunner.query(`DROP TABLE "inventory_transactions"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."inventory_transactions_transaction_type_enum"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_order_state_transitions_tenant_id_customer_order_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_order_state_transitions_tenant_id_created_at"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_order_state_transitions_tenant_id"`,
+    );
+    await queryRunner.query(`DROP TABLE "order_state_transitions"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."order_state_transitions_to_state_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."order_state_transitions_from_state_enum"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_stock_alerts_tenant_id_product_id_status"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_stock_alerts_tenant_id_warehouse_code_status"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_stock_alerts_tenant_id_severity_status"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_stock_alerts_tenant_id_alerted_at"`,
+    );
+    await queryRunner.query(`DROP INDEX "public"."idx_stock_alerts_tenant_id"`);
+    await queryRunner.query(`DROP TABLE "stock_alerts"`);
+    await queryRunner.query(`DROP TYPE "public"."stock_alerts_status_enum"`);
+    await queryRunner.query(`DROP TYPE "public"."stock_alerts_severity_enum"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_task_assignments_tenant_id_task_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_task_assignments_tenant_id_user_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_task_assignments_tenant_id_status"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_task_assignments_tenant_id_assigned_at"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_task_assignments_tenant_id_priority"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_task_assignments_tenant_id"`,
+    );
+    await queryRunner.query(`DROP TABLE "task_assignments"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."task_assignments_assignment_method_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "public"."task_assignments_status_enum"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_rules_tenant_id_is_active"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_rules_tenant_id"`,
+    );
+    await queryRunner.query(`DROP TABLE "time_clock_rules"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."time_clock_rules_rounding_direction_enum"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_sessions_tenant_id_worker_id_session_date"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_sessions_tenant_id_status"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_sessions_tenant_id_shift_assignment_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_time_clock_sessions_tenant_id"`,
+    );
+    await queryRunner.query(`DROP TABLE "time_clock_sessions"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."time_clock_sessions_status_enum"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_waste_records_record_date_type"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_waste_records_product_id_record_date"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_waste_records_work_order_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_waste_records_equipment_id"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_waste_records_tenant_id"`,
+    );
+    await queryRunner.query(`DROP TABLE "waste_records"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."waste_records_disposal_method_enum"`,
+    );
+    await queryRunner.query(`DROP TYPE "public"."waste_records_category_enum"`);
+    await queryRunner.query(`DROP TYPE "public"."waste_records_type_enum"`);
+    await queryRunner.query(
+      `ALTER TABLE "inventory" ADD CONSTRAINT "uq_inventory_tenant_id_product_id_warehouse_code_location_code_" UNIQUE ("tenant_id", "warehouse_code", "location_code", "lot_number", "product_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_task_dependencies_depends_on" ON "task_dependencies" ("depends_on_task_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_task_dependencies_task" ON "task_dependencies" ("task_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_activity_logs_user_date" ON "activity_logs" ("tenant_id", "timestamp", "user_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_activity_logs_entity_date" ON "activity_logs" ("tenant_id", "timestamp", "entity_type", "entity_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_quality_inspections_measurements" ON "quality_inspections" ("measurements") WHERE (measurements IS NOT NULL)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_quality_inspections_product_type" ON "quality_inspections" ("tenant_id", "type", "product_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_quality_inspections_date_result" ON "quality_inspections" ("tenant_id", "inspection_date", "result") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_worker_id" ON "time_clock_entries" ("tenant_id", "worker_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_clock_in" ON "time_clock_entries" ("tenant_id", "clock_in") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_time_clock_entries_tenant_id_clock_out" ON "time_clock_entries" ("tenant_id", "clock_out") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_maintenance_records_history" ON "maintenance_records" ("tenant_id", "start_date", "equipment_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_equipment_next_maintenance" ON "equipment" ("tenant_id", "next_maintenance_date") WHERE (status = 'operational'::equipment_status_enum)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_workers_department_active" ON "workers" ("is_active", "tenant_id", "department_id") WHERE (is_active = true)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_work_orders_covering" ON "work_orders" ("tenant_id", "work_order_number", "quantity_ordered", "quantity_completed", "scheduled_start_date", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_work_orders_product_id" ON "work_orders" ("product_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_work_orders_completion" ON "work_orders" ("tenant_id", "actual_end_date", "status") WHERE (status = 'completed'::work_orders_status_enum)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_work_orders_assigned_status" ON "work_orders" ("tenant_id", "status", "assigned_to_id") WHERE (status = ANY (ARRAY['scheduled'::work_orders_status_enum, 'released'::work_orders_status_enum, 'in_progress'::work_orders_status_enum]))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_work_orders_production_sequence" ON "work_orders" ("tenant_id", "sequence", "production_order_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_tasks_work_order_id" ON "tasks" ("work_order_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_tasks_worker_status" ON "tasks" ("tenant_id", "status", "scheduled_start_date", "assigned_to_id") WHERE (status <> ALL (ARRAY['completed'::tasks_status_enum, 'cancelled'::tasks_status_enum]))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_production_orders_covering" ON "production_orders" ("tenant_id", "order_number", "quantity_ordered", "quantity_produced", "status", "priority") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_production_orders_product_id" ON "production_orders" ("product_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_production_orders_date_range" ON "production_orders" ("tenant_id", "planned_start_date", "planned_end_date") WHERE (status <> ALL (ARRAY['completed'::production_orders_status_enum, 'cancelled'::production_orders_status_enum]))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_production_orders_status_priority" ON "production_orders" ("tenant_id", "status", "priority") WHERE (is_active = true)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_production_orders_tenant_id_planned_start_date_planned_end_" ON "production_orders" ("tenant_id", "planned_start_date", "planned_end_date") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_customer_orders_customer_status" ON "customer_orders" ("tenant_id", "status", "customer_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_customer_orders_status_date" ON "customer_orders" ("tenant_id", "order_date", "status") WHERE (is_active = true)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_products_specifications" ON "products" ("specifications") WHERE (specifications IS NOT NULL)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_products_low_stock" ON "products" ("tenant_id", "min_stock_level", "reorder_point") WHERE ((is_active = true) AND (reorder_point IS NOT NULL))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_inventory_reorder" ON "inventory" ("tenant_id", "quantity_on_hand", "product_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_inventory_expiration" ON "inventory" ("tenant_id", "expiration_date") WHERE (expiration_date IS NOT NULL)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_inventory_available_quantity" ON "inventory" ("tenant_id", "quantity_available", "product_id") WHERE (status = 'available'::inventory_status_enum)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_bom_active_version" ON "bills_of_materials" ("version", "tenant_id", "product_id") WHERE (is_active = true)`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "production_step_dependencies" ADD CONSTRAINT "fk_production_step_dependencies_depends_on_step_id_production_s" FOREIGN KEY ("depends_on_step_id") REFERENCES "production_steps"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
+    );
+  }
 }

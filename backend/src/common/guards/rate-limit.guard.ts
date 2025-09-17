@@ -7,7 +7,11 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerOptions } from '@nestjs/throttler';
-import { RATE_LIMIT_KEY, SKIP_RATE_LIMIT_KEY, RateLimitOptions } from '../decorators/rate-limit.decorator';
+import {
+  RATE_LIMIT_KEY,
+  SKIP_RATE_LIMIT_KEY,
+  RateLimitOptions,
+} from '../decorators/rate-limit.decorator';
 
 /**
  * Custom rate limiting guard that extends ThrottlerGuard
@@ -53,7 +57,7 @@ export class RateLimitGuard extends ThrottlerGuard {
     // Apply custom rate limit if specified
     if (rateLimitOptions) {
       const { ttl, limit } = rateLimitOptions;
-      
+
       // Override the default throttler options for this request
       if (ttl && limit) {
         // Create new options array instead of modifying readonly property
@@ -62,22 +66,22 @@ export class RateLimitGuard extends ThrottlerGuard {
         Object.defineProperty(this, 'options', {
           value: customOptions,
           writable: true,
-          configurable: true
+          configurable: true,
         });
       }
     }
 
     try {
       const canProceed = await super.canActivate(context);
-      
+
       // Add rate limit headers to response
       this.addRateLimitHeaders(response, rateLimitOptions);
-      
+
       return canProceed;
     } catch (error) {
       // Add rate limit headers even on error
       this.addRateLimitHeaders(response, rateLimitOptions);
-      
+
       throw new HttpException(
         {
           statusCode: HttpStatus.TOO_MANY_REQUESTS,
@@ -93,12 +97,14 @@ export class RateLimitGuard extends ThrottlerGuard {
   /**
    * Get the tracker key for rate limiting
    */
-  protected override async getTracker(req: Record<string, any>): Promise<string> {
+  protected override async getTracker(
+    req: Record<string, any>,
+  ): Promise<string> {
     // Use a combination of IP, user ID, and tenant ID for tracking
     const ip = req.ip || req.connection?.remoteAddress || 'unknown';
     const userId = req.user?.id || req.user?.sub || 'anonymous';
     const tenantId = req.tenant?.id || req.headers['x-tenant-id'] || 'default';
-    
+
     return Promise.resolve(`${ip}:${userId}:${tenantId}`);
   }
 
@@ -109,10 +115,13 @@ export class RateLimitGuard extends ThrottlerGuard {
     const optionsArray = this.options as any[];
     const limit = options?.limit || optionsArray?.[0]?.limit || 100;
     const ttl = options?.ttl || optionsArray?.[0]?.ttl || 60;
-    
+
     response.setHeader('X-RateLimit-Limit', limit);
     response.setHeader('X-RateLimit-TTL', ttl);
-    response.setHeader('X-RateLimit-Reset', new Date(Date.now() + ttl * 1000).toISOString());
+    response.setHeader(
+      'X-RateLimit-Reset',
+      new Date(Date.now() + ttl * 1000).toISOString(),
+    );
   }
 }
 
@@ -121,8 +130,12 @@ export class RateLimitGuard extends ThrottlerGuard {
  */
 @Injectable()
 export class IpRateLimitGuard extends RateLimitGuard {
-  protected override async getTracker(req: Record<string, any>): Promise<string> {
-    return Promise.resolve(req.ip || req.connection?.remoteAddress || 'unknown');
+  protected override async getTracker(
+    req: Record<string, any>,
+  ): Promise<string> {
+    return Promise.resolve(
+      req.ip || req.connection?.remoteAddress || 'unknown',
+    );
   }
 }
 
@@ -131,11 +144,15 @@ export class IpRateLimitGuard extends RateLimitGuard {
  */
 @Injectable()
 export class UserRateLimitGuard extends RateLimitGuard {
-  protected override async getTracker(req: Record<string, any>): Promise<string> {
+  protected override async getTracker(
+    req: Record<string, any>,
+  ): Promise<string> {
     const userId = req.user?.id || req.user?.sub;
     if (!userId) {
       // Fall back to IP-based tracking for unauthenticated requests
-      return Promise.resolve(req.ip || req.connection?.remoteAddress || 'unknown');
+      return Promise.resolve(
+        req.ip || req.connection?.remoteAddress || 'unknown',
+      );
     }
     return Promise.resolve(`user:${userId}`);
   }
@@ -146,11 +163,15 @@ export class UserRateLimitGuard extends RateLimitGuard {
  */
 @Injectable()
 export class TenantRateLimitGuard extends RateLimitGuard {
-  protected override async getTracker(req: Record<string, any>): Promise<string> {
+  protected override async getTracker(
+    req: Record<string, any>,
+  ): Promise<string> {
     const tenantId = req.tenant?.id || req.headers['x-tenant-id'];
     if (!tenantId) {
       // Fall back to IP-based tracking if no tenant
-      return Promise.resolve(req.ip || req.connection?.remoteAddress || 'unknown');
+      return Promise.resolve(
+        req.ip || req.connection?.remoteAddress || 'unknown',
+      );
     }
     return Promise.resolve(`tenant:${tenantId}`);
   }

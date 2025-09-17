@@ -15,7 +15,9 @@ export class WorkOrderRepository extends TenantAwareRepository<WorkOrder> {
     super(workOrderRepository, 'WorkOrder', clsService);
   }
 
-  async findByWorkOrderNumber(workOrderNumber: string): Promise<WorkOrder | null> {
+  async findByWorkOrderNumber(
+    workOrderNumber: string,
+  ): Promise<WorkOrder | null> {
     const tenantId = this.getTenantId();
     return this.repository.findOne({
       where: { workOrderNumber, tenantId },
@@ -50,7 +52,10 @@ export class WorkOrderRepository extends TenantAwareRepository<WorkOrder> {
     });
   }
 
-  async findScheduledInDateRange(startDate: Date, endDate: Date): Promise<WorkOrder[]> {
+  async findScheduledInDateRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<WorkOrder[]> {
     const tenantId = this.getTenantId();
     return this.repository.find({
       where: {
@@ -100,7 +105,10 @@ export class WorkOrderRepository extends TenantAwareRepository<WorkOrder> {
     return updated;
   }
 
-  async startWorkOrder(workOrderId: string, userId: string): Promise<WorkOrder> {
+  async startWorkOrder(
+    workOrderId: string,
+    userId: string,
+  ): Promise<WorkOrder> {
     const tenantId = this.getTenantId();
     await this.repository.update(
       { id: workOrderId, tenantId },
@@ -159,10 +167,10 @@ export class WorkOrderRepository extends TenantAwareRepository<WorkOrder> {
       where: { id: workOrderId, tenantId: this.getTenantId() },
     });
     if (!workOrder) return 0;
-    
+
     const total = workOrder.quantityOrdered;
     const completed = workOrder.quantityCompleted;
-    
+
     return total > 0 ? (completed / total) * 100 : 0;
   }
 }

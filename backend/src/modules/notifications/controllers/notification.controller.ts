@@ -11,7 +11,12 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/guards/roles.guard';
 import { RequireRoles as Roles } from '../../../auth/decorators/roles.decorator';
@@ -62,7 +67,10 @@ export class NotificationController {
   @Get('all')
   @Roles('ADMIN', 'MANAGER')
   @ApiOperation({ summary: 'Get all notifications for tenant' })
-  @ApiResponse({ status: 200, description: 'Returns list of all notifications' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns list of all notifications',
+  })
   async getAllNotifications(
     @CurrentUser() user: any,
     @Query() filter: NotificationFilter,
@@ -91,7 +99,10 @@ export class NotificationController {
   @ApiOperation({ summary: 'Get unread notification count' })
   @ApiResponse({ status: 200, description: 'Returns unread count' })
   async getUnreadCount(@CurrentUser() user: any): Promise<{ count: number }> {
-    const count = await this.inAppService.getUnreadCount(user.id, user.tenantId);
+    const count = await this.inAppService.getUnreadCount(
+      user.id,
+      user.tenantId,
+    );
     return { count };
   }
 
@@ -172,7 +183,10 @@ export class NotificationController {
   @Post('cleanup-old')
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Clean up old notifications' })
-  @ApiResponse({ status: 200, description: 'Returns number of deleted notifications' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns number of deleted notifications',
+  })
   async cleanupOld(
     @CurrentUser() user: any,
     @Query('days') days?: number,

@@ -15,14 +15,8 @@ import { DependencyHealthIndicator } from './dependency-health.indicator';
  * Health check and monitoring module
  */
 @Module({
-  imports: [
-    TerminusModule,
-    HttpModule,
-  ],
-  controllers: [
-    HealthController,
-    MetricsController,
-  ],
+  imports: [TerminusModule, HttpModule],
+  controllers: [HealthController, MetricsController],
   providers: [
     HealthService,
     MetricsService,

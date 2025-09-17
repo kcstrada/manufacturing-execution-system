@@ -64,7 +64,6 @@ export class WorkCenter extends TenantBaseEntity {
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 100 })
   utilization!: number;
 
-
   @Column({ type: 'jsonb', nullable: true })
   operatingHours?: {
     monday?: { start?: string; end?: string };

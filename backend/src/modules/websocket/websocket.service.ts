@@ -35,32 +35,46 @@ export class WebSocketService implements OnModuleInit {
     });
 
     // Notify sales team
-    this.gateway.broadcastToRole('sales', tenantId, WebSocketEvent.SYSTEM_NOTIFICATION, {
-      type: NotificationType.ORDER,
-      title: 'New Order Created',
-      message: `Order ${order.orderNumber} has been created`,
-      severity: NotificationSeverity.MEDIUM,
-      data: { orderId: order.id },
-    });
+    this.gateway.broadcastToRole(
+      'sales',
+      tenantId,
+      WebSocketEvent.SYSTEM_NOTIFICATION,
+      {
+        type: NotificationType.ORDER,
+        title: 'New Order Created',
+        message: `Order ${order.orderNumber} has been created`,
+        severity: NotificationSeverity.MEDIUM,
+        data: { orderId: order.id },
+      },
+    );
   }
 
   @OnEvent('order.status.changed')
   handleOrderStatusChanged(payload: any) {
     const { order, previousStatus, newStatus, tenantId } = payload;
-    this.gateway.broadcastToTenant(tenantId, WebSocketEvent.ORDER_STATUS_CHANGED, {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      previousStatus,
-      newStatus,
-      changedAt: new Date(),
-    });
+    this.gateway.broadcastToTenant(
+      tenantId,
+      WebSocketEvent.ORDER_STATUS_CHANGED,
+      {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        previousStatus,
+        newStatus,
+        changedAt: new Date(),
+      },
+    );
 
     // Notify relevant parties based on status
     if (newStatus === 'in_production') {
-      this.gateway.broadcastToRole('production', tenantId, WebSocketEvent.PRODUCTION_STARTED, {
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-      });
+      this.gateway.broadcastToRole(
+        'production',
+        tenantId,
+        WebSocketEvent.PRODUCTION_STARTED,
+        {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+        },
+      );
     } else if (newStatus === 'completed') {
       this.gateway.broadcastToUser(
         order.salesRepId,
@@ -90,21 +104,31 @@ export class WebSocketService implements OnModuleInit {
   @OnEvent('task.assigned')
   handleTaskAssigned(payload: any) {
     const { task, workerId, tenantId } = payload;
-    
+
     // Notify the assigned worker
-    this.gateway.broadcastToUser(workerId, WebSocketEvent.TASK_ASSIGNED, {
-      taskId: task.id,
-      taskNumber: task.taskNumber,
-      name: task.name,
-      priority: task.priority,
-      dueDate: task.dueDate,
-    }, tenantId);
+    this.gateway.broadcastToUser(
+      workerId,
+      WebSocketEvent.TASK_ASSIGNED,
+      {
+        taskId: task.id,
+        taskNumber: task.taskNumber,
+        name: task.name,
+        priority: task.priority,
+        dueDate: task.dueDate,
+      },
+      tenantId,
+    );
 
     // Update task list for supervisors
-    this.gateway.broadcastToRole('supervisor', tenantId, WebSocketEvent.TASK_UPDATED, {
-      taskId: task.id,
-      assignedTo: workerId,
-    });
+    this.gateway.broadcastToRole(
+      'supervisor',
+      tenantId,
+      WebSocketEvent.TASK_UPDATED,
+      {
+        taskId: task.id,
+        assignedTo: workerId,
+      },
+    );
   }
 
   @OnEvent('task.completed')
@@ -130,7 +154,7 @@ export class WebSocketService implements OnModuleInit {
   @OnEvent('inventory.low_stock')
   handleLowStock(payload: any) {
     const { product, currentStock, minStock, tenantId } = payload;
-    
+
     const notification: NotificationPayload = {
       type: NotificationType.INVENTORY,
       title: 'Low Stock Alert',
@@ -151,34 +175,48 @@ export class WebSocketService implements OnModuleInit {
     };
 
     // Notify inventory managers
-    this.gateway.broadcastToRole('inventory_manager', tenantId, WebSocketEvent.INVENTORY_LOW_STOCK, {
-      productId: product.id,
-      productName: product.name,
-      currentStock,
-      minStock,
-    });
+    this.gateway.broadcastToRole(
+      'inventory_manager',
+      tenantId,
+      WebSocketEvent.INVENTORY_LOW_STOCK,
+      {
+        productId: product.id,
+        productName: product.name,
+        currentStock,
+        minStock,
+      },
+    );
 
     // Send notification
-    this.gateway.broadcastToRole('inventory_manager', tenantId, WebSocketEvent.SYSTEM_NOTIFICATION, notification);
+    this.gateway.broadcastToRole(
+      'inventory_manager',
+      tenantId,
+      WebSocketEvent.SYSTEM_NOTIFICATION,
+      notification,
+    );
   }
 
   @OnEvent('inventory.stock_received')
   handleStockReceived(payload: any) {
     const { product, quantity, location, tenantId } = payload;
-    this.gateway.broadcastToTenant(tenantId, WebSocketEvent.INVENTORY_RECEIVED, {
-      productId: product.id,
-      productName: product.name,
-      quantity,
-      location,
-      receivedAt: new Date(),
-    });
+    this.gateway.broadcastToTenant(
+      tenantId,
+      WebSocketEvent.INVENTORY_RECEIVED,
+      {
+        productId: product.id,
+        productName: product.name,
+        quantity,
+        location,
+        receivedAt: new Date(),
+      },
+    );
   }
 
   // Production Events
   @OnEvent('production.started')
   handleProductionStarted(payload: any) {
     const { workOrder, workCenter, tenantId } = payload;
-    
+
     // Broadcast to work center
     this.gateway.broadcastToWorkCenter(
       workCenter.id,
@@ -196,7 +234,7 @@ export class WebSocketService implements OnModuleInit {
   @OnEvent('production.delay')
   handleProductionDelay(payload: any) {
     const { workOrder, reason, estimatedDelay, tenantId } = payload;
-    
+
     const notification: NotificationPayload = {
       type: NotificationType.WARNING,
       title: 'Production Delay',
@@ -210,21 +248,31 @@ export class WebSocketService implements OnModuleInit {
     };
 
     // Notify supervisors and managers
-    this.gateway.broadcastToRole('supervisor', tenantId, WebSocketEvent.PRODUCTION_DELAYED, {
-      workOrderId: workOrder.id,
-      workOrderNumber: workOrder.number,
-      reason,
-      estimatedDelay,
-    });
+    this.gateway.broadcastToRole(
+      'supervisor',
+      tenantId,
+      WebSocketEvent.PRODUCTION_DELAYED,
+      {
+        workOrderId: workOrder.id,
+        workOrderNumber: workOrder.number,
+        reason,
+        estimatedDelay,
+      },
+    );
 
-    this.gateway.broadcastToRole('production_manager', tenantId, WebSocketEvent.SYSTEM_NOTIFICATION, notification);
+    this.gateway.broadcastToRole(
+      'production_manager',
+      tenantId,
+      WebSocketEvent.SYSTEM_NOTIFICATION,
+      notification,
+    );
   }
 
   // Quality Events
   @OnEvent('quality.inspection.failed')
   handleQualityInspectionFailed(payload: any) {
     const { inspection, product, defects, tenantId } = payload;
-    
+
     const notification: NotificationPayload = {
       type: NotificationType.QUALITY,
       title: 'Quality Inspection Failed',
@@ -250,49 +298,72 @@ export class WebSocketService implements OnModuleInit {
     };
 
     // Notify quality team
-    this.gateway.broadcastToRole('quality_manager', tenantId, WebSocketEvent.QUALITY_ALERT, {
-      inspectionId: inspection.id,
-      productId: product.id,
-      result: 'failed',
-      defects,
-    });
+    this.gateway.broadcastToRole(
+      'quality_manager',
+      tenantId,
+      WebSocketEvent.QUALITY_ALERT,
+      {
+        inspectionId: inspection.id,
+        productId: product.id,
+        result: 'failed',
+        defects,
+      },
+    );
 
-    this.gateway.broadcastToRole('quality_manager', tenantId, WebSocketEvent.SYSTEM_NOTIFICATION, notification);
+    this.gateway.broadcastToRole(
+      'quality_manager',
+      tenantId,
+      WebSocketEvent.SYSTEM_NOTIFICATION,
+      notification,
+    );
   }
 
   @OnEvent('quality.ncr.created')
   handleNCRCreated(payload: any) {
     const { ncr, assignedTo, tenantId } = payload;
-    
+
     // Notify assigned person
     if (assignedTo) {
-      this.gateway.broadcastToUser(assignedTo, WebSocketEvent.QUALITY_NCR_CREATED, {
-        ncrId: ncr.id,
-        ncrNumber: ncr.reportNumber,
-        title: ncr.title,
-        severity: ncr.severity,
-        targetCloseDate: ncr.targetCloseDate,
-      }, tenantId);
+      this.gateway.broadcastToUser(
+        assignedTo,
+        WebSocketEvent.QUALITY_NCR_CREATED,
+        {
+          ncrId: ncr.id,
+          ncrNumber: ncr.reportNumber,
+          title: ncr.title,
+          severity: ncr.severity,
+          targetCloseDate: ncr.targetCloseDate,
+        },
+        tenantId,
+      );
     }
 
     // Notify quality team
-    this.gateway.broadcastToRole('quality_manager', tenantId, WebSocketEvent.QUALITY_NCR_CREATED, {
-      ncrId: ncr.id,
-      ncrNumber: ncr.reportNumber,
-      severity: ncr.severity,
-    });
+    this.gateway.broadcastToRole(
+      'quality_manager',
+      tenantId,
+      WebSocketEvent.QUALITY_NCR_CREATED,
+      {
+        ncrId: ncr.id,
+        ncrNumber: ncr.reportNumber,
+        severity: ncr.severity,
+      },
+    );
   }
 
   // Equipment Events
   @OnEvent('equipment.breakdown')
   handleEquipmentBreakdown(payload: any) {
     const { equipment, workCenter, severity, tenantId } = payload;
-    
+
     const notification: NotificationPayload = {
       type: NotificationType.ERROR,
       title: 'Equipment Breakdown',
       message: `${equipment.name} has broken down`,
-      severity: severity === 'critical' ? NotificationSeverity.CRITICAL : NotificationSeverity.HIGH,
+      severity:
+        severity === 'critical'
+          ? NotificationSeverity.CRITICAL
+          : NotificationSeverity.HIGH,
       data: {
         equipmentId: equipment.id,
         workCenterId: workCenter.id,
@@ -319,26 +390,36 @@ export class WebSocketService implements OnModuleInit {
     );
 
     // Notify maintenance team
-    this.gateway.broadcastToRole('maintenance', tenantId, WebSocketEvent.EQUIPMENT_ALERT, notification);
+    this.gateway.broadcastToRole(
+      'maintenance',
+      tenantId,
+      WebSocketEvent.EQUIPMENT_ALERT,
+      notification,
+    );
   }
 
   @OnEvent('equipment.maintenance.due')
   handleMaintenanceDue(payload: any) {
     const { equipment, maintenance, dueDate, tenantId } = payload;
-    
-    this.gateway.broadcastToRole('maintenance', tenantId, WebSocketEvent.EQUIPMENT_MAINTENANCE_DUE, {
-      equipmentId: equipment.id,
-      equipmentName: equipment.name,
-      maintenanceType: maintenance.type,
-      dueDate,
-    });
+
+    this.gateway.broadcastToRole(
+      'maintenance',
+      tenantId,
+      WebSocketEvent.EQUIPMENT_MAINTENANCE_DUE,
+      {
+        equipmentId: equipment.id,
+        equipmentName: equipment.name,
+        maintenanceType: maintenance.type,
+        dueDate,
+      },
+    );
   }
 
   // Worker Events
   @OnEvent('worker.clocked_in')
   handleWorkerClockedIn(payload: any) {
     const { worker, workCenter, tenantId } = payload;
-    
+
     // Notify supervisors in the work center
     if (workCenter) {
       this.gateway.broadcastToWorkCenter(
@@ -357,39 +438,54 @@ export class WebSocketService implements OnModuleInit {
   @OnEvent('worker.clocked_out')
   handleWorkerClockedOut(payload: any) {
     const { worker, hoursWorked, tenantId } = payload;
-    
+
     // Update dashboard metrics
-    this.gateway.broadcastToRole('supervisor', tenantId, WebSocketEvent.WORKER_CLOCKED_OUT, {
-      workerId: worker.id,
-      workerName: `${worker.firstName} ${worker.lastName}`,
-      clockedOutAt: new Date(),
-      hoursWorked,
-    });
+    this.gateway.broadcastToRole(
+      'supervisor',
+      tenantId,
+      WebSocketEvent.WORKER_CLOCKED_OUT,
+      {
+        workerId: worker.id,
+        workerName: `${worker.firstName} ${worker.lastName}`,
+        clockedOutAt: new Date(),
+        hoursWorked,
+      },
+    );
   }
 
   // Metrics Events
   @OnEvent('metrics.update')
   handleMetricsUpdate(payload: any) {
     const { type, metrics, tenantId } = payload;
-    
-    // Broadcast to dashboards
-    this.gateway.broadcastToRole('admin', tenantId, WebSocketEvent.METRICS_UPDATE, {
-      type,
-      metrics,
-      timestamp: new Date(),
-    });
 
-    this.gateway.broadcastToRole('executive', tenantId, WebSocketEvent.KPI_UPDATE, {
-      type,
-      metrics,
-      timestamp: new Date(),
-    });
+    // Broadcast to dashboards
+    this.gateway.broadcastToRole(
+      'admin',
+      tenantId,
+      WebSocketEvent.METRICS_UPDATE,
+      {
+        type,
+        metrics,
+        timestamp: new Date(),
+      },
+    );
+
+    this.gateway.broadcastToRole(
+      'executive',
+      tenantId,
+      WebSocketEvent.KPI_UPDATE,
+      {
+        type,
+        metrics,
+        timestamp: new Date(),
+      },
+    );
   }
 
   @OnEvent('dashboard.alert')
   handleDashboardAlert(payload: any) {
     const { alert, targetRoles, tenantId } = payload;
-    
+
     const notification: NotificationPayload = {
       type: NotificationType.WARNING,
       title: alert.title,
@@ -400,7 +496,12 @@ export class WebSocketService implements OnModuleInit {
 
     // Send to specific roles
     for (const role of targetRoles) {
-      this.gateway.broadcastToRole(role, tenantId, WebSocketEvent.SYSTEM_ALERT, notification);
+      this.gateway.broadcastToRole(
+        role,
+        tenantId,
+        WebSocketEvent.SYSTEM_ALERT,
+        notification,
+      );
     }
   }
 
@@ -414,11 +515,7 @@ export class WebSocketService implements OnModuleInit {
     this.gateway.sendNotification(userId, tenantId, notification);
   }
 
-  public broadcastToTenant(
-    tenantId: string,
-    event: WebSocketEvent,
-    data: any,
-  ) {
+  public broadcastToTenant(tenantId: string, event: WebSocketEvent, data: any) {
     this.gateway.broadcastToTenant(tenantId, event, data);
   }
 

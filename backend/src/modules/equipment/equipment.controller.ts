@@ -19,7 +19,11 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AuthGuard, RoleGuard, Roles } from 'nest-keycloak-connect';
-import { EquipmentService, EquipmentMetrics, MaintenanceMetrics } from './equipment.service';
+import {
+  EquipmentService,
+  EquipmentMetrics,
+  MaintenanceMetrics,
+} from './equipment.service';
 import {
   CreateEquipmentDto,
   CreateMaintenanceScheduleDto,
@@ -49,7 +53,9 @@ export class EquipmentController {
   @Roles({ roles: ['admin', 'production_manager', 'maintenance_manager'] })
   @ApiOperation({ summary: 'Create new equipment' })
   @ApiResponse({ status: HttpStatus.CREATED, type: Equipment })
-  async create(@Body() createEquipmentDto: CreateEquipmentDto): Promise<Equipment> {
+  async create(
+    @Body() createEquipmentDto: CreateEquipmentDto,
+  ): Promise<Equipment> {
     return this.equipmentService.create(createEquipmentDto);
   }
 
@@ -162,10 +168,11 @@ export class EquipmentController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ): Promise<{ oee: number }> {
-    const period = startDate && endDate
-      ? { start: new Date(startDate), end: new Date(endDate) }
-      : undefined;
-    
+    const period =
+      startDate && endDate
+        ? { start: new Date(startDate), end: new Date(endDate) }
+        : undefined;
+
     const oee = await this.equipmentService.calculateOEE(id, period);
     return { oee };
   }
@@ -192,7 +199,11 @@ export class EquipmentController {
   @Get('maintenance/upcoming')
   @Roles({ roles: ['admin', 'maintenance_manager', 'production_manager'] })
   @ApiOperation({ summary: 'Get upcoming maintenance' })
-  @ApiQuery({ name: 'days', required: false, description: 'Number of days ahead' })
+  @ApiQuery({
+    name: 'days',
+    required: false,
+    description: 'Number of days ahead',
+  })
   @ApiResponse({ status: HttpStatus.OK, type: [MaintenanceSchedule] })
   async getUpcomingMaintenance(
     @Query('days') days?: number,

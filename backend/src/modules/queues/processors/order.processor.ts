@@ -1,4 +1,10 @@
-import { Processor, Process, OnQueueActive, OnQueueCompleted, OnQueueFailed } from '@nestjs/bull';
+import {
+  Processor,
+  Process,
+  OnQueueActive,
+  OnQueueCompleted,
+  OnQueueFailed,
+} from '@nestjs/bull';
 import { Job } from 'bull';
 import { Logger } from '@nestjs/common';
 import { QUEUE_NAMES, JOB_NAMES } from '../constants/queue-names';
@@ -8,9 +14,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 export class OrderProcessor {
   private readonly logger = new Logger(OrderProcessor.name);
 
-  constructor(
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   @Process(JOB_NAMES.PROCESS_ORDER)
   async processOrder(job: Job) {
@@ -69,7 +73,9 @@ export class OrderProcessor {
 
       // Here you would update the order status in the database
       // For now, we'll just log and emit an event
-      this.logger.log(`Order ${orderId} status changed from ${previousStatus} to ${newStatus}`);
+      this.logger.log(
+        `Order ${orderId} status changed from ${previousStatus} to ${newStatus}`,
+      );
 
       // Emit status change event
       this.eventEmitter.emit('order.status.changed', {
@@ -115,7 +121,10 @@ export class OrderProcessor {
         onTimeDeliveryRate: this.calculateOTD(metrics),
       };
 
-      this.logger.log(`Metrics calculated for order ${orderId}:`, calculatedMetrics);
+      this.logger.log(
+        `Metrics calculated for order ${orderId}:`,
+        calculatedMetrics,
+      );
 
       return {
         success: true,
@@ -136,13 +145,13 @@ export class OrderProcessor {
 
     try {
       const delayedOrders = [];
-      
+
       for (const orderId of orderIds) {
         await this.simulateProcessing(100);
-        
+
         // Simulate delay check logic
         const isDelayed = Math.random() > 0.7; // 30% chance of delay
-        
+
         if (isDelayed) {
           const delayDays = Math.floor(Math.random() * 5) + 1;
           delayedOrders.push({
@@ -160,7 +169,9 @@ export class OrderProcessor {
         }
       }
 
-      this.logger.log(`Found ${delayedOrders.length} delayed orders out of ${orderIds.length}`);
+      this.logger.log(
+        `Found ${delayedOrders.length} delayed orders out of ${orderIds.length}`,
+      );
 
       return {
         success: true,
@@ -177,7 +188,10 @@ export class OrderProcessor {
   // Event handlers
   @OnQueueActive()
   onActive(job: Job) {
-    this.logger.debug(`Processing job ${job.id} of type ${job.name} with data:`, job.data);
+    this.logger.debug(
+      `Processing job ${job.id} of type ${job.name} with data:`,
+      job.data,
+    );
   }
 
   @OnQueueCompleted()
@@ -192,7 +206,7 @@ export class OrderProcessor {
 
   // Helper methods
   private async simulateProcessing(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private async validateOrder(orderId: string, data: any): Promise<void> {
@@ -210,12 +224,17 @@ export class OrderProcessor {
     // Production scheduling logic here
   }
 
-  private async calculateDeliveryDate(orderId: string, data: any): Promise<void> {
+  private async calculateDeliveryDate(
+    orderId: string,
+    data: any,
+  ): Promise<void> {
     this.logger.log(`Calculating delivery date for order ${orderId}`);
     // Delivery calculation logic here
   }
 
-  private async triggerOrderCompletionNotifications(orderId: string): Promise<void> {
+  private async triggerOrderCompletionNotifications(
+    orderId: string,
+  ): Promise<void> {
     this.eventEmitter.emit('notification.send', {
       type: 'order_completed',
       orderId,
@@ -223,7 +242,10 @@ export class OrderProcessor {
     });
   }
 
-  private async triggerDelayNotifications(orderId: string, reason: string): Promise<void> {
+  private async triggerDelayNotifications(
+    orderId: string,
+    reason: string,
+  ): Promise<void> {
     this.eventEmitter.emit('notification.send', {
       type: 'order_delayed',
       orderId,

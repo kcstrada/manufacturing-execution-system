@@ -47,7 +47,9 @@ export class MetricsController {
       version: this.healthService.getVersion(),
       environment: this.healthService.getEnvironment(),
       uptime: this.healthService.getUptime(),
-      startTime: new Date(Date.now() - this.healthService.getUptime()).toISOString(),
+      startTime: new Date(
+        Date.now() - this.healthService.getUptime(),
+      ).toISOString(),
       nodeVersion: process.version,
       platform: process.platform,
       arch: process.arch,
@@ -99,15 +101,15 @@ export class MetricsController {
     this.metricsService.incrementCounter('http_requests_total', 10);
     this.metricsService.incrementCounter('http_requests_success', 8);
     this.metricsService.incrementCounter('http_requests_error', 2);
-    
+
     // Simulate database queries
     this.metricsService.incrementCounter('database_queries_total', 15);
     this.metricsService.setGauge('active_connections', 5);
-    
+
     // Simulate cache operations
     this.metricsService.incrementCounter('cache_hits', 25);
     this.metricsService.incrementCounter('cache_misses', 5);
-    
+
     // Simulate request durations
     for (let i = 0; i < 20; i++) {
       this.metricsService.recordHistogram(
@@ -115,7 +117,7 @@ export class MetricsController {
         Math.random() * 1000, // Random duration between 0-1000ms
       );
     }
-    
+
     // Simulate query durations
     for (let i = 0; i < 15; i++) {
       this.metricsService.recordHistogram(
@@ -123,10 +125,10 @@ export class MetricsController {
         Math.random() * 100, // Random duration between 0-100ms
       );
     }
-    
+
     // Simulate queue size
     this.metricsService.setGauge('queue_size', Math.floor(Math.random() * 50));
-    
+
     return {
       message: 'Metrics simulated successfully',
       timestamp: new Date().toISOString(),

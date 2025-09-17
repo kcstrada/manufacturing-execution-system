@@ -17,7 +17,12 @@ import {
 } from '@nestjs/swagger';
 import { QueueManagementService } from './services/queue-management.service';
 import { JobSchedulingService } from './services/job-scheduling.service';
-import { QUEUE_NAMES, JOB_NAMES, QueueName, JobName } from './constants/queue-names';
+import {
+  QUEUE_NAMES,
+  JOB_NAMES,
+  QueueName,
+  JobName,
+} from './constants/queue-names';
 
 @ApiTags('Queues')
 @Controller('queues')
@@ -51,7 +56,10 @@ export class QueuesController {
   @Get(':queueName/jobs')
   @ApiOperation({ summary: 'Get jobs by status from a queue' })
   @ApiParam({ name: 'queueName', enum: Object.values(QUEUE_NAMES) })
-  @ApiQuery({ name: 'status', enum: ['waiting', 'active', 'completed', 'failed', 'delayed'] })
+  @ApiQuery({
+    name: 'status',
+    enum: ['waiting', 'active', 'completed', 'failed', 'delayed'],
+  })
   @ApiQuery({ name: 'start', required: false, type: Number })
   @ApiQuery({ name: 'end', required: false, type: Number })
   async getJobsByStatus(
@@ -103,7 +111,8 @@ export class QueuesController {
   @ApiParam({ name: 'queueName', enum: Object.values(QUEUE_NAMES) })
   async addJob(
     @Param('queueName') queueName: QueueName,
-    @Body() body: {
+    @Body()
+    body: {
       jobName: JobName;
       data: any;
       options?: any;
@@ -129,7 +138,8 @@ export class QueuesController {
   @ApiParam({ name: 'queueName', enum: Object.values(QUEUE_NAMES) })
   async addDelayedJob(
     @Param('queueName') queueName: QueueName,
-    @Body() body: {
+    @Body()
+    body: {
       jobName: JobName;
       data: any;
       delay: number;
@@ -158,7 +168,8 @@ export class QueuesController {
   @ApiParam({ name: 'queueName', enum: Object.values(QUEUE_NAMES) })
   async addRecurringJob(
     @Param('queueName') queueName: QueueName,
-    @Body() body: {
+    @Body()
+    body: {
       jobName: JobName;
       data: any;
       cron: string;
@@ -242,7 +253,10 @@ export class QueuesController {
     @Param('queueName') queueName: QueueName,
     @Query('grace') grace?: number,
   ) {
-    const removed = await this.queueManagement.cleanCompleted(queueName, grace || 0);
+    const removed = await this.queueManagement.cleanCompleted(
+      queueName,
+      grace || 0,
+    );
     return {
       success: true,
       message: `Cleaned ${removed.length} completed jobs from ${queueName}`,
@@ -258,7 +272,10 @@ export class QueuesController {
     @Param('queueName') queueName: QueueName,
     @Query('grace') grace?: number,
   ) {
-    const removed = await this.queueManagement.cleanFailed(queueName, grace || 0);
+    const removed = await this.queueManagement.cleanFailed(
+      queueName,
+      grace || 0,
+    );
     return {
       success: true,
       message: `Cleaned ${removed.length} failed jobs from ${queueName}`,
@@ -282,16 +299,17 @@ export class QueuesController {
   @ApiParam({ name: 'queueName', enum: Object.values(QUEUE_NAMES) })
   async getScheduledJobs(@Param('queueName') queueName: QueueName) {
     return this.jobScheduling.getScheduledJobs(
-      queueName as typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES],
+      queueName as (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES],
     );
   }
 
   @Post('schedule')
   @ApiOperation({ summary: 'Schedule a one-time job' })
   async scheduleJob(
-    @Body() body: {
-      queueName: typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
-      jobName: typeof JOB_NAMES[keyof typeof JOB_NAMES];
+    @Body()
+    body: {
+      queueName: (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
+      jobName: (typeof JOB_NAMES)[keyof typeof JOB_NAMES];
       data: any;
       scheduledTime: string;
     },
@@ -315,9 +333,10 @@ export class QueuesController {
   @Post('schedule/recurring')
   @ApiOperation({ summary: 'Schedule a recurring job' })
   async scheduleRecurringJob(
-    @Body() body: {
-      queueName: typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
-      jobName: typeof JOB_NAMES[keyof typeof JOB_NAMES];
+    @Body()
+    body: {
+      queueName: (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
+      jobName: (typeof JOB_NAMES)[keyof typeof JOB_NAMES];
       data: any;
       cronExpression: string;
     },
@@ -343,7 +362,8 @@ export class QueuesController {
   @ApiParam({ name: 'queueName', enum: Object.values(QUEUE_NAMES) })
   @ApiParam({ name: 'jobId', type: String })
   async cancelScheduledJob(
-    @Param('queueName') queueName: typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES],
+    @Param('queueName')
+    queueName: (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES],
     @Param('jobId') jobId: string,
   ) {
     await this.jobScheduling.cancelScheduledJob(queueName, jobId);

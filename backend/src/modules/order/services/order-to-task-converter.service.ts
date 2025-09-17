@@ -2,12 +2,30 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, EntityManager } from 'typeorm';
 import { ClsService } from 'nestjs-cls';
-import { CustomerOrder, CustomerOrderLine, CustomerOrderStatus } from '../../../entities/customer-order.entity';
-import { ProductionOrder, ProductionOrderStatus } from '../../../entities/production-order.entity';
-import { WorkOrder, WorkOrderStatus } from '../../../entities/work-order.entity';
-import { Task, TaskStatus, TaskPriority, TaskType } from '../../../entities/task.entity';
+import {
+  CustomerOrder,
+  CustomerOrderLine,
+  CustomerOrderStatus,
+} from '../../../entities/customer-order.entity';
+import {
+  ProductionOrder,
+  ProductionOrderStatus,
+} from '../../../entities/production-order.entity';
+import {
+  WorkOrder,
+  WorkOrderStatus,
+} from '../../../entities/work-order.entity';
+import {
+  Task,
+  TaskStatus,
+  TaskPriority,
+  TaskType,
+} from '../../../entities/task.entity';
 import { Routing } from '../../../entities/routing.entity';
-import { ProductionStep, StepType } from '../../../entities/production-step.entity';
+import {
+  ProductionStep,
+  StepType,
+} from '../../../entities/production-step.entity';
 
 export interface TaskGenerationOptions {
   priority?: TaskPriority;
@@ -46,7 +64,7 @@ export class OrderToTaskConverterService {
   ): Promise<ConversionResult> {
     const manager = entityManager || this.orderRepo.manager;
     const tenantId = this.clsService.get('tenantId');
-    
+
     const result: ConversionResult = {
       productionOrders: [],
       workOrders: [],
@@ -65,7 +83,9 @@ export class OrderToTaskConverterService {
     }
 
     if (order.status !== CustomerOrderStatus.CONFIRMED) {
-      result.warnings.push(`Order ${order.orderNumber} is not in CONFIRMED status`);
+      result.warnings.push(
+        `Order ${order.orderNumber} is not in CONFIRMED status`,
+      );
     }
 
     // Process each order line
@@ -77,14 +97,18 @@ export class OrderToTaskConverterService {
           options,
           manager,
         );
-        
+
         result.productionOrders.push(...lineResult.productionOrders);
         result.workOrders.push(...lineResult.workOrders);
         result.tasks.push(...lineResult.tasks);
         result.warnings.push(...lineResult.warnings);
       } catch (error) {
-        this.logger.error(`Error processing order line ${orderLine.id}: ${error}`);
-        result.warnings.push(`Failed to process line item ${orderLine.lineNumber}: ${error}`);
+        this.logger.error(
+          `Error processing order line ${orderLine.id}: ${error}`,
+        );
+        result.warnings.push(
+          `Failed to process line item ${orderLine.lineNumber}: ${error}`,
+        );
       }
     }
 
@@ -111,7 +135,9 @@ export class OrderToTaskConverterService {
     // Get the product's active routing
     const routing = await this.getActiveRouting(orderLine.productId, manager);
     if (!routing) {
-      result.warnings.push(`No active routing found for product ${orderLine.product?.name || orderLine.productId}`);
+      result.warnings.push(
+        `No active routing found for product ${orderLine.product?.name || orderLine.productId}`,
+      );
       return result;
     }
 
@@ -132,7 +158,9 @@ export class OrderToTaskConverterService {
     });
 
     if (routingSteps.length === 0) {
-      result.warnings.push(`No production steps found for routing ${routing.name}`);
+      result.warnings.push(
+        `No production steps found for routing ${routing.name}`,
+      );
       return result;
     }
 
@@ -171,7 +199,7 @@ export class OrderToTaskConverterService {
     manager: EntityManager,
   ): Promise<Routing | null> {
     const tenantId = this.clsService.get('tenantId');
-    
+
     return await manager.findOne(Routing, {
       where: {
         productId,
@@ -193,7 +221,7 @@ export class OrderToTaskConverterService {
   ): Promise<ProductionOrder> {
     const tenantId = this.clsService.get('tenantId');
     const userId = this.clsService.get('userId');
-    
+
     const productionOrder = manager.create(ProductionOrder, {
       tenantId,
       orderNumber: `PO-${order.orderNumber}-${orderLine.lineNumber}`,
@@ -203,10 +231,15 @@ export class OrderToTaskConverterService {
       status: ProductionOrderStatus.PLANNED,
       priority: this.mapPriorityToNumber(priority),
       productId: orderLine.productId,
-      unitOfMeasureId: orderLine.product?.unitOfMeasureId || '00000000-0000-0000-0000-000000000000', // Default UUID
+      unitOfMeasureId:
+        orderLine.product?.unitOfMeasureId ||
+        '00000000-0000-0000-0000-000000000000', // Default UUID
       customerOrderId: order.id,
       plannedStartDate: order.requiredDate || new Date(),
-      plannedEndDate: this.calculatePlannedEndDate(order.requiredDate || new Date(), 7), // Default 7 days
+      plannedEndDate: this.calculatePlannedEndDate(
+        order.requiredDate || new Date(),
+        7,
+      ), // Default 7 days
       createdBy: userId,
       notes: `Generated from order ${order.orderNumber}`,
     });
@@ -224,7 +257,7 @@ export class OrderToTaskConverterService {
     manager: EntityManager,
   ): Promise<WorkOrder> {
     const tenantId = this.clsService.get('tenantId');
-    
+
     const workOrder = manager.create(WorkOrder, {
       tenantId,
       workOrderNumber: `WO-${productionOrder.orderNumber}-${step.sequenceNumber}`,
@@ -239,8 +272,16 @@ export class OrderToTaskConverterService {
       productionOrderId: productionOrder.id,
       workCenterId: step.workCenterId!,
       productId: productionOrder.productId,
-      scheduledStartDate: this.calculateStepStartDate(productionOrder.plannedStartDate!, step.sequenceNumber),
-      scheduledEndDate: this.calculateStepEndDate(productionOrder.plannedStartDate!, step.sequenceNumber, quantity, step),
+      scheduledStartDate: this.calculateStepStartDate(
+        productionOrder.plannedStartDate!,
+        step.sequenceNumber,
+      ),
+      scheduledEndDate: this.calculateStepEndDate(
+        productionOrder.plannedStartDate!,
+        step.sequenceNumber,
+        quantity,
+        step,
+      ),
       notes: step.notes,
     });
 
@@ -314,14 +355,21 @@ export class OrderToTaskConverterService {
       workOrderId: workOrder.id,
       workCenterId: step.workCenterId,
       productId: workOrder.productId,
-      scheduledStartDate: this.addMinutesToDate(workOrder.scheduledStartDate!, step.setupTime),
+      scheduledStartDate: this.addMinutesToDate(
+        workOrder.scheduledStartDate!,
+        step.setupTime,
+      ),
       dueDate: workOrder.scheduledEndDate,
     } as any);
     productionTask.tenantId = tenantId;
     tasks.push(await manager.save(productionTask));
 
     // Create quality check task if needed
-    if (options.includeQualityChecks && step.qualityChecks && step.qualityChecks.length > 0) {
+    if (
+      options.includeQualityChecks &&
+      step.qualityChecks &&
+      step.qualityChecks.length > 0
+    ) {
       const qcTask = manager.create(Task, {
         taskNumber: `TSK-${workOrder.workOrderNumber}-${sequenceNumber++}`,
         name: `QC: ${step.name}`,
@@ -337,14 +385,21 @@ export class OrderToTaskConverterService {
         rejectedQuantity: 0,
         progressPercentage: 0,
         instructions: {
-          qualityChecks: step.qualityChecks.map(qc => `${qc.parameter}: ${qc.method} (${qc.acceptance})`),
+          qualityChecks: step.qualityChecks.map(
+            (qc) => `${qc.parameter}: ${qc.method} (${qc.acceptance})`,
+          ),
         },
-        checklistItems: this.createChecklistFromQualityChecks(step.qualityChecks),
+        checklistItems: this.createChecklistFromQualityChecks(
+          step.qualityChecks,
+        ),
         requiresSignOff: true,
         workOrderId: workOrder.id,
         workCenterId: step.workCenterId,
         productId: workOrder.productId,
-        scheduledStartDate: this.addMinutesToDate(workOrder.scheduledEndDate!, -30), // 30 min before end
+        scheduledStartDate: this.addMinutesToDate(
+          workOrder.scheduledEndDate!,
+          -30,
+        ), // 30 min before end
         dueDate: workOrder.scheduledEndDate,
       } as any);
       qcTask.tenantId = tenantId;
@@ -374,8 +429,12 @@ export class OrderToTaskConverterService {
     for (let i = 1; i < sortedTasks.length; i++) {
       const currentTask = sortedTasks[i];
       const previousTask = sortedTasks[i - 1];
-      
-      if (currentTask && previousTask && currentTask.workOrderId === previousTask.workOrderId) {
+
+      if (
+        currentTask &&
+        previousTask &&
+        currentTask.workOrderId === previousTask.workOrderId
+      ) {
         currentTask.dependencies = [previousTask];
         await manager.save(currentTask);
       }
@@ -384,22 +443,30 @@ export class OrderToTaskConverterService {
     // Link dependencies between work orders based on step sequence
     const workOrderGroups = this.groupTasksByWorkOrder(sortedTasks);
     const workOrderIds = Object.keys(workOrderGroups);
-    
+
     for (let i = 1; i < workOrderIds.length; i++) {
       const currentWorkOrderId = workOrderIds[i];
       const previousWorkOrderId = workOrderIds[i - 1];
-      
+
       if (currentWorkOrderId && previousWorkOrderId) {
         const currentWorkOrderTasks = workOrderGroups[currentWorkOrderId];
         const previousWorkOrderTasks = workOrderGroups[previousWorkOrderId];
-        
-        if (currentWorkOrderTasks && previousWorkOrderTasks && 
-            currentWorkOrderTasks.length > 0 && previousWorkOrderTasks.length > 0) {
+
+        if (
+          currentWorkOrderTasks &&
+          previousWorkOrderTasks &&
+          currentWorkOrderTasks.length > 0 &&
+          previousWorkOrderTasks.length > 0
+        ) {
           const firstCurrentTask = currentWorkOrderTasks[0];
-          const lastPreviousTask = previousWorkOrderTasks[previousWorkOrderTasks.length - 1];
-          
+          const lastPreviousTask =
+            previousWorkOrderTasks[previousWorkOrderTasks.length - 1];
+
           if (firstCurrentTask && lastPreviousTask) {
-            firstCurrentTask.dependencies = [...(firstCurrentTask.dependencies || []), lastPreviousTask];
+            firstCurrentTask.dependencies = [
+              ...(firstCurrentTask.dependencies || []),
+              lastPreviousTask,
+            ];
             await manager.save(firstCurrentTask);
           }
         }
@@ -466,7 +533,7 @@ export class OrderToTaskConverterService {
     step: ProductionStep,
   ): Date {
     const startDate = this.calculateStepStartDate(baseDate, sequenceNumber);
-    const totalMinutes = step.setupTime + (step.runTime * quantity);
+    const totalMinutes = step.setupTime + step.runTime * quantity;
     return this.addMinutesToDate(startDate, totalMinutes);
   }
 
@@ -478,15 +545,15 @@ export class OrderToTaskConverterService {
 
   private groupTasksByWorkOrder(tasks: Task[]): Record<string, Task[]> {
     const groups: Record<string, Task[]> = {};
-    
+
     for (const task of tasks) {
       const workOrderId = task.workOrderId;
       if (!groups[workOrderId]) {
         groups[workOrderId] = [];
       }
-      groups[workOrderId]!.push(task);
+      groups[workOrderId].push(task);
     }
-    
+
     return groups;
   }
 
@@ -500,7 +567,7 @@ export class OrderToTaskConverterService {
   ): Promise<ConversionResult> {
     const manager = entityManager || this.productionOrderRepo.manager;
     const tenantId = this.clsService.get('tenantId');
-    
+
     const result: ConversionResult = {
       productionOrders: [],
       workOrders: [],
@@ -519,14 +586,21 @@ export class OrderToTaskConverterService {
 
     // Check if work orders already exist
     if (productionOrder.workOrders && productionOrder.workOrders.length > 0) {
-      result.warnings.push(`Production order ${productionOrder.orderNumber} already has work orders`);
+      result.warnings.push(
+        `Production order ${productionOrder.orderNumber} already has work orders`,
+      );
       return result;
     }
 
     // Get the product's active routing
-    const routing = await this.getActiveRouting(productionOrder.productId, manager);
+    const routing = await this.getActiveRouting(
+      productionOrder.productId,
+      manager,
+    );
     if (!routing) {
-      result.warnings.push(`No active routing found for product ${productionOrder.product?.name || productionOrder.productId}`);
+      result.warnings.push(
+        `No active routing found for product ${productionOrder.product?.name || productionOrder.productId}`,
+      );
       return result;
     }
 
@@ -538,7 +612,9 @@ export class OrderToTaskConverterService {
     });
 
     if (routingSteps.length === 0) {
-      result.warnings.push(`No production steps found for routing ${routing.name}`);
+      result.warnings.push(
+        `No production steps found for routing ${routing.name}`,
+      );
       return result;
     }
 

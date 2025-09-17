@@ -165,7 +165,13 @@ export class ProductionStep extends TenantBaseEntity {
   validationRules?: Array<{
     ruleId: string;
     ruleName: string;
-    ruleType: 'range' | 'list' | 'pattern' | 'custom' | 'comparison' | 'calculation';
+    ruleType:
+      | 'range'
+      | 'list'
+      | 'pattern'
+      | 'custom'
+      | 'comparison'
+      | 'calculation';
     parameter: string; // Parameter to validate
     condition: string; // Validation condition
     expectedValue?: any;
@@ -188,12 +194,25 @@ export class ProductionStep extends TenantBaseEntity {
   mediaFiles?: Array<{
     fileId: string;
     fileName: string;
-    fileType: 'image' | 'video' | 'pdf' | 'cad' | '3d-model' | 'document' | 'spreadsheet';
+    fileType:
+      | 'image'
+      | 'video'
+      | 'pdf'
+      | 'cad'
+      | '3d-model'
+      | 'document'
+      | 'spreadsheet';
     fileUrl: string;
     thumbnailUrl?: string;
     fileSize: number;
     mimeType: string;
-    purpose: 'instruction' | 'reference' | 'quality' | 'safety' | 'training' | 'troubleshooting';
+    purpose:
+      | 'instruction'
+      | 'reference'
+      | 'quality'
+      | 'safety'
+      | 'training'
+      | 'troubleshooting';
     description?: string;
     tags?: string[];
     language?: string;
@@ -288,33 +307,42 @@ export class ProductionStep extends TenantBaseEntity {
   getActiveValidationRules(): any[] {
     if (!this.validationRules) return [];
     return this.validationRules
-      .filter(rule => rule.isActive)
+      .filter((rule) => rule.isActive)
       .sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
   }
 
   getCriticalValidationRules(): any[] {
-    return this.getActiveValidationRules()
-      .filter(rule => rule.severity === 'error' || rule.autoStop === true);
+    return this.getActiveValidationRules().filter(
+      (rule) => rule.severity === 'error' || rule.autoStop === true,
+    );
   }
 
-  validateParameter(parameterName: string, value: any): { valid: boolean; errors: any[] } {
+  validateParameter(
+    parameterName: string,
+    value: any,
+  ): { valid: boolean; errors: any[] } {
     const errors: any[] = [];
-    const rules = this.getActiveValidationRules()
-      .filter(rule => rule.parameter === parameterName);
+    const rules = this.getActiveValidationRules().filter(
+      (rule) => rule.parameter === parameterName,
+    );
 
     for (const rule of rules) {
       let isValid = true;
 
       switch (rule.ruleType) {
         case 'range':
-          if (rule.minValue !== undefined && value < rule.minValue) isValid = false;
-          if (rule.maxValue !== undefined && value > rule.maxValue) isValid = false;
+          if (rule.minValue !== undefined && value < rule.minValue)
+            isValid = false;
+          if (rule.maxValue !== undefined && value > rule.maxValue)
+            isValid = false;
           break;
         case 'list':
-          if (rule.allowedValues && !rule.allowedValues.includes(value)) isValid = false;
+          if (rule.allowedValues && !rule.allowedValues.includes(value))
+            isValid = false;
           break;
         case 'pattern':
-          if (rule.pattern && !new RegExp(rule.pattern).test(value)) isValid = false;
+          if (rule.pattern && !new RegExp(rule.pattern).test(value))
+            isValid = false;
           break;
         case 'comparison':
           // This would need runtime context for comparison
@@ -326,7 +354,7 @@ export class ProductionStep extends TenantBaseEntity {
           rule: rule.ruleName,
           severity: rule.severity,
           message: rule.errorMessage,
-          hint: rule.correctionHint
+          hint: rule.correctionHint,
         });
       }
     }
@@ -337,17 +365,20 @@ export class ProductionStep extends TenantBaseEntity {
   getMediaFilesByPurpose(purpose: string): any[] {
     if (!this.mediaFiles) return [];
     return this.mediaFiles
-      .filter(file => file.purpose === purpose)
+      .filter((file) => file.purpose === purpose)
       .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   getRequiredMediaFiles(): any[] {
     if (!this.mediaFiles) return [];
-    return this.mediaFiles.filter(file => file.isRequired === true);
+    return this.mediaFiles.filter((file) => file.isRequired === true);
   }
 
   hasAlternateWorkCenter(): boolean {
-    return this.alternateWorkCenterId !== null && this.alternateWorkCenterId !== undefined;
+    return (
+      this.alternateWorkCenterId !== null &&
+      this.alternateWorkCenterId !== undefined
+    );
   }
 
   getPreferredWorkCenter(): string | undefined {
@@ -357,7 +388,7 @@ export class ProductionStep extends TenantBaseEntity {
   updateMediaFileAccess(fileId: string): void {
     if (!this.mediaFiles) return;
 
-    const file = this.mediaFiles.find(f => f.fileId === fileId);
+    const file = this.mediaFiles.find((f) => f.fileId === fileId);
     if (file) {
       file.lastAccessedAt = new Date();
       file.accessCount = (file.accessCount || 0) + 1;

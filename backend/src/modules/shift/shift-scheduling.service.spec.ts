@@ -168,13 +168,17 @@ describe('ShiftSchedulingService', () => {
     }).compile();
 
     service = module.get<ShiftSchedulingService>(ShiftSchedulingService);
-    shiftRepository = module.get(getRepositoryToken(Shift)) as jest.Mocked<Repository<Shift>>;
-    assignmentRepository = module.get(getRepositoryToken(ShiftAssignment)) as jest.Mocked<Repository<ShiftAssignment>>;
-    exceptionRepository = module.get(getRepositoryToken(ShiftException)) as jest.Mocked<Repository<ShiftException>>;
-    calendarRepository = module.get(getRepositoryToken(ProductionCalendar)) as jest.Mocked<Repository<ProductionCalendar>>;
-    workerRepository = module.get(getRepositoryToken(Worker)) as jest.Mocked<Repository<Worker>>;
-    workerService = module.get<WorkerService>(WorkerService) as jest.Mocked<WorkerService>;
-    eventEmitter = module.get<EventEmitter2>(EventEmitter2) as jest.Mocked<EventEmitter2>;
+    shiftRepository = module.get(getRepositoryToken(Shift));
+    assignmentRepository = module.get(getRepositoryToken(ShiftAssignment));
+    exceptionRepository = module.get(getRepositoryToken(ShiftException));
+    calendarRepository = module.get(getRepositoryToken(ProductionCalendar));
+    workerRepository = module.get(getRepositoryToken(Worker));
+    workerService = module.get<WorkerService>(
+      WorkerService,
+    ) as jest.Mocked<WorkerService>;
+    eventEmitter = module.get<EventEmitter2>(
+      EventEmitter2,
+    ) as jest.Mocked<EventEmitter2>;
   });
 
   describe('generateSchedule', () => {
@@ -193,13 +197,17 @@ describe('ShiftSchedulingService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue([mockShift]),
       });
-      
+
       jest.spyOn(calendarRepository, 'find').mockResolvedValue([]);
       jest.spyOn(exceptionRepository, 'find').mockResolvedValue([]);
-      jest.spyOn(assignmentRepository, 'create').mockImplementation((data) => data as any);
-      jest.spyOn(assignmentRepository, 'save').mockImplementation((data) =>
-        Promise.resolve(Array.isArray(data) ? data : [data]) as any,
-      );
+      jest
+        .spyOn(assignmentRepository, 'create')
+        .mockImplementation((data) => data as any);
+      jest
+        .spyOn(assignmentRepository, 'save')
+        .mockImplementation(
+          (data) => Promise.resolve(Array.isArray(data) ? data : [data]) as any,
+        );
 
       const result = await service.generateSchedule(request);
 
@@ -244,10 +252,14 @@ describe('ShiftSchedulingService', () => {
         available: true,
       });
       jest.spyOn(assignmentRepository, 'find').mockResolvedValue([]);
-      jest.spyOn(assignmentRepository, 'create').mockImplementation((data) => data as any);
-      jest.spyOn(assignmentRepository, 'save').mockImplementation((data) =>
-        Promise.resolve(Array.isArray(data) ? data : [data]) as any,
-      );
+      jest
+        .spyOn(assignmentRepository, 'create')
+        .mockImplementation((data) => data as any);
+      jest
+        .spyOn(assignmentRepository, 'save')
+        .mockImplementation(
+          (data) => Promise.resolve(Array.isArray(data) ? data : [data]) as any,
+        );
 
       const result = await service.generateSchedule(request);
 
@@ -264,7 +276,7 @@ describe('ShiftSchedulingService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue([mockShift]),
       });
-      
+
       const request: ShiftScheduleRequest = {
         startDate: new Date('2024-01-15'),
         endDate: new Date('2024-01-15'),
@@ -291,12 +303,20 @@ describe('ShiftSchedulingService', () => {
         getMany: jest.fn().mockResolvedValue([mockShift]),
       });
       jest.spyOn(calendarRepository, 'find').mockResolvedValue([]);
-      jest.spyOn(exceptionRepository, 'find').mockResolvedValue([mockException]);
-      jest.spyOn(exceptionRepository, 'findOne').mockResolvedValue(mockException);
-      jest.spyOn(assignmentRepository, 'create').mockImplementation((data) => data as any);
-      jest.spyOn(assignmentRepository, 'save').mockImplementation((data) =>
-        Promise.resolve(Array.isArray(data) ? data : [data]) as any,
-      );
+      jest
+        .spyOn(exceptionRepository, 'find')
+        .mockResolvedValue([mockException]);
+      jest
+        .spyOn(exceptionRepository, 'findOne')
+        .mockResolvedValue(mockException);
+      jest
+        .spyOn(assignmentRepository, 'create')
+        .mockImplementation((data) => data as any);
+      jest
+        .spyOn(assignmentRepository, 'save')
+        .mockImplementation(
+          (data) => Promise.resolve(Array.isArray(data) ? data : [data]) as any,
+        );
 
       const result = await service.generateSchedule(request);
 
@@ -314,11 +334,15 @@ describe('ShiftSchedulingService', () => {
       // Mock shifts find
       jest.spyOn(shiftRepository, 'find').mockResolvedValue([mockShift]);
       jest.spyOn(shiftRepository, 'findBy').mockResolvedValue([mockShift]);
-      
-      // Mock assignments find - this is what analyzeCoverage actually uses
-      jest.spyOn(assignmentRepository, 'find').mockResolvedValue([mockAssignment]);
 
-      const result = await service.analyzeCoverage(startDate, endDate, ['shift-1']);
+      // Mock assignments find - this is what analyzeCoverage actually uses
+      jest
+        .spyOn(assignmentRepository, 'find')
+        .mockResolvedValue([mockAssignment]);
+
+      const result = await service.analyzeCoverage(startDate, endDate, [
+        'shift-1',
+      ]);
 
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
@@ -333,11 +357,15 @@ describe('ShiftSchedulingService', () => {
       // Mock shifts find
       jest.spyOn(shiftRepository, 'find').mockResolvedValue([mockShift]);
       jest.spyOn(shiftRepository, 'findBy').mockResolvedValue([mockShift]);
-      
-      // Mock assignments find - this is what analyzeCoverage actually uses
-      jest.spyOn(assignmentRepository, 'find').mockResolvedValue([mockAssignment]); // Only 1 worker assigned
 
-      const result = await service.analyzeCoverage(startDate, endDate, ['shift-1']);
+      // Mock assignments find - this is what analyzeCoverage actually uses
+      jest
+        .spyOn(assignmentRepository, 'find')
+        .mockResolvedValue([mockAssignment]); // Only 1 worker assigned
+
+      const result = await service.analyzeCoverage(startDate, endDate, [
+        'shift-1',
+      ]);
 
       expect(result).toBeDefined();
       expect(result.some((r: any) => r.understaffed)).toBe(true);
@@ -356,10 +384,12 @@ describe('ShiftSchedulingService', () => {
 
       const toWorker = { ...mockWorker, id: 'worker-2', employeeId: 'EMP002' };
 
-      jest.spyOn(assignmentRepository, 'findOne')
-        .mockResolvedValueOnce(mockAssignment)  // First call to find the assignment
-        .mockResolvedValueOnce(null);           // Second call for worker-2's existing assignment
-      jest.spyOn(workerRepository, 'findOne')
+      jest
+        .spyOn(assignmentRepository, 'findOne')
+        .mockResolvedValueOnce(mockAssignment) // First call to find the assignment
+        .mockResolvedValueOnce(null); // Second call for worker-2's existing assignment
+      jest
+        .spyOn(workerRepository, 'findOne')
         .mockResolvedValueOnce(mockWorker)
         .mockResolvedValueOnce(toWorker as Worker);
       jest.spyOn(workerService, 'checkAvailability').mockResolvedValue({
@@ -367,16 +397,27 @@ describe('ShiftSchedulingService', () => {
         reason: undefined,
         conflicts: [],
       });
-      const newAssignment = { ...mockAssignment, workerId: 'worker-2', id: 'assignment-new' };
-      jest.spyOn(assignmentRepository, 'create').mockReturnValue(newAssignment as ShiftAssignment);
-      jest.spyOn(assignmentRepository, 'save').mockResolvedValue([mockAssignment, newAssignment] as any);
+      const newAssignment = {
+        ...mockAssignment,
+        workerId: 'worker-2',
+        id: 'assignment-new',
+      };
+      jest
+        .spyOn(assignmentRepository, 'create')
+        .mockReturnValue(newAssignment as ShiftAssignment);
+      jest
+        .spyOn(assignmentRepository, 'save')
+        .mockResolvedValue([mockAssignment, newAssignment] as any);
 
       const result = await service.requestShiftSwap(request);
 
       expect(result).toBeDefined();
       expect(result.workerId).toBe('worker-2');
       expect(assignmentRepository.save).toHaveBeenCalled();
-      expect(eventEmitter.emit).toHaveBeenCalledWith('shift.swapped', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'shift.swapped',
+        expect.any(Object),
+      );
     });
 
     it('should reject swap if target worker is unavailable', async () => {
@@ -390,8 +431,11 @@ describe('ShiftSchedulingService', () => {
 
       const toWorker = { ...mockWorker, id: 'worker-2', employeeId: 'EMP002' };
 
-      jest.spyOn(assignmentRepository, 'findOne').mockResolvedValue(mockAssignment);
-      jest.spyOn(workerRepository, 'findOne')
+      jest
+        .spyOn(assignmentRepository, 'findOne')
+        .mockResolvedValue(mockAssignment);
+      jest
+        .spyOn(workerRepository, 'findOne')
         .mockResolvedValueOnce(mockWorker)
         .mockResolvedValueOnce(toWorker as Worker);
       jest.spyOn(workerService, 'checkAvailability').mockResolvedValue({
@@ -400,7 +444,9 @@ describe('ShiftSchedulingService', () => {
         conflicts: [],
       });
 
-      await expect(service.requestShiftSwap(request)).rejects.toThrow(ConflictException);
+      await expect(service.requestShiftSwap(request)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -413,18 +459,43 @@ describe('ShiftSchedulingService', () => {
         startDate: new Date('2024-01-15'),
       };
 
-      const mockAfternoonShift = { ...mockShift, id: 'shift-2', shiftCode: 'AFTERNOON', isActiveOnDay: jest.fn().mockReturnValue(true) };
-      const mockNightShift = { ...mockShift, id: 'shift-3', shiftCode: 'NIGHT', isActiveOnDay: jest.fn().mockReturnValue(true) };
-      const mockOffShift = { ...mockShift, id: 'shift-4', shiftCode: 'OFF', isActiveOnDay: jest.fn().mockReturnValue(true) };
+      const mockAfternoonShift = {
+        ...mockShift,
+        id: 'shift-2',
+        shiftCode: 'AFTERNOON',
+        isActiveOnDay: jest.fn().mockReturnValue(true),
+      };
+      const mockNightShift = {
+        ...mockShift,
+        id: 'shift-3',
+        shiftCode: 'NIGHT',
+        isActiveOnDay: jest.fn().mockReturnValue(true),
+      };
+      const mockOffShift = {
+        ...mockShift,
+        id: 'shift-4',
+        shiftCode: 'OFF',
+        isActiveOnDay: jest.fn().mockReturnValue(true),
+      };
 
       jest
         .spyOn(shiftRepository, 'find')
-        .mockResolvedValue([mockShift, mockAfternoonShift, mockNightShift, mockOffShift, mockShift] as unknown as Shift[]);
+        .mockResolvedValue([
+          mockShift,
+          mockAfternoonShift,
+          mockNightShift,
+          mockOffShift,
+          mockShift,
+        ] as unknown as Shift[]);
       jest.spyOn(assignmentRepository, 'findOne').mockResolvedValue(null);
-      jest.spyOn(assignmentRepository, 'create').mockImplementation((data) => data as any);
-      jest.spyOn(assignmentRepository, 'save').mockImplementation((data) =>
-        Promise.resolve(Array.isArray(data) ? data : [data]) as any,
-      );
+      jest
+        .spyOn(assignmentRepository, 'create')
+        .mockImplementation((data) => data as any);
+      jest
+        .spyOn(assignmentRepository, 'save')
+        .mockImplementation(
+          (data) => Promise.resolve(Array.isArray(data) ? data : [data]) as any,
+        );
 
       const result = await service.applyShiftPattern(
         pattern,
@@ -446,8 +517,12 @@ describe('ShiftSchedulingService', () => {
         startDate: new Date('2024-01-15'),
       };
 
-      jest.spyOn(shiftRepository, 'find').mockResolvedValue([mockShift] as unknown as Shift[]);
-      jest.spyOn(assignmentRepository, 'findOne').mockResolvedValue(mockAssignment);
+      jest
+        .spyOn(shiftRepository, 'find')
+        .mockResolvedValue([mockShift] as unknown as Shift[]);
+      jest
+        .spyOn(assignmentRepository, 'findOne')
+        .mockResolvedValue(mockAssignment);
       jest.spyOn(assignmentRepository, 'save').mockResolvedValue([] as any);
 
       const result = await service.applyShiftPattern(
@@ -469,7 +544,9 @@ describe('ShiftSchedulingService', () => {
         { ...mockAssignment, id: 'assignment-2', shiftId: 'shift-2' },
       ];
 
-      jest.spyOn(assignmentRepository, 'find').mockResolvedValue(doubleBookedAssignments as any);
+      jest
+        .spyOn(assignmentRepository, 'find')
+        .mockResolvedValue(doubleBookedAssignments as any);
 
       const result = await service.detectConflicts(
         'worker-1',
@@ -478,7 +555,9 @@ describe('ShiftSchedulingService', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.some((c) => c.conflictType === 'double_booking')).toBe(true);
+      expect(result.some((c) => c.conflictType === 'double_booking')).toBe(
+        true,
+      );
     });
 
     it('should detect rest period violations', async () => {
@@ -492,7 +571,9 @@ describe('ShiftSchedulingService', () => {
         },
       ];
 
-      jest.spyOn(assignmentRepository, 'find').mockResolvedValue(closeShifts as any);
+      jest
+        .spyOn(assignmentRepository, 'find')
+        .mockResolvedValue(closeShifts as any);
 
       const result = await service.detectConflicts(
         'worker-1',
@@ -514,7 +595,9 @@ describe('ShiftSchedulingService', () => {
           shift: { ...mockShift, workingHours: 8 },
         }));
 
-      jest.spyOn(assignmentRepository, 'find').mockResolvedValue(manyShifts as any);
+      jest
+        .spyOn(assignmentRepository, 'find')
+        .mockResolvedValue(manyShifts as any);
 
       const result = await service.detectConflicts(
         'worker-1',
@@ -523,13 +606,17 @@ describe('ShiftSchedulingService', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.some((c) => c.conflictType === 'overtime_violation')).toBe(true);
+      expect(result.some((c) => c.conflictType === 'overtime_violation')).toBe(
+        true,
+      );
     });
   });
 
   describe('updateAssignmentStatus', () => {
     it('should update assignment status', async () => {
-      jest.spyOn(assignmentRepository, 'findOne').mockResolvedValue(mockAssignment);
+      jest
+        .spyOn(assignmentRepository, 'findOne')
+        .mockResolvedValue(mockAssignment);
       jest.spyOn(assignmentRepository, 'save').mockResolvedValue({
         ...mockAssignment,
         status: 'cancelled',
@@ -544,7 +631,10 @@ describe('ShiftSchedulingService', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe('cancelled');
       expect(assignmentRepository.save).toHaveBeenCalled();
-      expect(eventEmitter.emit).toHaveBeenCalledWith('assignment.status.updated', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'assignment.status.updated',
+        expect.any(Object),
+      );
     });
 
     it('should throw error if assignment not found', async () => {
@@ -569,7 +659,10 @@ describe('ShiftSchedulingService', () => {
         shift: { ...mockShift, startTime: '08:00' },
       };
 
-      const restHours = service['calculateRestHours'](shift1 as ShiftAssignment, shift2 as ShiftAssignment);
+      const restHours = service['calculateRestHours'](
+        shift1 as ShiftAssignment,
+        shift2 as ShiftAssignment,
+      );
 
       expect(restHours).toBe(16); // 16:00 to 08:00 next day = 16 hours
     });
@@ -586,7 +679,10 @@ describe('ShiftSchedulingService', () => {
         shift: { ...mockShift, startTime: '07:00' },
       };
 
-      const restHours = service['calculateRestHours'](shift1 as ShiftAssignment, shift2 as ShiftAssignment);
+      const restHours = service['calculateRestHours'](
+        shift1 as ShiftAssignment,
+        shift2 as ShiftAssignment,
+      );
 
       expect(restHours).toBe(8); // 23:00 to 07:00 next day = 8 hours
     });

@@ -1,4 +1,7 @@
-import { CustomerOrder, CustomerOrderLine } from '../../../entities/customer-order.entity';
+import {
+  CustomerOrder,
+  CustomerOrderLine,
+} from '../../../entities/customer-order.entity';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { UpdateOrderDto, UpdateOrderStatusDto } from '../dto/update-order.dto';
 import { OrderQueryDto } from '../dto/order-query.dto';
@@ -42,7 +45,10 @@ export interface IOrderService {
   /**
    * Update order status
    */
-  updateStatus(id: string, statusDto: UpdateOrderStatusDto): Promise<CustomerOrder>;
+  updateStatus(
+    id: string,
+    statusDto: UpdateOrderStatusDto,
+  ): Promise<CustomerOrder>;
 
   /**
    * Remove an order (soft delete)
@@ -77,7 +83,10 @@ export interface IOrderService {
   /**
    * Add order line
    */
-  addOrderLine(orderId: string, orderLine: Partial<CustomerOrderLine>): Promise<CustomerOrder>;
+  addOrderLine(
+    orderId: string,
+    orderLine: Partial<CustomerOrderLine>,
+  ): Promise<CustomerOrder>;
 
   /**
    * Update order line
@@ -85,7 +94,7 @@ export interface IOrderService {
   updateOrderLine(
     orderId: string,
     lineId: string,
-    orderLine: Partial<CustomerOrderLine>
+    orderLine: Partial<CustomerOrderLine>,
   ): Promise<CustomerOrder>;
 
   /**

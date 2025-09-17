@@ -59,7 +59,7 @@ export class QualityMetricRepository extends TenantAwareRepository<QualityMetric
       { id: metricId, tenantId },
       { targetValue, minValue, maxValue, tolerance },
     );
-    
+
     const updated = await this.repository.findOne({
       where: { id: metricId, tenantId },
     });

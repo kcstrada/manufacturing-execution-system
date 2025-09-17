@@ -202,10 +202,7 @@ export class ShiftSchedulingController {
     description: 'Shift updated successfully',
     type: Shift,
   })
-  async updateShift(
-    @Param('id') _id: string,
-    @Body() _dto: UpdateShiftDto,
-  ) {
+  async updateShift(@Param('id') _id: string, @Body() _dto: UpdateShiftDto) {
     // This would need to be implemented in the service
     throw new Error('Method not yet implemented');
   }

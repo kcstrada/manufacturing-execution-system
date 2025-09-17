@@ -106,7 +106,9 @@ describe('WorkerService', () => {
     }).compile();
 
     service = module.get<WorkerService>(WorkerService);
-    workerRepository = module.get<Repository<Worker>>(getRepositoryToken(Worker));
+    workerRepository = module.get<Repository<Worker>>(
+      getRepositoryToken(Worker),
+    );
     scheduleRepository = module.get<Repository<WorkerSchedule>>(
       getRepositoryToken(WorkerSchedule),
     );
@@ -130,9 +132,9 @@ describe('WorkerService', () => {
         getMany: jest.fn().mockResolvedValue(mockWorkers),
       };
 
-      jest.spyOn(workerRepository, 'createQueryBuilder').mockReturnValue(
-        queryBuilder as any,
-      );
+      jest
+        .spyOn(workerRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const result = await service.findAll({
         status: WorkerStatus.AVAILABLE,
@@ -177,9 +179,9 @@ describe('WorkerService', () => {
         getMany: jest.fn().mockResolvedValue([mockWorker]),
       };
 
-      jest.spyOn(workerRepository, 'createQueryBuilder').mockReturnValue(
-        queryBuilder as any,
-      );
+      jest
+        .spyOn(workerRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const skillRequirements = [
         {
@@ -199,7 +201,10 @@ describe('WorkerService', () => {
 
     it('should filter by minimum match score', async () => {
       const workers = [
-        { ...mockWorker, skills: [{ name: 'Welding', level: SkillLevel.EXPERT }] },
+        {
+          ...mockWorker,
+          skills: [{ name: 'Welding', level: SkillLevel.EXPERT }],
+        },
         { ...mockWorker, id: 'worker-2', skills: [] },
       ];
 
@@ -209,9 +214,9 @@ describe('WorkerService', () => {
         getMany: jest.fn().mockResolvedValue(workers),
       };
 
-      jest.spyOn(workerRepository, 'createQueryBuilder').mockReturnValue(
-        queryBuilder as any,
-      );
+      jest
+        .spyOn(workerRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const result = await service.findWorkersWithSkills(
         [{ name: 'Welding', required: true }],
@@ -251,9 +256,9 @@ describe('WorkerService', () => {
         getMany: jest.fn().mockResolvedValue([mockWorkerWithCorrectSkills]),
       };
 
-      jest.spyOn(workerRepository, 'createQueryBuilder').mockReturnValue(
-        queryBuilder as any,
-      );
+      jest
+        .spyOn(workerRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const result = await service.findBestMatchForTask('task-1');
 
@@ -267,7 +272,7 @@ describe('WorkerService', () => {
 
     it.skip('should consider workload when requested', async () => {
       jest.spyOn(taskRepository, 'findOne').mockResolvedValue(mockTask);
-      
+
       const mockWorkerWithCorrectSkills = {
         ...mockWorker,
         skills: [
@@ -286,11 +291,13 @@ describe('WorkerService', () => {
         getMany: jest.fn().mockResolvedValue([mockWorkerWithCorrectSkills]),
       };
 
-      jest.spyOn(workerRepository, 'createQueryBuilder').mockReturnValue(
-        queryBuilder as any,
-      );
-      
-      jest.spyOn(workerRepository, 'findOne').mockResolvedValue(mockWorkerWithCorrectSkills as Worker);
+      jest
+        .spyOn(workerRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
+
+      jest
+        .spyOn(workerRepository, 'findOne')
+        .mockResolvedValue(mockWorkerWithCorrectSkills as Worker);
       jest.spyOn(assignmentRepository, 'count').mockResolvedValue(2);
       jest.spyOn(scheduleRepository, 'find').mockResolvedValue([mockSchedule]);
 
@@ -311,7 +318,11 @@ describe('WorkerService', () => {
       jest.spyOn(assignmentRepository, 'count').mockResolvedValue(3);
       jest.spyOn(scheduleRepository, 'find').mockResolvedValue([
         mockSchedule,
-        { ...mockSchedule, scheduledHours: 8, isOvertime: false } as WorkerSchedule,
+        {
+          ...mockSchedule,
+          scheduledHours: 8,
+          isOvertime: false,
+        } as WorkerSchedule,
       ]);
 
       const result = await service.getWorkerWorkload('worker-1');
@@ -354,9 +365,9 @@ describe('WorkerService', () => {
         getMany: jest.fn().mockResolvedValue(completedAssignments),
       };
 
-      jest.spyOn(assignmentRepository, 'createQueryBuilder').mockReturnValue(
-        queryBuilder as any,
-      );
+      jest
+        .spyOn(assignmentRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const result = await service.getWorkerPerformance('worker-1');
 
@@ -393,7 +404,9 @@ describe('WorkerService', () => {
         status: WorkerStatus.SICK_LEAVE,
       };
 
-      jest.spyOn(workerRepository, 'findOne').mockResolvedValue(unavailableWorker as Worker);
+      jest
+        .spyOn(workerRepository, 'findOne')
+        .mockResolvedValue(unavailableWorker as Worker);
 
       const result = await service.checkAvailability({
         workerId: 'worker-1',
@@ -478,7 +491,7 @@ describe('WorkerService', () => {
   describe('recordPerformanceMetrics', () => {
     it('should update performance metrics', async () => {
       jest.spyOn(workerRepository, 'findOne').mockResolvedValue(mockWorker);
-      
+
       const updatedWorker = {
         ...mockWorker,
         efficiency: 97,
@@ -486,8 +499,10 @@ describe('WorkerService', () => {
         totalTasksCompleted: 155,
         totalHoursWorked: 1208,
       };
-      
-      jest.spyOn(workerRepository, 'save').mockResolvedValue(updatedWorker as Worker);
+
+      jest
+        .spyOn(workerRepository, 'save')
+        .mockResolvedValue(updatedWorker as Worker);
 
       const result = await service.recordPerformanceMetrics('worker-1', {
         efficiency: 97,
@@ -516,16 +531,12 @@ describe('WorkerService', () => {
         {
           ...mockWorker,
           id: 'worker-2',
-          skills: [
-            { name: 'Welding', level: SkillLevel.BEGINNER },
-          ],
+          skills: [{ name: 'Welding', level: SkillLevel.BEGINNER }],
         },
         {
           ...mockWorker,
           id: 'worker-3',
-          skills: [
-            { name: 'Assembly', level: SkillLevel.EXPERT },
-          ],
+          skills: [{ name: 'Assembly', level: SkillLevel.EXPERT }],
         },
       ];
 
@@ -535,9 +546,9 @@ describe('WorkerService', () => {
         getMany: jest.fn().mockResolvedValue(workers),
       };
 
-      jest.spyOn(workerRepository, 'createQueryBuilder').mockReturnValue(
-        queryBuilder as any,
-      );
+      jest
+        .spyOn(workerRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const requirements = [
         {
@@ -556,13 +567,17 @@ describe('WorkerService', () => {
       // Worker 1 should have highest score (has both skills at high levels)
       // Worker 2 should have lower score (has welding but at beginner level)
       // Worker 3 should have lowest score (missing required welding skill)
-      
+
       const worker1Match = matches.find((m) => m.worker.id === 'worker-1');
       const worker2Match = matches.find((m) => m.worker.id === 'worker-2');
       const worker3Match = matches.find((m) => m.worker.id === 'worker-3');
 
-      expect(worker1Match!.matchScore).toBeGreaterThan(worker2Match!.matchScore);
-      expect(worker2Match!.matchScore).toBeGreaterThan(worker3Match!.matchScore);
+      expect(worker1Match!.matchScore).toBeGreaterThan(
+        worker2Match!.matchScore,
+      );
+      expect(worker2Match!.matchScore).toBeGreaterThan(
+        worker3Match!.matchScore,
+      );
       expect(worker3Match!.skillLevelMatch).toBe(false); // Missing required skill
     });
   });

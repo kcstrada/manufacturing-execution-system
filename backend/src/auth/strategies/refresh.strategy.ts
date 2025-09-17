@@ -11,14 +11,17 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_REFRESH_SECRET', 'jwt_refresh_secret_key'),
+      secretOrKey: configService.get<string>(
+        'JWT_REFRESH_SECRET',
+        'jwt_refresh_secret_key',
+      ),
       passReqToCallback: true,
     });
   }
 
   async validate(req: Request, payload: any) {
     const refreshToken = req.get('Authorization')?.replace('Bearer', '').trim();
-    
+
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token not found');
     }

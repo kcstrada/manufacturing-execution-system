@@ -10,9 +10,7 @@ export class JobQueueService implements OnModuleInit {
   private readonly logger = new Logger(JobQueueService.name);
   private queues: Map<string, Queue> = new Map();
 
-  constructor(
-    private configService: ConfigService,
-  ) {}
+  constructor(private configService: ConfigService) {}
 
   async onModuleInit() {
     // Initialize default queues
@@ -60,7 +58,10 @@ export class JobQueueService implements OnModuleInit {
 
     try {
       const job = await queue.add(jobName, data, {
-        removeOnComplete: this.configService.get('BULL_REMOVE_ON_COMPLETE', true),
+        removeOnComplete: this.configService.get(
+          'BULL_REMOVE_ON_COMPLETE',
+          true,
+        ),
         removeOnFail: this.configService.get('BULL_REMOVE_ON_FAIL', false),
         attempts: this.configService.get('BULL_RETRY_ATTEMPTS', 3),
         backoff: {
@@ -70,7 +71,9 @@ export class JobQueueService implements OnModuleInit {
         ...options,
       });
 
-      this.logger.log(`Job ${jobName} added to queue ${queueName}, ID: ${job.id}`);
+      this.logger.log(
+        `Job ${jobName} added to queue ${queueName}, ID: ${job.id}`,
+      );
       return job;
     } catch (error) {
       this.logger.error(`Failed to add job to queue ${queueName}:`, error);
@@ -101,9 +104,9 @@ export class JobQueueService implements OnModuleInit {
     cron: string,
     options?: JobOptions,
   ): Promise<Job<T>> {
-    return this.addJob(queueName, jobName, data, { 
-      ...options, 
-      repeat: { cron } 
+    return this.addJob(queueName, jobName, data, {
+      ...options,
+      repeat: { cron },
     });
   }
 
@@ -176,7 +179,9 @@ export class JobQueueService implements OnModuleInit {
     }
 
     const removed = await queue.clean(grace, 'completed');
-    this.logger.log(`Cleaned ${removed.length} completed jobs from queue ${queueName}`);
+    this.logger.log(
+      `Cleaned ${removed.length} completed jobs from queue ${queueName}`,
+    );
     return removed;
   }
 
@@ -190,7 +195,9 @@ export class JobQueueService implements OnModuleInit {
     }
 
     const removed = await queue.clean(grace, 'failed');
-    this.logger.log(`Cleaned ${removed.length} failed jobs from queue ${queueName}`);
+    this.logger.log(
+      `Cleaned ${removed.length} failed jobs from queue ${queueName}`,
+    );
     return removed;
   }
 
@@ -229,21 +236,15 @@ export class JobQueueService implements OnModuleInit {
       throw new Error(`Queue ${queueName} not found`);
     }
 
-    const [
-      waiting,
-      active,
-      completed,
-      failed,
-      delayed,
-      paused,
-    ] = await Promise.all([
-      queue.getWaitingCount(),
-      queue.getActiveCount(),
-      queue.getCompletedCount(),
-      queue.getFailedCount(),
-      queue.getDelayedCount(),
-      queue.isPaused(),
-    ]);
+    const [waiting, active, completed, failed, delayed, paused] =
+      await Promise.all([
+        queue.getWaitingCount(),
+        queue.getActiveCount(),
+        queue.getCompletedCount(),
+        queue.getFailedCount(),
+        queue.getDelayedCount(),
+        queue.isPaused(),
+      ]);
 
     return {
       name: queueName,

@@ -193,10 +193,10 @@ export class OrderStateMachineService implements IOrderStateMachine {
    */
   async canTransition(
     order: CustomerOrder,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<boolean> {
     const transition = this.findTransition(order.status, event);
-    
+
     if (!transition) {
       return false;
     }
@@ -214,7 +214,7 @@ export class OrderStateMachineService implements IOrderStateMachine {
   async transition(
     order: CustomerOrder,
     event: WorkflowEvent,
-    context?: Partial<StateMachineContext>
+    context?: Partial<StateMachineContext>,
   ): Promise<TransitionResult> {
     const previousState = order.status;
     const transition = this.findTransition(order.status, event);
@@ -282,7 +282,7 @@ export class OrderStateMachineService implements IOrderStateMachine {
    */
   getAvailableTransitions(order: CustomerOrder): StateTransition[] {
     return this.config.transitions.filter(
-      (transition) => transition.from === order.status
+      (transition) => transition.from === order.status,
     );
   }
 
@@ -330,10 +330,10 @@ export class OrderStateMachineService implements IOrderStateMachine {
    */
   private findTransition(
     fromState: CustomerOrderStatus,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): StateTransition | undefined {
     return this.config.transitions.find(
-      (t) => t.from === fromState && t.event === event
+      (t) => t.from === fromState && t.event === event,
     );
   }
 
@@ -342,10 +342,10 @@ export class OrderStateMachineService implements IOrderStateMachine {
    */
   private async recordTransition(
     context: StateMachineContext,
-    result: TransitionResult
+    result: TransitionResult,
   ): Promise<void> {
     const tenantId = this.clsService.get('tenantId');
-    
+
     const transition = this.transitionRepo.create({
       tenantId,
       customerOrderId: context.order.id,
@@ -368,7 +368,7 @@ export class OrderStateMachineService implements IOrderStateMachine {
    */
   private emitStateChangeEvent(
     context: StateMachineContext,
-    result: TransitionResult
+    result: TransitionResult,
   ): void {
     this.eventEmitter.emit('order.state.changed', {
       orderId: context.order.id,
@@ -407,7 +407,11 @@ export class OrderStateMachineService implements IOrderStateMachine {
 
   private async canShipOrder(order: CustomerOrder): Promise<boolean> {
     // Check if shipping address is valid
-    return !!(order.shippingAddress && order.shippingAddress.city && order.shippingAddress.postalCode);
+    return !!(
+      order.shippingAddress &&
+      order.shippingAddress.city &&
+      order.shippingAddress.postalCode
+    );
   }
 
   private async canPartiallyShip(_order: CustomerOrder): Promise<boolean> {
@@ -428,13 +432,17 @@ export class OrderStateMachineService implements IOrderStateMachine {
   private async wasInProduction(order: CustomerOrder): Promise<boolean> {
     // Check transition history to see if order was in production
     const history = await this.getTransitionHistory(order.id);
-    return history.some(h => h.currentState === CustomerOrderStatus.IN_PRODUCTION);
+    return history.some(
+      (h) => h.currentState === CustomerOrderStatus.IN_PRODUCTION,
+    );
   }
 
   // Action methods
   private async createProductionOrders(order: CustomerOrder): Promise<void> {
     // TODO: Create production orders
-    this.logger.log(`Creating production orders for order ${order.orderNumber}`);
+    this.logger.log(
+      `Creating production orders for order ${order.orderNumber}`,
+    );
   }
 
   private async handleQCFailure(order: CustomerOrder): Promise<void> {

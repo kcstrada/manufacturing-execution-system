@@ -5,50 +5,50 @@ export enum NotificationType {
   ORDER_COMPLETED = 'order.completed',
   ORDER_CANCELLED = 'order.cancelled',
   ORDER_DELAYED = 'order.delayed',
-  
+
   // Inventory notifications
   INVENTORY_LOW_STOCK = 'inventory.low_stock',
   INVENTORY_OUT_OF_STOCK = 'inventory.out_of_stock',
   INVENTORY_RECEIVED = 'inventory.received',
   INVENTORY_EXPIRED = 'inventory.expired',
   INVENTORY_REORDER = 'inventory.reorder',
-  
+
   // Production notifications
   PRODUCTION_STARTED = 'production.started',
   PRODUCTION_COMPLETED = 'production.completed',
   PRODUCTION_DELAYED = 'production.delayed',
   PRODUCTION_ERROR = 'production.error',
-  
+
   // Task notifications
   TASK_ASSIGNED = 'task.assigned',
   TASK_UPDATED = 'task.updated',
   TASK_COMPLETED = 'task.completed',
   TASK_OVERDUE = 'task.overdue',
-  
+
   // Quality notifications
   QUALITY_ALERT = 'quality.alert',
   QUALITY_INSPECTION_FAILED = 'quality.inspection_failed',
   QUALITY_NCR_CREATED = 'quality.ncr_created',
   QUALITY_NCR_RESOLVED = 'quality.ncr_resolved',
-  
+
   // Maintenance notifications
   MAINTENANCE_DUE = 'maintenance.due',
   MAINTENANCE_SCHEDULED = 'maintenance.scheduled',
   MAINTENANCE_COMPLETED = 'maintenance.completed',
   EQUIPMENT_BREAKDOWN = 'equipment.breakdown',
-  
+
   // System notifications
   SYSTEM_ALERT = 'system.alert',
   SYSTEM_UPDATE = 'system.update',
   SYSTEM_MAINTENANCE = 'system.maintenance',
   SYSTEM_ERROR = 'system.error',
-  
+
   // User notifications
   USER_WELCOME = 'user.welcome',
   USER_PASSWORD_RESET = 'user.password_reset',
   USER_ACCOUNT_LOCKED = 'user.account_locked',
   USER_ROLE_CHANGED = 'user.role_changed',
-  
+
   // Custom notifications
   CUSTOM = 'custom',
 }

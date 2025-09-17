@@ -101,7 +101,7 @@ export function ApiAuth(...guards: string[]) {
   }
   return applyDecorators(
     ApiBearerAuth('JWT-auth'),
-    ...guards.map(guard => ApiSecurity(guard)),
+    ...guards.map((guard) => ApiSecurity(guard)),
     ApiUnauthorizedResponse({
       description: 'Unauthorized - Invalid or missing JWT token',
     }),
@@ -123,11 +123,7 @@ export function ApiKeyAuth() {
 /**
  * File upload decorator
  */
-export function ApiFile(
-  fieldName = 'file',
-  required = true,
-  isArray = false,
-) {
+export function ApiFile(fieldName = 'file', required = true, isArray = false) {
   return applyDecorators(
     ApiResponse({
       schema: {

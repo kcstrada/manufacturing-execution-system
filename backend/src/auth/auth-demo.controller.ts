@@ -14,7 +14,6 @@ import { CheckPermission } from '../permissions/decorators/check-permission.deco
 @ApiTags('Auth Demo')
 @Controller('auth-demo')
 export class AuthDemoController {
-  
   @Get('public')
   @Public()
   @ApiOperation({ summary: 'Public endpoint - no auth required' })
@@ -81,7 +80,9 @@ export class AuthDemoController {
     objectIdParam: 'id',
   })
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'View order - requires viewer permission on specific order' })
+  @ApiOperation({
+    summary: 'View order - requires viewer permission on specific order',
+  })
   viewOrder(@Param('id') orderId: string, @CurrentUser() user: any) {
     return {
       message: `User ${user.username} can view order ${orderId}`,
@@ -97,7 +98,9 @@ export class AuthDemoController {
     objectIdParam: 'id',
   })
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Edit order - requires editor permission on specific order' })
+  @ApiOperation({
+    summary: 'Edit order - requires editor permission on specific order',
+  })
   editOrder(@Param('id') orderId: string, @CurrentUser() user: any) {
     return {
       message: `User ${user.username} can edit order ${orderId}`,
@@ -107,9 +110,7 @@ export class AuthDemoController {
 
   @Get('permission-check')
   @UseGuards(AuthGuard, PermissionsGuard)
-  @RequirePermissions(
-    { resource: 'organization', action: 'viewer' },
-  )
+  @RequirePermissions({ resource: 'organization', action: 'viewer' })
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Check organization viewer permission' })
   checkPermission(@CurrentUser() user: any) {
@@ -122,9 +123,7 @@ export class AuthDemoController {
   @Get('combined-check')
   @UseGuards(AuthGuard, RolesGuard, PermissionsGuard)
   @Roles({ roles: ['executive', 'admin'] })
-  @RequirePermissions(
-    { resource: 'organization', action: 'editor' },
-  )
+  @RequirePermissions({ resource: 'organization', action: 'editor' })
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Combined role and permission check' })
   combinedCheck(@CurrentUser() user: any) {

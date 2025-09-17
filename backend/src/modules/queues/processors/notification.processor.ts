@@ -8,9 +8,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 export class NotificationProcessor {
   private readonly logger = new Logger(NotificationProcessor.name);
 
-  constructor(
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   @Process(JOB_NAMES.SEND_EMAIL)
   async sendEmail(job: Job) {
@@ -95,6 +93,6 @@ export class NotificationProcessor {
   }
 
   private async simulateProcessing(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

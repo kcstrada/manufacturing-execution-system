@@ -100,10 +100,7 @@ export class ProductRepository extends TenantAwareRepository<Product> {
     price: number,
   ): Promise<Product> {
     const tenantId = this.getTenantId();
-    await this.repository.update(
-      { id: productId, tenantId },
-      { cost, price },
-    );
+    await this.repository.update({ id: productId, tenantId }, { cost, price });
     const updated = await this.repository.findOne({
       where: { id: productId, tenantId },
     });
@@ -122,7 +119,7 @@ export class ProductRepository extends TenantAwareRepository<Product> {
       .andWhere('product.reorderPoint IS NOT NULL')
       .groupBy('product.id')
       .having('SUM(inventory.quantityAvailable) < product.reorderPoint');
-    
+
     return query.getMany();
   }
 }

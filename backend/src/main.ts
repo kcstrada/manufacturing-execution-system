@@ -13,7 +13,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   // Determine environment
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   // Create Winston logger instance with our custom configuration
   const logger = WinstonModule.createLogger(createWinstonConfig(isProduction));
 
@@ -24,31 +24,38 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 3000);
   const apiPrefix = configService.get<string>('API_PREFIX', 'api');
-  const corsOrigins = configService.get<string>('CORS_ORIGINS', 'http://localhost:3001,http://localhost:3002');
+  const corsOrigins = configService.get<string>(
+    'CORS_ORIGINS',
+    'http://localhost:3001,http://localhost:3002',
+  );
 
   // Security Headers with Helmet
   app.use(helmet(getHelmetConfig()));
 
   // CORS Configuration
   app.enableCors(getCorsConfig(corsOrigins));
-  
+
   // Additional Security Headers
   app.use((req: any, res: any, next: any) => {
     // Request ID for tracing
-    const requestId = req.headers['x-request-id'] || 
-                     `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const requestId =
+      req.headers['x-request-id'] ||
+      `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     res.setHeader('X-Request-Id', requestId);
-    
+
     // Security headers
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    
+    res.setHeader(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains',
+    );
+
     // Remove fingerprinting headers
     res.removeHeader('X-Powered-By');
     res.removeHeader('Server');
-    
+
     next();
   });
 
@@ -63,10 +70,8 @@ async function bootstrap() {
   });
 
   // Global validation pipe with enhanced configuration
-  app.useGlobalPipes(
-    new ValidationPipe(getValidationPipeConfig(isProduction)),
-  );
-  
+  app.useGlobalPipes(new ValidationPipe(getValidationPipeConfig(isProduction)));
+
   // Global validation exception filter
   app.useGlobalFilters(new ValidationExceptionFilter());
 
@@ -75,7 +80,9 @@ async function bootstrap() {
   if (enableSwagger && configService.get<string>('NODE_ENV') !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('Manufacturing Execution System API')
-      .setDescription('API documentation for the Manufacturing Execution System')
+      .setDescription(
+        'API documentation for the Manufacturing Execution System',
+      )
       .setVersion('1.0')
       .setContact(
         'MES Support',
@@ -123,10 +130,11 @@ async function bootstrap() {
       .build();
 
     const document = SwaggerModule.createDocument(app, config, {
-      operationIdFactory: (_controllerKey: string, methodKey: string) => methodKey,
+      operationIdFactory: (_controllerKey: string, methodKey: string) =>
+        methodKey,
       deepScanRoutes: true,
     });
-    
+
     // Custom Swagger UI options
     SwaggerModule.setup(`${apiPrefix}/docs`, app, document, {
       swaggerOptions: {
@@ -164,22 +172,30 @@ async function bootstrap() {
         .swagger-ui .scheme-container { margin-bottom: 20px }
       `,
     });
-    
+
     // Also serve OpenAPI JSON spec
     app.getHttpAdapter().get(`/${apiPrefix}/docs-json`, (_req, res) => {
       res.json(document);
     });
-    
-    logger.log(`📚 Swagger documentation available at: http://localhost:${port}/${apiPrefix}/docs`);
-    logger.log(`📄 OpenAPI JSON spec available at: http://localhost:${port}/${apiPrefix}/docs-json`);
+
+    logger.log(
+      `📚 Swagger documentation available at: http://localhost:${port}/${apiPrefix}/docs`,
+    );
+    logger.log(
+      `📄 OpenAPI JSON spec available at: http://localhost:${port}/${apiPrefix}/docs-json`,
+    );
   }
 
   // Graceful shutdown
   app.enableShutdownHooks();
 
   await app.listen(port);
-  logger.log(`🚀 Application is running on: http://localhost:${port}/${apiPrefix}`);
-  logger.log(`📚 API Documentation available at: http://localhost:${port}/${apiPrefix}/docs`);
+  logger.log(
+    `🚀 Application is running on: http://localhost:${port}/${apiPrefix}`,
+  );
+  logger.log(
+    `📚 API Documentation available at: http://localhost:${port}/${apiPrefix}/docs`,
+  );
 }
 
 bootstrap();

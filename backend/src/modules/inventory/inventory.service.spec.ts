@@ -7,8 +7,15 @@ import { InventoryService } from './inventory.service';
 import { InventoryRepository } from '../../repositories/inventory.repository';
 import { InventoryTransactionRepository } from '../../repositories/inventory-transaction.repository';
 import { Inventory, InventoryStatus } from '../../entities/inventory.entity';
-import { InventoryTransaction, InventoryTransactionType } from '../../entities/inventory-transaction.entity';
-import { CreateInventoryDto, AdjustInventoryDto, TransferInventoryDto } from './dto/create-inventory.dto';
+import {
+  InventoryTransaction,
+  InventoryTransactionType,
+} from '../../entities/inventory-transaction.entity';
+import {
+  CreateInventoryDto,
+  AdjustInventoryDto,
+  TransferInventoryDto,
+} from './dto/create-inventory.dto';
 import { ReserveInventoryDto } from './dto/update-inventory.dto';
 
 describe('InventoryService', () => {
@@ -106,11 +113,13 @@ describe('InventoryService', () => {
     }).compile();
 
     service = module.get<InventoryService>(InventoryService);
-    inventoryRepository = module.get(getRepositoryToken(Inventory)) as jest.Mocked<Repository<Inventory>>;
-    transactionRepository = module.get(getRepositoryToken(InventoryTransaction)) as jest.Mocked<Repository<InventoryTransaction>>;
-    inventoryRepo = module.get(InventoryRepository) as jest.Mocked<InventoryRepository>;
-    transactionRepo = module.get(InventoryTransactionRepository) as jest.Mocked<InventoryTransactionRepository>;
-    clsService = module.get(ClsService) as jest.Mocked<ClsService>;
+    inventoryRepository = module.get(getRepositoryToken(Inventory));
+    transactionRepository = module.get(
+      getRepositoryToken(InventoryTransaction),
+    );
+    inventoryRepo = module.get(InventoryRepository);
+    transactionRepo = module.get(InventoryTransactionRepository);
+    clsService = module.get(ClsService);
 
     // Setup default cls service behavior
     clsService.get.mockImplementation((key?: string | symbol) => {
@@ -167,7 +176,7 @@ describe('InventoryService', () => {
           quantityReserved: 0,
           quantityInTransit: 0,
           status: InventoryStatus.AVAILABLE,
-        })
+        }),
       );
       expect(transactionRepository.create).toHaveBeenCalled();
     });
@@ -195,7 +204,9 @@ describe('InventoryService', () => {
     it('should throw NotFoundException if inventory not found', async () => {
       inventoryRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne(mockInventoryId)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(mockInventoryId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -226,7 +237,7 @@ describe('InventoryService', () => {
         mockProductId,
         'WH01',
         'A-1-1',
-        reserveDto
+        reserveDto,
       );
 
       expect(result).toEqual(mockInventory);
@@ -234,7 +245,7 @@ describe('InventoryService', () => {
         mockProductId,
         'WH01',
         'A-1-1',
-        10
+        10,
       );
       expect(queryRunner.commitTransaction).toHaveBeenCalled();
     });
@@ -247,7 +258,7 @@ describe('InventoryService', () => {
       inventoryRepo.reserveQuantity.mockResolvedValue(null);
 
       await expect(
-        service.reserveInventory(mockProductId, 'WH01', 'A-1-1', reserveDto)
+        service.reserveInventory(mockProductId, 'WH01', 'A-1-1', reserveDto),
       ).rejects.toThrow(BadRequestException);
 
       expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
@@ -287,7 +298,7 @@ describe('InventoryService', () => {
         mockProductId,
         'WH01',
         'A-1-1',
-        adjustDto
+        adjustDto,
       );
 
       expect(result).toEqual(mockTransaction);
@@ -295,7 +306,7 @@ describe('InventoryService', () => {
         expect.objectContaining({
           quantityOnHand: 95,
           quantityAvailable: 85,
-        })
+        }),
       );
       expect(queryRunner.commitTransaction).toHaveBeenCalled();
     });
@@ -315,7 +326,7 @@ describe('InventoryService', () => {
       inventoryRepository.findOne.mockResolvedValue(mockInventory);
 
       await expect(
-        service.adjustInventory(mockProductId, 'WH01', 'A-1-1', adjustDto)
+        service.adjustInventory(mockProductId, 'WH01', 'A-1-1', adjustDto),
       ).rejects.toThrow(BadRequestException);
 
       expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
@@ -379,7 +390,7 @@ describe('InventoryService', () => {
       inventoryRepository.findOne.mockResolvedValueOnce(null);
 
       await expect(service.transferInventory(transferDto)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
 
       expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
@@ -415,7 +426,7 @@ describe('InventoryService', () => {
         'WH01',
         'A-1-1',
         95,
-        'Regular cycle count'
+        'Regular cycle count',
       );
 
       expect(result.inventory.quantityOnHand).toBe(95);
@@ -424,7 +435,7 @@ describe('InventoryService', () => {
         expect.objectContaining({
           quantityOnHand: 95,
           quantityAvailable: 85,
-        })
+        }),
       );
     });
   });
@@ -504,7 +515,7 @@ describe('InventoryService', () => {
         'purchase_order',
         'po-123',
         'LOT-001',
-        10
+        10,
       );
 
       expect(result.inventory).toEqual(mockInventory);
@@ -518,7 +529,7 @@ describe('InventoryService', () => {
           quantityAvailable: 100,
           lotNumber: 'LOT-001',
           unitCost: 10,
-        })
+        }),
       );
     });
 
@@ -556,7 +567,7 @@ describe('InventoryService', () => {
         undefined,
         undefined,
         undefined,
-        10
+        10,
       );
 
       expect(result.inventory.quantityOnHand).toBe(150);
@@ -596,7 +607,7 @@ describe('InventoryService', () => {
         'A-1-1',
         20,
         'work_order',
-        'wo-123'
+        'wo-123',
       );
 
       expect(result.inventory.quantityOnHand).toBe(80);
@@ -614,7 +625,7 @@ describe('InventoryService', () => {
       inventoryRepository.findOne.mockResolvedValue(mockInventory);
 
       await expect(
-        service.issueStock(mockProductId, 'WH01', 'A-1-1', 20)
+        service.issueStock(mockProductId, 'WH01', 'A-1-1', 20),
       ).rejects.toThrow(BadRequestException);
     });
   });

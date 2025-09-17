@@ -39,7 +39,7 @@ export class LoggingService implements LoggerService {
    */
   error(message: any, trace?: string, context?: string) {
     const errorObj = message instanceof Error ? message : new Error(message);
-    
+
     this.logger.error(this.formatMessage(errorObj.message), {
       context: context || this.context,
       stack: trace || errorObj.stack,
@@ -134,9 +134,14 @@ export class LoggingService implements LoggerService {
   /**
    * Log security event
    */
-  security(event: string, severity: 'low' | 'medium' | 'high' | 'critical', meta?: any) {
-    const level = severity === 'critical' || severity === 'high' ? 'error' : 'warn';
-    
+  security(
+    event: string,
+    severity: 'low' | 'medium' | 'high' | 'critical',
+    meta?: any,
+  ) {
+    const level =
+      severity === 'critical' || severity === 'high' ? 'error' : 'warn';
+
     this.logger.log(level, `Security: ${event}`, {
       context: 'SECURITY',
       security: {
@@ -152,7 +157,10 @@ export class LoggingService implements LoggerService {
    * Log database query
    */
   query(query: string, parameters?: any[], duration?: number) {
-    if (this.isDevelopment || this.configService.get('LOG_DATABASE_QUERIES') === 'true') {
+    if (
+      this.isDevelopment ||
+      this.configService.get('LOG_DATABASE_QUERIES') === 'true'
+    ) {
       this.logger.debug('Database Query', {
         context: 'DATABASE',
         database: {
@@ -245,8 +253,8 @@ export class LoggingService implements LoggerService {
    */
   private sanitizeParameters(parameters?: any[]): any[] | undefined {
     if (!parameters) return undefined;
-    
-    return parameters.map(param => {
+
+    return parameters.map((param) => {
       // Hide sensitive data
       if (typeof param === 'string' && param.length > 100) {
         return '[TRUNCATED]';

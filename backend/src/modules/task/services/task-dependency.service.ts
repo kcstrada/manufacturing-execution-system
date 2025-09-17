@@ -58,23 +58,32 @@ export class TaskDependencyService {
     });
 
     if (!dependsOnTask) {
-      throw new NotFoundException(`Dependency task with ID ${dependsOnTaskId} not found`);
+      throw new NotFoundException(
+        `Dependency task with ID ${dependsOnTaskId} not found`,
+      );
     }
 
     // Check if dependency already exists
-    if (task.dependencies.some(dep => dep.id === dependsOnTaskId)) {
+    if (task.dependencies.some((dep) => dep.id === dependsOnTaskId)) {
       throw new BadRequestException('Dependency already exists');
     }
 
     // Check for circular dependencies
-    const wouldCreateCycle = await this.wouldCreateCycle(taskId, dependsOnTaskId);
+    const wouldCreateCycle = await this.wouldCreateCycle(
+      taskId,
+      dependsOnTaskId,
+    );
     if (wouldCreateCycle) {
-      throw new BadRequestException('Adding this dependency would create a circular dependency');
+      throw new BadRequestException(
+        'Adding this dependency would create a circular dependency',
+      );
     }
 
     // Check if both tasks are in the same work order
     if (task.workOrderId !== dependsOnTask.workOrderId) {
-      throw new BadRequestException('Dependencies can only be created between tasks in the same work order');
+      throw new BadRequestException(
+        'Dependencies can only be created between tasks in the same work order',
+      );
     }
 
     // Add the dependency
@@ -89,7 +98,9 @@ export class TaskDependencyService {
       dependsOn: dependsOnTask,
     });
 
-    this.logger.log(`Added dependency: Task ${taskId} now depends on ${dependsOnTaskId}`);
+    this.logger.log(
+      `Added dependency: Task ${taskId} now depends on ${dependsOnTaskId}`,
+    );
 
     return updatedTask;
   }
@@ -97,7 +108,10 @@ export class TaskDependencyService {
   /**
    * Remove a dependency between tasks
    */
-  async removeDependency(taskId: string, dependsOnTaskId: string): Promise<Task> {
+  async removeDependency(
+    taskId: string,
+    dependsOnTaskId: string,
+  ): Promise<Task> {
     const task = await this.taskRepository.findOne({
       where: { id: taskId, tenantId: this.getTenantId() },
       relations: ['dependencies'],
@@ -107,7 +121,9 @@ export class TaskDependencyService {
       throw new NotFoundException(`Task with ID ${taskId} not found`);
     }
 
-    const dependencyIndex = task.dependencies.findIndex(dep => dep.id === dependsOnTaskId);
+    const dependencyIndex = task.dependencies.findIndex(
+      (dep) => dep.id === dependsOnTaskId,
+    );
     if (dependencyIndex === -1) {
       throw new NotFoundException('Dependency not found');
     }
@@ -124,7 +140,9 @@ export class TaskDependencyService {
       removedDependencyId: dependsOnTaskId,
     });
 
-    this.logger.log(`Removed dependency: Task ${taskId} no longer depends on ${dependsOnTaskId}`);
+    this.logger.log(
+      `Removed dependency: Task ${taskId} no longer depends on ${dependsOnTaskId}`,
+    );
 
     return updatedTask;
   }
@@ -132,7 +150,10 @@ export class TaskDependencyService {
   /**
    * Get all dependencies for a task
    */
-  async getTaskDependencies(taskId: string, includeTransitive = false): Promise<Task[]> {
+  async getTaskDependencies(
+    taskId: string,
+    includeTransitive = false,
+  ): Promise<Task[]> {
     const task = await this.taskRepository.findOne({
       where: { id: taskId, tenantId: this.getTenantId() },
       relations: ['dependencies'],
@@ -175,7 +196,10 @@ export class TaskDependencyService {
   /**
    * Get all tasks that depend on a given task
    */
-  async getTaskDependents(taskId: string, includeTransitive = false): Promise<Task[]> {
+  async getTaskDependents(
+    taskId: string,
+    includeTransitive = false,
+  ): Promise<Task[]> {
     const directDependents = await this.taskRepository
       .createQueryBuilder('task')
       .leftJoin('task.dependencies', 'dependency')
@@ -216,7 +240,9 @@ export class TaskDependencyService {
   /**
    * Build a dependency graph for a work order
    */
-  async buildDependencyGraph(workOrderId: string): Promise<TaskDependencyGraph> {
+  async buildDependencyGraph(
+    workOrderId: string,
+  ): Promise<TaskDependencyGraph> {
     const tasks = await this.taskRepository.find({
       where: { workOrderId, tenantId: this.getTenantId() },
       relations: ['dependencies'],
@@ -247,14 +273,18 @@ export class TaskDependencyService {
   /**
    * Validate dependencies for a work order
    */
-  async validateDependencies(workOrderId: string): Promise<DependencyValidationResult> {
+  async validateDependencies(
+    workOrderId: string,
+  ): Promise<DependencyValidationResult> {
     const graph = await this.buildDependencyGraph(workOrderId);
     const issues: string[] = [];
-    
+
     // Check for circular dependencies
     const circularDependencies = this.findCircularDependencies(graph);
     if (circularDependencies.length > 0) {
-      issues.push(`Found ${circularDependencies.length} circular dependency chain(s)`);
+      issues.push(
+        `Found ${circularDependencies.length} circular dependency chain(s)`,
+      );
     }
 
     // Find tasks with incomplete dependencies
@@ -264,11 +294,14 @@ export class TaskDependencyService {
 
     for (const [taskId, task] of graph.nodes) {
       const deps = Array.from(graph.edges.get(taskId) || [])
-        .map(depId => graph.nodes.get(depId)!)
-        .filter(dep => dep.status !== TaskStatus.COMPLETED);
+        .map((depId) => graph.nodes.get(depId)!)
+        .filter((dep) => dep.status !== TaskStatus.COMPLETED);
 
       if (deps.length > 0) {
-        if (task.status === TaskStatus.PENDING || task.status === TaskStatus.READY) {
+        if (
+          task.status === TaskStatus.PENDING ||
+          task.status === TaskStatus.READY
+        ) {
           blockedTasks.push(task);
           incompleteDependencies.push(...deps);
         }
@@ -332,14 +365,17 @@ export class TaskDependencyService {
   /**
    * Check if adding a dependency would create a cycle
    */
-  private async wouldCreateCycle(taskId: string, dependsOnTaskId: string): Promise<boolean> {
+  private async wouldCreateCycle(
+    taskId: string,
+    dependsOnTaskId: string,
+  ): Promise<boolean> {
     // Check if dependsOnTaskId can reach taskId through existing dependencies
     const visited = new Set<string>();
     const queue = [dependsOnTaskId];
 
     while (queue.length > 0) {
       const current = queue.shift()!;
-      
+
       if (current === taskId) {
         return true; // Would create a cycle
       }
@@ -355,7 +391,7 @@ export class TaskDependencyService {
         .andWhere('task.tenantId = :tenantId', { tenantId: this.getTenantId() })
         .getMany();
 
-      queue.push(...dependents.map(t => t.id));
+      queue.push(...dependents.map((t) => t.id));
     }
 
     return false;
@@ -374,20 +410,24 @@ export class TaskDependencyService {
 
     // Check if all dependencies are completed
     const allDepsCompleted = taskWithDeps.dependencies.every(
-      dep => dep.status === TaskStatus.COMPLETED
+      (dep) => dep.status === TaskStatus.COMPLETED,
     );
 
     if (allDepsCompleted && taskWithDeps.status === TaskStatus.PENDING) {
       taskWithDeps.status = TaskStatus.READY;
       await this.taskRepository.save(taskWithDeps);
-      
+
       this.eventEmitter.emit('task.ready', { task: taskWithDeps });
-      this.logger.log(`Task ${taskWithDeps.taskNumber} is now ready (all dependencies completed)`);
+      this.logger.log(
+        `Task ${taskWithDeps.taskNumber} is now ready (all dependencies completed)`,
+      );
     } else if (!allDepsCompleted && taskWithDeps.status === TaskStatus.READY) {
       taskWithDeps.status = TaskStatus.PENDING;
       await this.taskRepository.save(taskWithDeps);
-      
-      this.logger.log(`Task ${taskWithDeps.taskNumber} is now pending (has incomplete dependencies)`);
+
+      this.logger.log(
+        `Task ${taskWithDeps.taskNumber} is now pending (has incomplete dependencies)`,
+      );
     }
   }
 
@@ -396,7 +436,7 @@ export class TaskDependencyService {
    */
   async cascadeCompletionUpdate(completedTaskId: string): Promise<Task[]> {
     const updatedTasks: Task[] = [];
-    
+
     // Find all tasks that depend on the completed task
     const dependents = await this.getTaskDependents(completedTaskId);
 
@@ -410,16 +450,19 @@ export class TaskDependencyService {
 
       // Check if all dependencies are now completed
       const allDepsCompleted = depWithDeps.dependencies.every(
-        dep => dep.id === completedTaskId || dep.status === TaskStatus.COMPLETED
+        (dep) =>
+          dep.id === completedTaskId || dep.status === TaskStatus.COMPLETED,
       );
 
       if (allDepsCompleted && depWithDeps.status === TaskStatus.PENDING) {
         depWithDeps.status = TaskStatus.READY;
         const updated = await this.taskRepository.save(depWithDeps);
         updatedTasks.push(updated);
-        
+
         this.eventEmitter.emit('task.ready', { task: updated });
-        this.logger.log(`Task ${updated.taskNumber} is now ready after dependency completion`);
+        this.logger.log(
+          `Task ${updated.taskNumber} is now ready after dependency completion`,
+        );
       }
     }
 
@@ -436,7 +479,9 @@ export class TaskDependencyService {
     // Topological sort to find task order
     const sorted = this.topologicalSort(graph);
     if (!sorted) {
-      throw new BadRequestException('Cannot calculate critical path due to circular dependencies');
+      throw new BadRequestException(
+        'Cannot calculate critical path due to circular dependencies',
+      );
     }
 
     // Calculate earliest start and latest finish times
@@ -454,12 +499,12 @@ export class TaskDependencyService {
     for (const taskId of sorted) {
       const deps = Array.from(graph.edges.get(taskId) || []);
       let maxEarliestFinish = 0;
-      
+
       for (const depId of deps) {
         const depFinish = earliestStart.get(depId)! + taskDuration.get(depId)!;
         maxEarliestFinish = Math.max(maxEarliestFinish, depFinish);
       }
-      
+
       earliestStart.set(taskId, maxEarliestFinish);
     }
 
@@ -477,7 +522,7 @@ export class TaskDependencyService {
 
     for (const taskId of sorted.reverse()) {
       const dependents = Array.from(graph.reverseEdges.get(taskId) || []);
-      
+
       if (dependents.length > 0) {
         let minLatestStart = projectDuration;
         for (const depId of dependents) {
@@ -490,17 +535,19 @@ export class TaskDependencyService {
 
     // Find critical tasks (zero slack)
     for (const [taskId, task] of graph.nodes) {
-      const slack = latestFinish.get(taskId)! - 
-                   (earliestStart.get(taskId)! + taskDuration.get(taskId)!);
-      
-      if (Math.abs(slack) < 0.01) { // Account for floating point precision
+      const slack =
+        latestFinish.get(taskId)! -
+        (earliestStart.get(taskId)! + taskDuration.get(taskId)!);
+
+      if (Math.abs(slack) < 0.01) {
+        // Account for floating point precision
         criticalPath.push(task);
       }
     }
 
     // Sort critical path by earliest start time
-    criticalPath.sort((a, b) => 
-      earliestStart.get(a.id)! - earliestStart.get(b.id)!
+    criticalPath.sort(
+      (a, b) => earliestStart.get(a.id)! - earliestStart.get(b.id)!,
     );
 
     return criticalPath;
@@ -542,7 +589,7 @@ export class TaskDependencyService {
       for (const neighbor of neighbors) {
         const newDegree = inDegree.get(neighbor)! - 1;
         inDegree.set(neighbor, newDegree);
-        
+
         if (newDegree === 0) {
           queue.push(neighbor);
         }
@@ -566,7 +613,7 @@ export class TaskDependencyService {
         targetQuantity: number;
       }>;
       preserveDependencies?: boolean;
-    }
+    },
   ): Promise<Task[]> {
     const originalTask = await this.taskRepository.findOne({
       where: { id: taskId, tenantId: this.getTenantId() },
@@ -577,8 +624,13 @@ export class TaskDependencyService {
       throw new NotFoundException(`Task with ID ${taskId} not found`);
     }
 
-    if (originalTask.status !== TaskStatus.PENDING && originalTask.status !== TaskStatus.READY) {
-      throw new BadRequestException('Can only split tasks that have not started');
+    if (
+      originalTask.status !== TaskStatus.PENDING &&
+      originalTask.status !== TaskStatus.READY
+    ) {
+      throw new BadRequestException(
+        'Can only split tasks that have not started',
+      );
     }
 
     const createdTasks: Task[] = [];
@@ -588,7 +640,7 @@ export class TaskDependencyService {
     for (let i = 0; i < splitConfig.subtasks.length; i++) {
       const subtaskConfig = splitConfig.subtasks[i];
       if (!subtaskConfig) continue;
-      
+
       const subtask = this.taskRepository.create({
         ...originalTask,
         id: undefined,
@@ -629,7 +681,9 @@ export class TaskDependencyService {
 
         if (depWithDeps) {
           // Replace original task with last subtask in dependencies
-          const depIndex = depWithDeps.dependencies.findIndex(d => d.id === taskId);
+          const depIndex = depWithDeps.dependencies.findIndex(
+            (d) => d.id === taskId,
+          );
           if (depIndex !== -1 && lastSubtask) {
             depWithDeps.dependencies[depIndex] = lastSubtask;
             await this.taskRepository.save(depWithDeps);
@@ -648,7 +702,9 @@ export class TaskDependencyService {
       subtasks: createdTasks,
     });
 
-    this.logger.log(`Task ${originalTask.taskNumber} split into ${createdTasks.length} subtasks`);
+    this.logger.log(
+      `Task ${originalTask.taskNumber} split into ${createdTasks.length} subtasks`,
+    );
 
     return createdTasks;
   }

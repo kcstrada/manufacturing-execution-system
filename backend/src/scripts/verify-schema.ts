@@ -15,7 +15,7 @@ async function verifySchema() {
       'routings',
       'production_steps',
       'work_instructions',
-      'process_parameters'
+      'process_parameters',
     ];
 
     console.log('📊 Product Management Tables Status:');
@@ -25,12 +25,14 @@ async function verifySchema() {
       const result = await dataSource.query(
         `SELECT COUNT(*) as count FROM information_schema.tables
          WHERE table_schema = 'public' AND table_name = $1`,
-        [table]
+        [table],
       );
 
       const exists = result[0].count > 0;
       const status = exists ? '✅' : '❌';
-      console.log(`${status} ${table.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`);
+      console.log(
+        `${status} ${table.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`,
+      );
     }
 
     // Check for new fields in products table
@@ -41,19 +43,21 @@ async function verifySchema() {
       'is_purchasable',
       'barcode',
       'default_bom_id',
-      'default_routing_id'
+      'default_routing_id',
     ];
 
     for (const field of productFields) {
       const result = await dataSource.query(
         `SELECT COUNT(*) as count FROM information_schema.columns
          WHERE table_schema = 'public' AND table_name = 'products' AND column_name = $1`,
-        [field]
+        [field],
       );
 
       const exists = result[0].count > 0;
       const status = exists ? '✅' : '❌';
-      console.log(`${status} ${field.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`);
+      console.log(
+        `${status} ${field.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`,
+      );
     }
 
     // Check for BOM fields
@@ -65,12 +69,14 @@ async function verifySchema() {
       const result = await dataSource.query(
         `SELECT COUNT(*) as count FROM information_schema.columns
          WHERE table_schema = 'public' AND table_name = 'bills_of_materials' AND column_name = $1`,
-        [field]
+        [field],
       );
 
       const exists = result[0].count > 0;
       const status = exists ? '✅' : '❌';
-      console.log(`${status} ${field.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`);
+      console.log(
+        `${status} ${field.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`,
+      );
     }
 
     // Check for Routing fields
@@ -82,29 +88,37 @@ async function verifySchema() {
       const result = await dataSource.query(
         `SELECT COUNT(*) as count FROM information_schema.columns
          WHERE table_schema = 'public' AND table_name = 'routings' AND column_name = $1`,
-        [field]
+        [field],
       );
 
       const exists = result[0].count > 0;
       const status = exists ? '✅' : '❌';
-      console.log(`${status} ${field.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`);
+      console.log(
+        `${status} ${field.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`,
+      );
     }
 
     // Check for ProductionStep fields
     console.log('\n⚙️ ProductionStep Entity Fields:');
     console.log('=================================');
-    const stepFields = ['validation_rules', 'media_files', 'alternate_work_center_id'];
+    const stepFields = [
+      'validation_rules',
+      'media_files',
+      'alternate_work_center_id',
+    ];
 
     for (const field of stepFields) {
       const result = await dataSource.query(
         `SELECT COUNT(*) as count FROM information_schema.columns
          WHERE table_schema = 'public' AND table_name = 'production_steps' AND column_name = $1`,
-        [field]
+        [field],
       );
 
       const exists = result[0].count > 0;
       const status = exists ? '✅' : '❌';
-      console.log(`${status} ${field.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`);
+      console.log(
+        `${status} ${field.padEnd(25)} ${exists ? 'EXISTS' : 'MISSING'}`,
+      );
     }
 
     // Check for composite indexes
@@ -119,7 +133,7 @@ async function verifySchema() {
             OR indexname LIKE 'idx_production_steps_%'
             OR indexname LIKE 'idx_work_instructions_%'
             OR indexname LIKE 'idx_process_parameters_%')
-       ORDER BY indexname`
+       ORDER BY indexname`,
     );
 
     console.log(`Total composite indexes created: ${indexes.length}`);
@@ -141,7 +155,7 @@ async function verifySchema() {
     const views = await dataSource.query(
       `SELECT viewname FROM pg_views
        WHERE schemaname = 'public'
-       ORDER BY viewname`
+       ORDER BY viewname`,
     );
 
     views.forEach((view: any) => {
@@ -149,7 +163,9 @@ async function verifySchema() {
     });
 
     console.log('\n✨ Schema verification complete!');
-    console.log('All product management migrations have been successfully applied.');
+    console.log(
+      'All product management migrations have been successfully applied.',
+    );
 
     await dataSource.destroy();
   } catch (error) {

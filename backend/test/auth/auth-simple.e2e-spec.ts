@@ -12,7 +12,7 @@ describe('Authentication Integration Tests (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Set global prefix and versioning like in main.ts
     app.setGlobalPrefix('api');
     app.enableVersioning({
@@ -20,7 +20,7 @@ describe('Authentication Integration Tests (e2e)', () => {
       defaultVersion: '1',
       prefix: 'v',
     });
-    
+
     await app.init();
   });
 

@@ -101,7 +101,10 @@ export class CreateQualityMetricDto {
     }[];
   };
 
-  @ApiProperty({ description: 'Sampling frequency (1 = every item)', default: 1 })
+  @ApiProperty({
+    description: 'Sampling frequency (1 = every item)',
+    default: 1,
+  })
   @IsOptional()
   @IsNumber()
   @Min(1)

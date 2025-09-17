@@ -85,7 +85,9 @@ export class DatabaseService {
   /**
    * Execute a transaction
    */
-  async transaction<T>(work: (queryRunner: QueryRunner) => Promise<T>): Promise<T> {
+  async transaction<T>(
+    work: (queryRunner: QueryRunner) => Promise<T>,
+  ): Promise<T> {
     const queryRunner = this.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -114,7 +116,7 @@ export class DatabaseService {
    */
   async cleanupOrphanedRecords(): Promise<void> {
     this.logger.log('Starting cleanup of orphaned records');
-    
+
     try {
       // Add cleanup queries here based on your schema
       // Example: Delete soft-deleted records older than 30 days
@@ -135,14 +137,14 @@ export class DatabaseService {
    */
   async optimizeDatabase(): Promise<void> {
     this.logger.log('Starting database optimization');
-    
+
     try {
       // Run VACUUM to reclaim storage
       await this.dataSource.query('VACUUM ANALYZE');
-      
+
       // Update statistics
       await this.dataSource.query('ANALYZE');
-      
+
       this.logger.log('Database optimization completed');
     } catch (error) {
       this.logger.error('Database optimization failed', error);
@@ -158,10 +160,10 @@ export class DatabaseService {
     try {
       // Create extensions if needed
       await this.createRequiredExtensions();
-      
+
       // Create custom functions if needed
       await this.createCustomFunctions();
-      
+
       this.logger.log('Initialization tasks completed');
     } catch (error) {
       this.logger.error('Initialization tasks failed', error);
@@ -173,15 +175,15 @@ export class DatabaseService {
    */
   private async createRequiredExtensions(): Promise<void> {
     const extensions = ['uuid-ossp', 'pg_trgm', 'btree_gin'];
-    
+
     for (const ext of extensions) {
       try {
         // Check if extension exists
         const result = await this.dataSource.query(
           `SELECT * FROM pg_extension WHERE extname = $1`,
-          [ext]
+          [ext],
         );
-        
+
         if (result.length === 0) {
           // Extension doesn't exist, create it
           await this.dataSource.query(`CREATE EXTENSION "${ext}"`);
@@ -189,7 +191,7 @@ export class DatabaseService {
         }
         // Extension already exists - silent
       } catch (error) {
-        this.logger.warn(`Failed to create extension ${ext}:`, (error as any).message);
+        this.logger.warn(`Failed to create extension ${ext}:`, error.message);
       }
     }
   }
@@ -202,9 +204,9 @@ export class DatabaseService {
       // Check if the function exists
       const result = await this.dataSource.query(
         `SELECT * FROM pg_proc WHERE proname = $1`,
-        ['update_updated_at_column']
+        ['update_updated_at_column'],
       );
-      
+
       if (result.length === 0) {
         // Function doesn't exist, create it
         await this.dataSource.query(`
@@ -216,11 +218,13 @@ export class DatabaseService {
           END;
           $$ language 'plpgsql';
         `);
-        this.logger.log('Custom function update_updated_at_column created successfully');
+        this.logger.log(
+          'Custom function update_updated_at_column created successfully',
+        );
       }
       // Function already exists - silent
     } catch (error) {
-      this.logger.warn('Failed to create custom functions:', (error as any).message);
+      this.logger.warn('Failed to create custom functions:', error.message);
     }
   }
 

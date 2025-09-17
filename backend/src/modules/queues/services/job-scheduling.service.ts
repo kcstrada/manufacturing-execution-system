@@ -7,9 +7,7 @@ import { QUEUE_NAMES, JOB_NAMES } from '../constants/queue-names';
 export class JobSchedulingService implements OnModuleInit {
   private readonly logger = new Logger(JobSchedulingService.name);
 
-  constructor(
-    private readonly queueManagement: QueueManagementService,
-  ) {}
+  constructor(private readonly queueManagement: QueueManagementService) {}
 
   async onModuleInit() {
     this.logger.log('Initializing scheduled jobs...');
@@ -25,7 +23,7 @@ export class JobSchedulingService implements OnModuleInit {
       await this.queueManagement.addRepeatingJob(
         QUEUE_NAMES.REPORTS,
         JOB_NAMES.GENERATE_DAILY_REPORT,
-        { 
+        {
           tenantId: 'all',
           reportType: 'daily',
           date: new Date(),
@@ -87,7 +85,7 @@ export class JobSchedulingService implements OnModuleInit {
   @Cron(CronExpression.EVERY_HOUR)
   async checkOrderDelays() {
     this.logger.debug('Running scheduled order delay check');
-    
+
     await this.queueManagement.addJob(
       QUEUE_NAMES.ORDERS,
       JOB_NAMES.CHECK_ORDER_DELAYS,
@@ -105,7 +103,7 @@ export class JobSchedulingService implements OnModuleInit {
   @Cron('0 */6 * * *')
   async updateInventoryForecasts() {
     this.logger.debug('Running scheduled inventory forecast update');
-    
+
     await this.queueManagement.addJob(
       QUEUE_NAMES.INVENTORY,
       JOB_NAMES.UPDATE_INVENTORY_FORECAST,
@@ -123,7 +121,7 @@ export class JobSchedulingService implements OnModuleInit {
   @Cron('0 */2 * * *')
   async checkQualityAlerts() {
     this.logger.debug('Running scheduled quality alert check');
-    
+
     await this.queueManagement.addJob(
       QUEUE_NAMES.QUALITY,
       JOB_NAMES.CHECK_QUALITY_ALERTS,
@@ -145,14 +143,17 @@ export class JobSchedulingService implements OnModuleInit {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async cleanCompletedJobs() {
     this.logger.debug('Cleaning completed jobs');
-    
+
     const grace = 24 * 60 * 60 * 1000; // 24 hours
-    
+
     for (const queueName of Object.values(QUEUE_NAMES)) {
       try {
         await this.queueManagement.cleanCompleted(queueName, grace);
       } catch (error) {
-        this.logger.error(`Failed to clean completed jobs in ${queueName}:`, error);
+        this.logger.error(
+          `Failed to clean completed jobs in ${queueName}:`,
+          error,
+        );
       }
     }
   }
@@ -163,14 +164,17 @@ export class JobSchedulingService implements OnModuleInit {
   @Cron(CronExpression.EVERY_WEEK)
   async cleanFailedJobs() {
     this.logger.debug('Cleaning failed jobs');
-    
+
     const grace = 7 * 24 * 60 * 60 * 1000; // 7 days
-    
+
     for (const queueName of Object.values(QUEUE_NAMES)) {
       try {
         await this.queueManagement.cleanFailed(queueName, grace);
       } catch (error) {
-        this.logger.error(`Failed to clean failed jobs in ${queueName}:`, error);
+        this.logger.error(
+          `Failed to clean failed jobs in ${queueName}:`,
+          error,
+        );
       }
     }
   }
@@ -179,13 +183,13 @@ export class JobSchedulingService implements OnModuleInit {
    * Schedule a one-time job
    */
   async scheduleJob(
-    queueName: typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES],
-    jobName: typeof JOB_NAMES[keyof typeof JOB_NAMES],
+    queueName: (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES],
+    jobName: (typeof JOB_NAMES)[keyof typeof JOB_NAMES],
     data: any,
     scheduledTime: Date,
   ) {
     const delay = scheduledTime.getTime() - Date.now();
-    
+
     if (delay <= 0) {
       throw new Error('Scheduled time must be in the future');
     }
@@ -197,7 +201,9 @@ export class JobSchedulingService implements OnModuleInit {
       delay,
     );
 
-    this.logger.log(`Job ${jobName} scheduled for ${scheduledTime}, ID: ${job.id}`);
+    this.logger.log(
+      `Job ${jobName} scheduled for ${scheduledTime}, ID: ${job.id}`,
+    );
     return job;
   }
 
@@ -205,8 +211,8 @@ export class JobSchedulingService implements OnModuleInit {
    * Schedule a recurring job
    */
   async scheduleRecurringJob(
-    queueName: typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES],
-    jobName: typeof JOB_NAMES[keyof typeof JOB_NAMES],
+    queueName: (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES],
+    jobName: (typeof JOB_NAMES)[keyof typeof JOB_NAMES],
     data: any,
     cronExpression: string,
   ) {
@@ -217,7 +223,9 @@ export class JobSchedulingService implements OnModuleInit {
       cronExpression,
     );
 
-    this.logger.log(`Recurring job ${jobName} scheduled with cron ${cronExpression}, ID: ${job.id}`);
+    this.logger.log(
+      `Recurring job ${jobName} scheduled with cron ${cronExpression}, ID: ${job.id}`,
+    );
     return job;
   }
 
@@ -225,7 +233,7 @@ export class JobSchedulingService implements OnModuleInit {
    * Cancel a scheduled job
    */
   async cancelScheduledJob(
-    queueName: typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES],
+    queueName: (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES],
     jobId: string,
   ) {
     await this.queueManagement.removeJob(queueName, jobId);
@@ -235,10 +243,15 @@ export class JobSchedulingService implements OnModuleInit {
   /**
    * Get scheduled jobs
    */
-  async getScheduledJobs(queueName: typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES]) {
-    const delayed = await this.queueManagement.getJobsByStatus(queueName, 'delayed');
+  async getScheduledJobs(
+    queueName: (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES],
+  ) {
+    const delayed = await this.queueManagement.getJobsByStatus(
+      queueName,
+      'delayed',
+    );
     const repeatable = await this.queueManagement.getRepeatableJobs(queueName);
-    
+
     return {
       delayed,
       repeatable,

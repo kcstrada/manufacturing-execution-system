@@ -1,14 +1,15 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, IsNull } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ClsService } from 'nestjs-cls';
 import { Product } from '../../../entities/product.entity';
-import { StockAlert, AlertStatus, AlertSeverity } from '../../../entities/stock-alert.entity';
+import {
+  StockAlert,
+  AlertStatus,
+  AlertSeverity,
+} from '../../../entities/stock-alert.entity';
 import { InventoryService } from '../inventory.service';
 
 export interface StockLevelAlert {
@@ -29,7 +30,7 @@ export interface StockAlertConfig {
   checkInterval: string; // cron expression
   alertThresholds: {
     critical: number; // percentage of min stock (e.g., 0.5 = 50%)
-    warning: number;  // percentage of min stock (e.g., 0.75 = 75%)
+    warning: number; // percentage of min stock (e.g., 0.75 = 75%)
   };
   notificationChannels: ('email' | 'webhook' | 'dashboard')[];
 }
@@ -63,24 +64,26 @@ export class StockAlertService {
   @Cron(CronExpression.EVERY_HOUR)
   async checkStockLevels(): Promise<StockLevelAlert[]> {
     this.logger.log('Starting scheduled stock level check');
-    
+
     // Skip scheduled check if no tenant context is available
     const tenantId = this.clsService.get('tenantId');
     if (!tenantId) {
-      this.logger.debug('Skipping scheduled stock check - no tenant context available');
+      this.logger.debug(
+        'Skipping scheduled stock check - no tenant context available',
+      );
       return [];
     }
-    
+
     try {
       const alerts = await this.performStockCheck();
-      
+
       if (alerts.length > 0) {
         this.logger.warn(`Found ${alerts.length} products with low stock`);
         await this.processAlerts(alerts);
       } else {
         this.logger.log('All stock levels are within acceptable ranges');
       }
-      
+
       return alerts;
     } catch (error) {
       this.logger.error('Error during stock level check', error);
@@ -93,7 +96,7 @@ export class StockAlertService {
    */
   async performStockCheck(warehouseCode?: string): Promise<StockLevelAlert[]> {
     const tenantId = this.getTenantId();
-    
+
     // Get all products with minimum stock levels defined
     const products = await this.productRepository.find({
       where: {
@@ -111,14 +114,14 @@ export class StockAlertService {
       // Get current stock level
       const currentStock = await this.inventoryService.getAvailableQuantity(
         product.id,
-        warehouseCode
+        warehouseCode,
       );
 
       // Check if stock is below minimum
       if (currentStock < product.minStockLevel) {
         const severity = this.calculateSeverity(
           currentStock,
-          product.minStockLevel
+          product.minStockLevel,
         );
 
         alerts.push({
@@ -135,7 +138,7 @@ export class StockAlertService {
             product,
             currentStock,
             product.minStockLevel,
-            severity
+            severity,
           ),
         });
       }
@@ -149,7 +152,7 @@ export class StockAlertService {
    */
   async checkProductStock(
     productId: string,
-    warehouseCode?: string
+    warehouseCode?: string,
   ): Promise<StockLevelAlert | null> {
     const product = await this.productRepository.findOne({
       where: { id: productId },
@@ -161,11 +164,14 @@ export class StockAlertService {
 
     const currentStock = await this.inventoryService.getAvailableQuantity(
       productId,
-      warehouseCode
+      warehouseCode,
     );
 
     if (currentStock < product.minStockLevel) {
-      const severity = this.calculateSeverity(currentStock, product.minStockLevel);
+      const severity = this.calculateSeverity(
+        currentStock,
+        product.minStockLevel,
+      );
 
       return {
         productId: product.id,
@@ -181,7 +187,7 @@ export class StockAlertService {
           product,
           currentStock,
           product.minStockLevel,
-          severity
+          severity,
         ),
       };
     }
@@ -194,7 +200,7 @@ export class StockAlertService {
    */
   private async processAlerts(alerts: StockLevelAlert[]): Promise<void> {
     const tenantId = this.getTenantId();
-    
+
     for (const alert of alerts) {
       // Check if alert already exists and is active
       const existingAlert = await this.alertRepository.findOne({
@@ -213,9 +219,9 @@ export class StockAlertService {
           existingAlert.currentStock = alert.currentStock;
           existingAlert.message = alert.message;
           await this.alertRepository.save(existingAlert);
-          
+
           this.logger.log(
-            `Updated alert for product ${alert.sku} - severity: ${alert.severity}`
+            `Updated alert for product ${alert.sku} - severity: ${alert.severity}`,
           );
         }
       } else {
@@ -231,11 +237,11 @@ export class StockAlertService {
           message: alert.message,
           alertedAt: new Date(),
         });
-        
+
         await this.alertRepository.save(newAlert);
-        
+
         this.logger.log(
-          `Created new alert for product ${alert.sku} - severity: ${alert.severity}`
+          `Created new alert for product ${alert.sku} - severity: ${alert.severity}`,
         );
 
         // Emit event for notifications
@@ -252,7 +258,7 @@ export class StockAlertService {
    */
   private calculateSeverity(
     currentStock: number,
-    minStockLevel: number
+    minStockLevel: number,
   ): AlertSeverity {
     const percentage = currentStock / minStockLevel;
 
@@ -272,10 +278,10 @@ export class StockAlertService {
     product: Product,
     currentStock: number,
     minStockLevel: number,
-    severity: AlertSeverity
+    severity: AlertSeverity,
   ): string {
     const stockPercentage = ((currentStock / minStockLevel) * 100).toFixed(1);
-    
+
     switch (severity) {
       case AlertSeverity.CRITICAL:
         return `CRITICAL: ${product.name} (${product.sku}) stock is critically low at ${currentStock} units (${stockPercentage}% of minimum). Immediate action required!`;
@@ -293,7 +299,7 @@ export class StockAlertService {
    */
   async getActiveAlerts(warehouseCode?: string): Promise<StockAlert[]> {
     const tenantId = this.getTenantId();
-    
+
     const query = this.alertRepository
       .createQueryBuilder('alert')
       .leftJoinAndSelect('alert.product', 'product')
@@ -313,7 +319,7 @@ export class StockAlertService {
   async acknowledgeAlert(
     alertId: string,
     acknowledgedBy: string,
-    notes?: string
+    notes?: string,
   ): Promise<StockAlert> {
     const alert = await this.alertRepository.findOne({
       where: { id: alertId },
@@ -339,7 +345,7 @@ export class StockAlertService {
   async resolveAlert(
     alertId: string,
     resolvedBy: string,
-    resolution: string
+    resolution: string,
   ): Promise<StockAlert> {
     const alert = await this.alertRepository.findOne({
       where: { id: alertId },
@@ -360,7 +366,10 @@ export class StockAlertService {
   /**
    * Auto-resolve alerts when stock is replenished
    */
-  async checkAndResolveAlerts(productId: string, warehouseCode?: string): Promise<void> {
+  async checkAndResolveAlerts(
+    productId: string,
+    warehouseCode?: string,
+  ): Promise<void> {
     const product = await this.productRepository.findOne({
       where: { id: productId },
     });
@@ -371,7 +380,7 @@ export class StockAlertService {
 
     const currentStock = await this.inventoryService.getAvailableQuantity(
       productId,
-      warehouseCode
+      warehouseCode,
     );
 
     // If stock is now above minimum, resolve active alerts
@@ -390,9 +399,9 @@ export class StockAlertService {
         alert.resolvedAt = new Date();
         alert.resolution = `Stock replenished to ${currentStock} units`;
         await this.alertRepository.save(alert);
-        
+
         this.logger.log(
-          `Auto-resolved alert for product ${product.sku} - stock replenished`
+          `Auto-resolved alert for product ${product.sku} - stock replenished`,
         );
       }
     }
@@ -409,7 +418,7 @@ export class StockAlertService {
     bySeverity: Record<AlertSeverity, number>;
   }> {
     const tenantId = this.getTenantId();
-    
+
     const stats = await this.alertRepository
       .createQueryBuilder('alert')
       .select('alert.status', 'status')
@@ -433,10 +442,10 @@ export class StockAlertService {
       },
     };
 
-    stats.forEach(stat => {
+    stats.forEach((stat) => {
       const count = parseInt(stat.count);
       result.total += count;
-      
+
       switch (stat.status) {
         case AlertStatus.ACTIVE:
           result.active += count;
@@ -448,9 +457,9 @@ export class StockAlertService {
           result.resolved += count;
           break;
       }
-      
+
       if (stat.severity) {
-        result.bySeverity[stat.severity as AlertSeverity] = 
+        result.bySeverity[stat.severity as AlertSeverity] =
           (result.bySeverity[stat.severity as AlertSeverity] || 0) + count;
       }
     });

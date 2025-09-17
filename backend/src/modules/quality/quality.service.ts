@@ -101,7 +101,9 @@ export class QualityService {
     });
 
     if (existing) {
-      throw new ConflictException(`Metric with code ${dto.metricCode} already exists`);
+      throw new ConflictException(
+        `Metric with code ${dto.metricCode} already exists`,
+      );
     }
 
     const metric = this.metricRepository.create(dto);
@@ -123,7 +125,8 @@ export class QualityService {
 
     if (filters?.type) where.type = filters.type;
     if (filters?.productId) where.productId = filters.productId;
-    if (filters?.isCritical !== undefined) where.isCritical = filters.isCritical;
+    if (filters?.isCritical !== undefined)
+      where.isCritical = filters.isCritical;
     if (filters?.isActive !== undefined) where.isActive = filters.isActive;
 
     return this.metricRepository.find({
@@ -146,25 +149,35 @@ export class QualityService {
     return metric;
   }
 
-  async updateMetric(id: string, dto: UpdateQualityMetricDto): Promise<QualityMetric> {
+  async updateMetric(
+    id: string,
+    dto: UpdateQualityMetricDto,
+  ): Promise<QualityMetric> {
     const metric = await this.findMetricById(id);
     Object.assign(metric, dto);
-    
+
     const updated = await this.metricRepository.save(metric);
     this.eventEmitter.emit('quality.metric.updated', updated);
-    
+
     return updated;
   }
 
   // Quality Inspections
-  async createInspection(dto: CreateQualityInspectionDto): Promise<QualityInspection> {
+  async createInspection(
+    dto: CreateQualityInspectionDto,
+  ): Promise<QualityInspection> {
     const metric = await this.findMetricById(dto.metricId);
 
     // Check if inspection passes based on measurements
     if (dto.measurements && dto.measurements.length > 0) {
-      const failedMeasurements = dto.measurements.filter(m => !m.passed);
-      if (failedMeasurements.length > 0 && dto.result === InspectionResult.PASS) {
-        throw new BadRequestException('Inspection cannot pass with failed measurements');
+      const failedMeasurements = dto.measurements.filter((m) => !m.passed);
+      if (
+        failedMeasurements.length > 0 &&
+        dto.result === InspectionResult.PASS
+      ) {
+        throw new BadRequestException(
+          'Inspection cannot pass with failed measurements',
+        );
       }
     }
 
@@ -177,7 +190,10 @@ export class QualityService {
     const saved = await this.inspectionRepository.save(inspection);
 
     // Update product quality status if needed
-    if (dto.result === InspectionResult.FAIL || dto.result === InspectionResult.SCRAP) {
+    if (
+      dto.result === InspectionResult.FAIL ||
+      dto.result === InspectionResult.SCRAP
+    ) {
       this.eventEmitter.emit('quality.inspection.failed', saved);
     }
 
@@ -189,7 +205,9 @@ export class QualityService {
       });
     }
 
-    this.logger.log(`Created inspection ${saved.inspectionNumber} with result: ${saved.result}`);
+    this.logger.log(
+      `Created inspection ${saved.inspectionNumber} with result: ${saved.result}`,
+    );
     return saved;
   }
 
@@ -208,7 +226,8 @@ export class QualityService {
     if (filters?.result) where.result = filters.result;
     if (filters?.productId) where.productId = filters.productId;
     if (filters?.workOrderId) where.workOrderId = filters.workOrderId;
-    if (filters?.requiresReview !== undefined) where.requiresReview = filters.requiresReview;
+    if (filters?.requiresReview !== undefined)
+      where.requiresReview = filters.requiresReview;
 
     if (filters?.startDate && filters?.endDate) {
       where.inspectionDate = Between(
@@ -227,7 +246,14 @@ export class QualityService {
   async findInspectionById(id: string): Promise<QualityInspection> {
     const inspection = await this.inspectionRepository.findOne({
       where: { id },
-      relations: ['metric', 'product', 'workOrder', 'productionOrder', 'workCenter', 'inspector'],
+      relations: [
+        'metric',
+        'product',
+        'workOrder',
+        'productionOrder',
+        'workCenter',
+        'inspector',
+      ],
     });
 
     if (!inspection) {
@@ -237,9 +263,12 @@ export class QualityService {
     return inspection;
   }
 
-  async updateInspection(id: string, dto: UpdateQualityInspectionDto): Promise<QualityInspection> {
+  async updateInspection(
+    id: string,
+    dto: UpdateQualityInspectionDto,
+  ): Promise<QualityInspection> {
     const inspection = await this.findInspectionById(id);
-    
+
     if (inspection.reviewedAt) {
       throw new BadRequestException('Cannot update reviewed inspection');
     }
@@ -251,11 +280,14 @@ export class QualityService {
 
     const updated = await this.inspectionRepository.save(inspection);
     this.eventEmitter.emit('quality.inspection.updated', updated);
-    
+
     return updated;
   }
 
-  async reviewInspection(id: string, dto: ReviewInspectionDto): Promise<QualityInspection> {
+  async reviewInspection(
+    id: string,
+    dto: ReviewInspectionDto,
+  ): Promise<QualityInspection> {
     const inspection = await this.findInspectionById(id);
 
     if (inspection.reviewedAt) {
@@ -269,21 +301,25 @@ export class QualityService {
 
     const updated = await this.inspectionRepository.save(inspection);
     this.eventEmitter.emit('quality.inspection.reviewed', updated);
-    
+
     return updated;
   }
 
   // Quality Control Plans
-  async createControlPlan(dto: CreateQualityControlPlanDto): Promise<QualityControlPlan> {
+  async createControlPlan(
+    dto: CreateQualityControlPlanDto,
+  ): Promise<QualityControlPlan> {
     const existing = await this.planRepository.findOne({
-      where: { 
+      where: {
         planCode: dto.planCode,
         productId: dto.productId,
       },
     });
 
     if (existing) {
-      throw new ConflictException(`Control plan ${dto.planCode} already exists for this product`);
+      throw new ConflictException(
+        `Control plan ${dto.planCode} already exists for this product`,
+      );
     }
 
     const plan = this.planRepository.create({
@@ -294,7 +330,7 @@ export class QualityService {
 
     const saved = await this.planRepository.save(plan);
     this.eventEmitter.emit('quality.plan.created', saved);
-    
+
     return saved;
   }
 
@@ -322,7 +358,10 @@ export class QualityService {
     return plan;
   }
 
-  async approveControlPlan(id: string, approvedBy: string): Promise<QualityControlPlan> {
+  async approveControlPlan(
+    id: string,
+    approvedBy: string,
+  ): Promise<QualityControlPlan> {
     const plan = await this.findControlPlanById(id);
 
     if (plan.approvedAt) {
@@ -334,12 +373,14 @@ export class QualityService {
 
     const updated = await this.planRepository.save(plan);
     this.eventEmitter.emit('quality.plan.approved', updated);
-    
+
     return updated;
   }
 
   // Non-Conformance Reports
-  async createNCR(dto: CreateNonConformanceReportDto): Promise<NonConformanceReport> {
+  async createNCR(
+    dto: CreateNonConformanceReportDto,
+  ): Promise<NonConformanceReport> {
     const existing = await this.ncrRepository.findOne({
       where: { reportNumber: dto.reportNumber },
     });
@@ -351,7 +392,9 @@ export class QualityService {
     const ncr = this.ncrRepository.create({
       ...dto,
       reportDate: new Date(dto.reportDate),
-      targetCloseDate: dto.targetCloseDate ? new Date(dto.targetCloseDate) : undefined,
+      targetCloseDate: dto.targetCloseDate
+        ? new Date(dto.targetCloseDate)
+        : undefined,
       status: 'open',
     });
 
@@ -362,7 +405,9 @@ export class QualityService {
       this.eventEmitter.emit('quality.ncr.critical', saved);
     }
 
-    this.logger.log(`Created NCR ${saved.reportNumber} with severity: ${saved.severity}`);
+    this.logger.log(
+      `Created NCR ${saved.reportNumber} with severity: ${saved.severity}`,
+    );
     return saved;
   }
 
@@ -400,7 +445,10 @@ export class QualityService {
     return ncr;
   }
 
-  async updateNCR(id: string, dto: UpdateNonConformanceReportDto): Promise<NonConformanceReport> {
+  async updateNCR(
+    id: string,
+    dto: UpdateNonConformanceReportDto,
+  ): Promise<NonConformanceReport> {
     const ncr = await this.findNCRById(id);
 
     if (ncr.status === 'closed') {
@@ -414,11 +462,14 @@ export class QualityService {
 
     const updated = await this.ncrRepository.save(ncr);
     this.eventEmitter.emit('quality.ncr.updated', updated);
-    
+
     return updated;
   }
 
-  async closeNCR(id: string, dto: CloseNonConformanceDto): Promise<NonConformanceReport> {
+  async closeNCR(
+    id: string,
+    dto: CloseNonConformanceDto,
+  ): Promise<NonConformanceReport> {
     const ncr = await this.findNCRById(id);
 
     if (ncr.status === 'closed') {
@@ -433,7 +484,7 @@ export class QualityService {
 
     const updated = await this.ncrRepository.save(ncr);
     this.eventEmitter.emit('quality.ncr.closed', updated);
-    
+
     return updated;
   }
 
@@ -452,67 +503,99 @@ export class QualityService {
 
     const inspections = await this.inspectionRepository.find({ where });
     const ncrs = await this.ncrRepository.find({
-      where: startDate && endDate ? {
-        reportDate: Between(startOfDay(startDate), endOfDay(endDate)),
-      } : {},
+      where:
+        startDate && endDate
+          ? {
+              reportDate: Between(startOfDay(startDate), endOfDay(endDate)),
+            }
+          : {},
     });
 
     const totalInspections = inspections.length;
-    const passedInspections = inspections.filter(i => i.result === InspectionResult.PASS).length;
-    const failedInspections = inspections.filter(i => i.result === InspectionResult.FAIL).length;
-    const reworkInspections = inspections.filter(i => i.result === InspectionResult.REWORK).length;
-    const scrapInspections = inspections.filter(i => i.result === InspectionResult.SCRAP).length;
+    const passedInspections = inspections.filter(
+      (i) => i.result === InspectionResult.PASS,
+    ).length;
+    const failedInspections = inspections.filter(
+      (i) => i.result === InspectionResult.FAIL,
+    ).length;
+    const reworkInspections = inspections.filter(
+      (i) => i.result === InspectionResult.REWORK,
+    ).length;
+    const scrapInspections = inspections.filter(
+      (i) => i.result === InspectionResult.SCRAP,
+    ).length;
 
-    const totalDefects = inspections.reduce((sum, i) => sum + (i.defectiveQuantity || 0), 0);
-    const totalSamples = inspections.reduce((sum, i) => sum + (i.sampleSize || 0), 0);
+    const totalDefects = inspections.reduce(
+      (sum, i) => sum + (i.defectiveQuantity || 0),
+      0,
+    );
+    const totalSamples = inspections.reduce(
+      (sum, i) => sum + (i.sampleSize || 0),
+      0,
+    );
 
-    const defectsBySeverity = inspections.reduce((acc, inspection) => {
-      if (inspection.defects) {
-        inspection.defects.forEach(defect => {
-          switch (defect.severity) {
-            case DefectSeverity.CRITICAL:
-              acc.critical += defect.quantity;
-              break;
-            case DefectSeverity.MAJOR:
-              acc.major += defect.quantity;
-              break;
-            case DefectSeverity.MINOR:
-              acc.minor += defect.quantity;
-              break;
-          }
-        });
-      }
-      return acc;
-    }, { critical: 0, major: 0, minor: 0 });
+    const defectsBySeverity = inspections.reduce(
+      (acc, inspection) => {
+        if (inspection.defects) {
+          inspection.defects.forEach((defect) => {
+            switch (defect.severity) {
+              case DefectSeverity.CRITICAL:
+                acc.critical += defect.quantity;
+                break;
+              case DefectSeverity.MAJOR:
+                acc.major += defect.quantity;
+                break;
+              case DefectSeverity.MINOR:
+                acc.minor += defect.quantity;
+                break;
+            }
+          });
+        }
+        return acc;
+      },
+      { critical: 0, major: 0, minor: 0 },
+    );
 
-    const openNCRs = ncrs.filter(n => n.status !== 'closed').length;
-    const closedNCRs = ncrs.filter(n => n.status === 'closed');
-    
-    const averageClosureTime = closedNCRs.length > 0
-      ? closedNCRs.reduce((sum, ncr) => {
-          if (ncr.actualCloseDate && ncr.reportDate) {
-            return sum + differenceInDays(ncr.actualCloseDate, ncr.reportDate);
-          }
-          return sum;
-        }, 0) / closedNCRs.length
-      : 0;
+    const openNCRs = ncrs.filter((n) => n.status !== 'closed').length;
+    const closedNCRs = ncrs.filter((n) => n.status === 'closed');
 
-    const costOfQuality = ncrs.reduce((sum, ncr) => sum + (ncr.actualCost || ncr.estimatedCost || 0), 0);
+    const averageClosureTime =
+      closedNCRs.length > 0
+        ? closedNCRs.reduce((sum, ncr) => {
+            if (ncr.actualCloseDate && ncr.reportDate) {
+              return (
+                sum + differenceInDays(ncr.actualCloseDate, ncr.reportDate)
+              );
+            }
+            return sum;
+          }, 0) / closedNCRs.length
+        : 0;
+
+    const costOfQuality = ncrs.reduce(
+      (sum, ncr) => sum + (ncr.actualCost || ncr.estimatedCost || 0),
+      0,
+    );
 
     return {
       totalInspections,
-      passRate: totalInspections > 0 ? (passedInspections / totalInspections) * 100 : 0,
-      failRate: totalInspections > 0 ? (failedInspections / totalInspections) * 100 : 0,
-      reworkRate: totalInspections > 0 ? (reworkInspections / totalInspections) * 100 : 0,
-      scrapRate: totalInspections > 0 ? (scrapInspections / totalInspections) * 100 : 0,
+      passRate:
+        totalInspections > 0 ? (passedInspections / totalInspections) * 100 : 0,
+      failRate:
+        totalInspections > 0 ? (failedInspections / totalInspections) * 100 : 0,
+      reworkRate:
+        totalInspections > 0 ? (reworkInspections / totalInspections) * 100 : 0,
+      scrapRate:
+        totalInspections > 0 ? (scrapInspections / totalInspections) * 100 : 0,
       averageDefectsPerUnit: totalSamples > 0 ? totalDefects / totalSamples : 0,
       criticalDefects: defectsBySeverity.critical,
       majorDefects: defectsBySeverity.major,
       minorDefects: defectsBySeverity.minor,
-      firstPassYield: totalInspections > 0 ? (passedInspections / totalInspections) * 100 : 0,
-      overallYield: totalInspections > 0 
-        ? ((passedInspections + reworkInspections) / totalInspections) * 100 
-        : 0,
+      firstPassYield:
+        totalInspections > 0 ? (passedInspections / totalInspections) * 100 : 0,
+      overallYield:
+        totalInspections > 0
+          ? ((passedInspections + reworkInspections) / totalInspections) * 100
+          : 0,
       costOfQuality,
       nonConformanceCount: ncrs.length,
       openNCRs,
@@ -538,7 +621,7 @@ export class QualityService {
     // Group by product
     const productMap = new Map<string, InspectionSummary>();
 
-    inspections.forEach(inspection => {
+    inspections.forEach((inspection) => {
       if (!inspection.productId) return;
 
       const productId = inspection.productId;
@@ -565,8 +648,10 @@ export class QualityService {
 
       // Collect defects
       if (inspection.defects) {
-        inspection.defects.forEach(defect => {
-          const existingDefect = summary.commonDefects.find(d => d.code === defect.code);
+        inspection.defects.forEach((defect) => {
+          const existingDefect = summary.commonDefects.find(
+            (d) => d.code === defect.code,
+          );
           if (existingDefect) {
             existingDefect.count += defect.quantity;
           } else {
@@ -583,11 +668,12 @@ export class QualityService {
 
     // Calculate pass rates and sort defects
     const summaries = Array.from(productMap.values());
-    summaries.forEach(summary => {
-      summary.passRate = summary.totalInspected > 0
-        ? (summary.totalPassed / summary.totalInspected) * 100
-        : 0;
-      
+    summaries.forEach((summary) => {
+      summary.passRate =
+        summary.totalInspected > 0
+          ? (summary.totalPassed / summary.totalInspected) * 100
+          : 0;
+
       // Sort defects by count
       summary.commonDefects.sort((a, b) => b.count - a.count);
       // Keep only top 5 defects
@@ -615,10 +701,12 @@ export class QualityService {
 
     // Extract measurement values
     const dataPoints: Array<{ date: Date; value: number }> = [];
-    
-    inspections.forEach(inspection => {
+
+    inspections.forEach((inspection) => {
       if (inspection.measurements) {
-        const measurement = inspection.measurements.find(m => m.metricId === metricId);
+        const measurement = inspection.measurements.find(
+          (m) => m.metricId === metricId,
+        );
         if (measurement && measurement.actualValue !== undefined) {
           dataPoints.push({
             date: inspection.inspectionDate,
@@ -629,20 +717,21 @@ export class QualityService {
     });
 
     // Calculate control limits (simplified - using 3-sigma rule)
-    const values = dataPoints.map(d => d.value);
+    const values = dataPoints.map((d) => d.value);
     const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
-    const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+    const variance =
+      values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
     const stdDev = Math.sqrt(variance);
 
-    const ucl = mean + (3 * stdDev);
-    const lcl = mean - (3 * stdDev);
+    const ucl = mean + 3 * stdDev;
+    const lcl = mean - 3 * stdDev;
 
     // Check for out-of-control points
-    const outOfControl = values.some(v => v > ucl || v < lcl);
+    const outOfControl = values.some((v) => v > ucl || v < lcl);
 
     return {
       metric: metric.name,
-      data: dataPoints.map(point => ({
+      data: dataPoints.map((point) => ({
         ...point,
         ucl,
         lcl,
@@ -655,7 +744,14 @@ export class QualityService {
   async getDefectParetoAnalysis(
     startDate?: Date,
     endDate?: Date,
-  ): Promise<Array<{ defectCode: string; description: string; count: number; percentage: number }>> {
+  ): Promise<
+    Array<{
+      defectCode: string;
+      description: string;
+      count: number;
+      percentage: number;
+    }>
+  > {
     const where: any = {};
 
     if (startDate && endDate) {
@@ -668,9 +764,9 @@ export class QualityService {
     const defectMap = new Map<string, { description: string; count: number }>();
     let totalDefects = 0;
 
-    inspections.forEach(inspection => {
+    inspections.forEach((inspection) => {
       if (inspection.defects) {
-        inspection.defects.forEach(defect => {
+        inspection.defects.forEach((defect) => {
           const key = defect.code;
           if (defectMap.has(key)) {
             defectMap.get(key)!.count += defect.quantity;
@@ -699,8 +795,11 @@ export class QualityService {
     return defects;
   }
 
-  async checkQualityAlerts(): Promise<Array<{ type: string; message: string; severity: string }>> {
-    const alerts: Array<{ type: string; message: string; severity: string }> = [];
+  async checkQualityAlerts(): Promise<
+    Array<{ type: string; message: string; severity: string }>
+  > {
+    const alerts: Array<{ type: string; message: string; severity: string }> =
+      [];
 
     // Check for overdue NCRs
     const overdueNCRs = await this.ncrRepository.find({

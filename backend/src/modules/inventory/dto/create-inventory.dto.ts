@@ -46,13 +46,21 @@ export class CreateInventoryDto {
   @IsOptional()
   quantityAvailable?: number;
 
-  @ApiPropertyOptional({ description: 'Quantity reserved', minimum: 0, default: 0 })
+  @ApiPropertyOptional({
+    description: 'Quantity reserved',
+    minimum: 0,
+    default: 0,
+  })
   @IsNumber({ maxDecimalPlaces: 3 })
   @Min(0)
   @IsOptional()
   quantityReserved?: number;
 
-  @ApiPropertyOptional({ description: 'Quantity in transit', minimum: 0, default: 0 })
+  @ApiPropertyOptional({
+    description: 'Quantity in transit',
+    minimum: 0,
+    default: 0,
+  })
   @IsNumber({ maxDecimalPlaces: 3 })
   @Min(0)
   @IsOptional()
@@ -120,7 +128,9 @@ export class CreateInventoryTransactionDto {
   @Min(0)
   quantity!: number;
 
-  @ApiPropertyOptional({ description: 'Reference type (e.g., work_order, purchase_order)' })
+  @ApiPropertyOptional({
+    description: 'Reference type (e.g., work_order, purchase_order)',
+  })
   @IsString()
   @IsOptional()
   referenceType?: string;

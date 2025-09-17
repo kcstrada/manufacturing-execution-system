@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, HttpStatus, VersioningType, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  HttpStatus,
+  VersioningType,
+  ValidationPipe,
+} from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 
@@ -12,7 +17,7 @@ describe('Comprehensive Auth Tests (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Apply the same configuration as main.ts
     app.setGlobalPrefix('api');
     app.enableVersioning({
@@ -20,7 +25,7 @@ describe('Comprehensive Auth Tests (e2e)', () => {
       defaultVersion: '1',
       prefix: 'v',
     });
-    
+
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -28,7 +33,7 @@ describe('Comprehensive Auth Tests (e2e)', () => {
         transform: true,
       }),
     );
-    
+
     await app.init();
   });
 
@@ -43,7 +48,10 @@ describe('Comprehensive Auth Tests (e2e)', () => {
           .get('/api/v1/auth/profile')
           .expect(HttpStatus.UNAUTHORIZED);
 
-        expect(response.body).toHaveProperty('statusCode', HttpStatus.UNAUTHORIZED);
+        expect(response.body).toHaveProperty(
+          'statusCode',
+          HttpStatus.UNAUTHORIZED,
+        );
         expect(response.body).toHaveProperty('message');
       });
 
@@ -112,7 +120,10 @@ describe('Comprehensive Auth Tests (e2e)', () => {
           .get('/api/v1/auth/admin-only')
           .expect(HttpStatus.UNAUTHORIZED);
 
-        expect(response.body).toHaveProperty('statusCode', HttpStatus.UNAUTHORIZED);
+        expect(response.body).toHaveProperty(
+          'statusCode',
+          HttpStatus.UNAUTHORIZED,
+        );
       });
 
       it('should handle OPTIONS request', async () => {
@@ -221,15 +232,17 @@ describe('Comprehensive Auth Tests (e2e)', () => {
 
   describe('Security Headers and Response Format', () => {
     it('should not expose sensitive headers', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/auth/profile');
+      const response = await request(app.getHttpServer()).get(
+        '/api/v1/auth/profile',
+      );
 
       expect(response.headers['x-powered-by']).toBeUndefined();
     });
 
     it('should return proper content-type', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/auth/profile');
+      const response = await request(app.getHttpServer()).get(
+        '/api/v1/auth/profile',
+      );
 
       expect(response.headers['content-type']).toContain('application/json');
     });
@@ -249,15 +262,17 @@ describe('Comprehensive Auth Tests (e2e)', () => {
 
   describe('Concurrent Requests', () => {
     it('should handle multiple simultaneous requests', async () => {
-      const requests = Array(10).fill(null).map(() =>
-        request(app.getHttpServer())
-          .get('/api/v1/auth/profile')
-          .set('Authorization', 'Bearer invalid')
-      );
+      const requests = Array(10)
+        .fill(null)
+        .map(() =>
+          request(app.getHttpServer())
+            .get('/api/v1/auth/profile')
+            .set('Authorization', 'Bearer invalid'),
+        );
 
       const responses = await Promise.all(requests);
-      
-      responses.forEach(response => {
+
+      responses.forEach((response) => {
         expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
       });
     });

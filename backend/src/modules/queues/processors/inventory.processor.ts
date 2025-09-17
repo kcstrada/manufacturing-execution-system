@@ -1,4 +1,10 @@
-import { Processor, Process, OnQueueActive, OnQueueCompleted, OnQueueFailed } from '@nestjs/bull';
+import {
+  Processor,
+  Process,
+  OnQueueActive,
+  OnQueueCompleted,
+  OnQueueFailed,
+} from '@nestjs/bull';
 import { Job } from 'bull';
 import { Logger } from '@nestjs/common';
 import { QUEUE_NAMES, JOB_NAMES } from '../constants/queue-names';
@@ -8,9 +14,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 export class InventoryProcessor {
   private readonly logger = new Logger(InventoryProcessor.name);
 
-  constructor(
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   @Process(JOB_NAMES.CHECK_STOCK_LEVELS)
   async checkStockLevels(job: Job) {
@@ -19,9 +23,9 @@ export class InventoryProcessor {
 
     try {
       // If no products provided, generate mock data for demo
-      const productsToCheck = products.length > 0 ? products :
-        this.generateMockProducts();
-      
+      const productsToCheck =
+        products.length > 0 ? products : this.generateMockProducts();
+
       const lowStockItems = [];
       const criticalStockItems = [];
 
@@ -69,7 +73,9 @@ export class InventoryProcessor {
         }
       }
 
-      this.logger.log(`Stock check complete: ${lowStockItems.length} low, ${criticalStockItems.length} critical`);
+      this.logger.log(
+        `Stock check complete: ${lowStockItems.length} low, ${criticalStockItems.length} critical`,
+      );
 
       return {
         success: true,
@@ -113,7 +119,10 @@ export class InventoryProcessor {
         id: `PO-${Date.now()}`,
         supplierId,
         items: reorderItems,
-        totalCost: reorderItems.reduce((sum, item) => sum + item.estimatedCost, 0),
+        totalCost: reorderItems.reduce(
+          (sum, item) => sum + item.estimatedCost,
+          0,
+        ),
         status: 'pending',
         createdAt: new Date(),
       };
@@ -208,7 +217,9 @@ export class InventoryProcessor {
         }
       }
 
-      this.logger.log(`Inventory sync complete: ${successCount} success, ${failureCount} failed`);
+      this.logger.log(
+        `Inventory sync complete: ${successCount} success, ${failureCount} failed`,
+      );
 
       return {
         success: true,
@@ -244,7 +255,7 @@ export class InventoryProcessor {
 
   // Helper methods
   private async simulateProcessing(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private calculateReorderQuantity(material: any): number {
@@ -268,7 +279,7 @@ export class InventoryProcessor {
     const averageDailyDemand = 10;
     const leadTime = 5;
     const safetyStock = 30;
-    return (averageDailyDemand * leadTime) + safetyStock;
+    return averageDailyDemand * leadTime + safetyStock;
   }
 
   private calculateEOQ(historicalData: any): number {
@@ -282,12 +293,42 @@ export class InventoryProcessor {
   private generateMockProducts(): any[] {
     // Generate mock products for demo purposes when no real data is available
     return [
-      { id: 'PROD-001', name: 'Steel Sheet 5mm', minStock: 500, reorderQuantity: 1000 },
-      { id: 'PROD-002', name: 'Aluminum Bar 10cm', minStock: 200, reorderQuantity: 500 },
-      { id: 'PROD-003', name: 'Circuit Board Type A', minStock: 100, reorderQuantity: 300 },
-      { id: 'PROD-004', name: 'Hydraulic Pump XL', minStock: 50, reorderQuantity: 100 },
-      { id: 'PROD-005', name: 'Bearing Set Standard', minStock: 150, reorderQuantity: 400 },
-      { id: 'PROD-006', name: 'Control Module V2', minStock: 75, reorderQuantity: 200 },
+      {
+        id: 'PROD-001',
+        name: 'Steel Sheet 5mm',
+        minStock: 500,
+        reorderQuantity: 1000,
+      },
+      {
+        id: 'PROD-002',
+        name: 'Aluminum Bar 10cm',
+        minStock: 200,
+        reorderQuantity: 500,
+      },
+      {
+        id: 'PROD-003',
+        name: 'Circuit Board Type A',
+        minStock: 100,
+        reorderQuantity: 300,
+      },
+      {
+        id: 'PROD-004',
+        name: 'Hydraulic Pump XL',
+        minStock: 50,
+        reorderQuantity: 100,
+      },
+      {
+        id: 'PROD-005',
+        name: 'Bearing Set Standard',
+        minStock: 150,
+        reorderQuantity: 400,
+      },
+      {
+        id: 'PROD-006',
+        name: 'Control Module V2',
+        minStock: 75,
+        reorderQuantity: 200,
+      },
     ];
   }
 }

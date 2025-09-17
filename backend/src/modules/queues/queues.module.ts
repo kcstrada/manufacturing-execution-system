@@ -63,7 +63,7 @@ import { QueuesController } from './queues.controller';
     ReportProcessor,
     MaintenanceProcessor,
     QualityProcessor,
-    
+
     // Services
     QueueManagementService,
     JobSchedulingService,

@@ -9,7 +9,7 @@ export const AuditContext = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
     const user = request.user;
-    
+
     return {
       userId: user?.id || user?.sub,
       tenantId: user?.tenantId || request.headers['x-tenant-id'],
@@ -41,13 +41,17 @@ export interface AuditContextData {
  * Decorator to automatically set audit context for service methods
  */
 export function WithAuditContext() {
-  return function (_target: any, _propertyName: string, descriptor: PropertyDescriptor) {
+  return function (
+    _target: any,
+    _propertyName: string,
+    descriptor: PropertyDescriptor,
+  ) {
     const method = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
       // Try to extract context from the first argument if it's a request context
-      const context = args.find(arg => arg?.userId || arg?.tenantId);
-      
+      const context = args.find((arg) => arg?.userId || arg?.tenantId);
+
       if (context) {
         // Store context globally for the subscriber to access
         (global as any)[REQUEST_CONTEXT] = context;

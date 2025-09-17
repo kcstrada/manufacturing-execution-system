@@ -18,7 +18,11 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard, ResourceGuard, Roles } from 'nest-keycloak-connect';
 import { ReportsService } from './reports.service';
-import { ReportFiltersDto, CustomReportDto, ExportReportDto } from './dto/report-filters.dto';
+import {
+  ReportFiltersDto,
+  CustomReportDto,
+  ExportReportDto,
+} from './dto/report-filters.dto';
 import {
   ProductionEfficiencyReport,
   InventoryTurnoverReport,
@@ -38,7 +42,7 @@ export class ReportsController {
   @Get('production-efficiency')
   @Roles({ roles: ['admin', 'production_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Get production efficiency report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Production efficiency report generated successfully',
   })
@@ -51,7 +55,7 @@ export class ReportsController {
   @Get('inventory-turnover')
   @Roles({ roles: ['admin', 'inventory_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Get inventory turnover report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Inventory turnover report generated successfully',
   })
@@ -64,7 +68,7 @@ export class ReportsController {
   @Get('worker-productivity')
   @Roles({ roles: ['admin', 'hr_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Get worker productivity report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Worker productivity report generated successfully',
   })
@@ -77,7 +81,7 @@ export class ReportsController {
   @Get('quality-control')
   @Roles({ roles: ['admin', 'quality_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Get quality control report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Quality control report generated successfully',
   })
@@ -90,7 +94,7 @@ export class ReportsController {
   @Get('dashboard')
   @Roles({ roles: ['admin', 'production_manager', 'supervisor', 'operator'] })
   @ApiOperation({ summary: 'Get dashboard metrics' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Dashboard metrics retrieved successfully',
   })
@@ -101,7 +105,7 @@ export class ReportsController {
   @Post('custom')
   @Roles({ roles: ['admin', 'production_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Generate custom report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Custom report generated successfully',
   })
@@ -120,7 +124,7 @@ export class ReportsController {
   @Post('export/production-efficiency')
   @Roles({ roles: ['admin', 'production_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Export production efficiency report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Report exported successfully',
   })
@@ -129,18 +133,25 @@ export class ReportsController {
     @Body() exportDto: ExportReportDto,
     @Res() res: Response,
   ): Promise<void> {
-    const reportData = await this.reportsService.getProductionEfficiencyReport(filters);
-    const exportData = await this.reportsService.exportReport(reportData, exportDto.format);
-    
+    const reportData =
+      await this.reportsService.getProductionEfficiencyReport(filters);
+    const exportData = await this.reportsService.exportReport(
+      reportData,
+      exportDto.format,
+    );
+
     res.setHeader('Content-Type', exportData.mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${exportData.filename}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${exportData.filename}"`,
+    );
     res.send(exportData.content);
   }
 
   @Post('export/inventory-turnover')
   @Roles({ roles: ['admin', 'inventory_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Export inventory turnover report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Report exported successfully',
   })
@@ -149,18 +160,25 @@ export class ReportsController {
     @Body() exportDto: ExportReportDto,
     @Res() res: Response,
   ): Promise<void> {
-    const reportData = await this.reportsService.getInventoryTurnoverReport(filters);
-    const exportData = await this.reportsService.exportReport(reportData, exportDto.format);
-    
+    const reportData =
+      await this.reportsService.getInventoryTurnoverReport(filters);
+    const exportData = await this.reportsService.exportReport(
+      reportData,
+      exportDto.format,
+    );
+
     res.setHeader('Content-Type', exportData.mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${exportData.filename}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${exportData.filename}"`,
+    );
     res.send(exportData.content);
   }
 
   @Post('export/worker-productivity')
   @Roles({ roles: ['admin', 'hr_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Export worker productivity report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Report exported successfully',
   })
@@ -169,18 +187,25 @@ export class ReportsController {
     @Body() exportDto: ExportReportDto,
     @Res() res: Response,
   ): Promise<void> {
-    const reportData = await this.reportsService.getWorkerProductivityReport(filters);
-    const exportData = await this.reportsService.exportReport(reportData, exportDto.format);
-    
+    const reportData =
+      await this.reportsService.getWorkerProductivityReport(filters);
+    const exportData = await this.reportsService.exportReport(
+      reportData,
+      exportDto.format,
+    );
+
     res.setHeader('Content-Type', exportData.mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${exportData.filename}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${exportData.filename}"`,
+    );
     res.send(exportData.content);
   }
 
   @Post('export/quality-control')
   @Roles({ roles: ['admin', 'quality_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Export quality control report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Report exported successfully',
   })
@@ -189,18 +214,25 @@ export class ReportsController {
     @Body() exportDto: ExportReportDto,
     @Res() res: Response,
   ): Promise<void> {
-    const reportData = await this.reportsService.getQualityControlReport(filters);
-    const exportData = await this.reportsService.exportReport(reportData, exportDto.format);
-    
+    const reportData =
+      await this.reportsService.getQualityControlReport(filters);
+    const exportData = await this.reportsService.exportReport(
+      reportData,
+      exportDto.format,
+    );
+
     res.setHeader('Content-Type', exportData.mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${exportData.filename}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${exportData.filename}"`,
+    );
     res.send(exportData.content);
   }
 
   @Post('export/custom')
   @Roles({ roles: ['admin', 'production_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Export custom report' })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Custom report exported successfully',
   })
@@ -216,10 +248,16 @@ export class ReportsController {
       groupByFields,
       metrics,
     );
-    const exportData = await this.reportsService.exportReport(reportData, exportDto.format);
-    
+    const exportData = await this.reportsService.exportReport(
+      reportData,
+      exportDto.format,
+    );
+
     res.setHeader('Content-Type', exportData.mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${exportData.filename}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${exportData.filename}"`,
+    );
     res.send(exportData.content);
   }
 
@@ -227,13 +265,11 @@ export class ReportsController {
   @Roles({ roles: ['admin', 'production_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Get daily summary report' })
   @ApiQuery({ name: 'date', required: false, type: String })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Daily summary retrieved successfully',
   })
-  async getDailySummary(
-    @Query('date') date?: string,
-  ): Promise<any> {
+  async getDailySummary(@Query('date') date?: string): Promise<any> {
     const targetDate = date ? new Date(date) : new Date();
     const startDate = new Date(targetDate);
     startDate.setHours(0, 0, 0, 0);
@@ -275,7 +311,7 @@ export class ReportsController {
   @Roles({ roles: ['admin', 'production_manager', 'supervisor'] })
   @ApiOperation({ summary: 'Get weekly summary report' })
   @ApiQuery({ name: 'startDate', required: false, type: String })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Weekly summary retrieved successfully',
   })
@@ -284,7 +320,7 @@ export class ReportsController {
   ): Promise<any> {
     const startDate = startDateStr ? new Date(startDateStr) : new Date();
     startDate.setHours(0, 0, 0, 0);
-    
+
     // Get Monday of the week
     const day = startDate.getDay();
     const diff = startDate.getDate() - day + (day === 0 ? -6 : 1);
@@ -335,7 +371,7 @@ export class ReportsController {
   @ApiOperation({ summary: 'Get monthly summary report' })
   @ApiQuery({ name: 'month', required: false, type: Number })
   @ApiQuery({ name: 'year', required: false, type: Number })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Monthly summary retrieved successfully',
   })
@@ -352,13 +388,14 @@ export class ReportsController {
 
     const filters = { startDate, endDate };
 
-    const [production, inventory, quality, worker, dashboard] = await Promise.all([
-      this.reportsService.getProductionEfficiencyReport(filters),
-      this.reportsService.getInventoryTurnoverReport(filters),
-      this.reportsService.getQualityControlReport(filters),
-      this.reportsService.getWorkerProductivityReport(filters),
-      this.reportsService.getDashboardMetrics(),
-    ]);
+    const [production, inventory, quality, worker, dashboard] =
+      await Promise.all([
+        this.reportsService.getProductionEfficiencyReport(filters),
+        this.reportsService.getInventoryTurnoverReport(filters),
+        this.reportsService.getQualityControlReport(filters),
+        this.reportsService.getWorkerProductivityReport(filters),
+        this.reportsService.getDashboardMetrics(),
+      ]);
 
     return {
       month: targetMonth,

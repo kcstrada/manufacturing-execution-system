@@ -15,7 +15,11 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { WorkerStatus, SkillLevel, ShiftType } from '../../../entities/worker.entity';
+import {
+  WorkerStatus,
+  SkillLevel,
+  ShiftType,
+} from '../../../entities/worker.entity';
 
 export class WorkerSkillDto {
   @ApiProperty({ description: 'Skill name' })

@@ -1,4 +1,10 @@
-import { Injectable, Scope, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  Scope,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
@@ -16,7 +22,8 @@ export class TenantService {
 
   constructor(
     @InjectEntityManager() private readonly entityManager: EntityManager,
-    @InjectRepository(Tenant) private readonly tenantRepository: Repository<Tenant>,
+    @InjectRepository(Tenant)
+    private readonly tenantRepository: Repository<Tenant>,
     // @ts-ignore - configService might be used in future tenant switching logic
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => KeycloakAdminService))
@@ -50,13 +57,13 @@ export class TenantService {
    */
   createQueryBuilder(entityClass: any, alias: string) {
     const qb = this.entityManager.createQueryBuilder(entityClass, alias);
-    
+
     // Automatically add tenant filter if entity has tenantId field
     const metadata = this.entityManager.getRepository(entityClass).metadata;
-    if (metadata.columns.find(col => col.propertyName === 'tenantId')) {
+    if (metadata.columns.find((col) => col.propertyName === 'tenantId')) {
       qb.andWhere(`${alias}.tenantId = :tenantId`, { tenantId: this.tenantId });
     }
-    
+
     return qb;
   }
 
@@ -65,11 +72,13 @@ export class TenantService {
    */
   async find<T = any>(entityClass: any, options?: any): Promise<T[]> {
     const repository = this.entityManager.getRepository(entityClass);
-    
+
     // Check if entity has tenantId field
     const metadata = repository.metadata;
-    const hasTenantId = metadata.columns.find(col => col.propertyName === 'tenantId');
-    
+    const hasTenantId = metadata.columns.find(
+      (col) => col.propertyName === 'tenantId',
+    );
+
     if (hasTenantId) {
       // Add tenant filter to options
       const whereClause = options?.where || {};
@@ -81,7 +90,7 @@ export class TenantService {
         },
       }) as Promise<T[]>;
     }
-    
+
     // If no tenantId field, return without filtering
     return repository.find(options) as Promise<T[]>;
   }
@@ -89,13 +98,18 @@ export class TenantService {
   /**
    * Find one entity with automatic tenant filtering
    */
-  async findOneEntity<T = any>(entityClass: any, options?: any): Promise<T | null> {
+  async findOneEntity<T = any>(
+    entityClass: any,
+    options?: any,
+  ): Promise<T | null> {
     const repository = this.entityManager.getRepository(entityClass);
-    
+
     // Check if entity has tenantId field
     const metadata = repository.metadata;
-    const hasTenantId = metadata.columns.find(col => col.propertyName === 'tenantId');
-    
+    const hasTenantId = metadata.columns.find(
+      (col) => col.propertyName === 'tenantId',
+    );
+
     if (hasTenantId) {
       // Add tenant filter to options
       const whereClause = options?.where || {};
@@ -107,7 +121,7 @@ export class TenantService {
         },
       }) as Promise<T | null>;
     }
-    
+
     // If no tenantId field, return without filtering
     return repository.findOne(options) as Promise<T | null>;
   }
@@ -117,16 +131,18 @@ export class TenantService {
    */
   async save<T>(entityClass: any, entity: any): Promise<T> {
     const repository = this.entityManager.getRepository(entityClass);
-    
+
     // Check if entity has tenantId field
     const metadata = repository.metadata;
-    const hasTenantId = metadata.columns.find(col => col.propertyName === 'tenantId');
-    
+    const hasTenantId = metadata.columns.find(
+      (col) => col.propertyName === 'tenantId',
+    );
+
     if (hasTenantId && !entity.tenantId) {
       // Automatically set tenantId if not already set
       entity.tenantId = this.tenantId;
     }
-    
+
     return repository.save(entity);
   }
 
@@ -135,11 +151,13 @@ export class TenantService {
    */
   async delete(entityClass: any, criteria: any) {
     const repository = this.entityManager.getRepository(entityClass);
-    
+
     // Check if entity has tenantId field
     const metadata = repository.metadata;
-    const hasTenantId = metadata.columns.find(col => col.propertyName === 'tenantId');
-    
+    const hasTenantId = metadata.columns.find(
+      (col) => col.propertyName === 'tenantId',
+    );
+
     if (hasTenantId) {
       // Add tenant filter to delete criteria
       if (typeof criteria === 'object' && !Array.isArray(criteria)) {
@@ -149,7 +167,7 @@ export class TenantService {
         });
       }
     }
-    
+
     return repository.delete(criteria);
   }
 
@@ -175,7 +193,7 @@ export class TenantService {
       query = query.replace(':tenantId', `$${index + 1}`);
       parameters = [...(parameters || []), this.tenantId];
     }
-    
+
     return this.entityManager.query(query, parameters);
   }
 
@@ -185,12 +203,12 @@ export class TenantService {
   async hasAccessToTenant(userId: string, tenantId: string): Promise<boolean> {
     // This would typically check against a user_tenants table
     // For now, we'll implement a simple check
-    
+
     // Admin users have access to all tenants
     if (await this.isAdminUser(userId)) {
       return true;
     }
-    
+
     // Regular users only have access to their own tenant
     return this.tenantId === tenantId;
   }
@@ -244,10 +262,15 @@ export class TenantService {
     // Update each tenant with real user count from Keycloak
     for (const tenant of tenants) {
       try {
-        const userCount = await this.keycloakAdminService.getUserCountByTenant(tenant.id);
+        const userCount = await this.keycloakAdminService.getUserCountByTenant(
+          tenant.id,
+        );
         tenant.userCount = userCount;
       } catch (error) {
-        console.error(`Failed to get user count for tenant ${tenant.id}:`, error);
+        console.error(
+          `Failed to get user count for tenant ${tenant.id}:`,
+          error,
+        );
         // Keep the existing userCount from database if Keycloak query fails
       }
     }

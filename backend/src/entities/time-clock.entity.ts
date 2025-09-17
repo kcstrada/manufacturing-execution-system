@@ -241,22 +241,22 @@ export class TimeClockSession extends TenantBaseEntity {
     if (this.clockInTime && this.clockOutTime) {
       const diff = this.clockOutTime.getTime() - this.clockInTime.getTime();
       const totalMinutes = diff / (1000 * 60);
-      
+
       // Calculate total hours
       this.totalHours = Number((totalMinutes / 60).toFixed(2));
-      
+
       // Calculate productive hours (total - breaks - lunch)
       const nonProductiveMinutes = this.breakMinutes + this.lunchMinutes;
       this.productiveHours = Number(
-        ((totalMinutes - nonProductiveMinutes) / 60).toFixed(2)
+        ((totalMinutes - nonProductiveMinutes) / 60).toFixed(2),
       );
-      
+
       // Set regular hours (assuming 8 hour workday)
       const regularHoursLimit = 8;
       if (this.productiveHours > regularHoursLimit) {
         this.regularHours = regularHoursLimit;
         this.overtimeHours = Number(
-          (this.productiveHours - regularHoursLimit).toFixed(2)
+          (this.productiveHours - regularHoursLimit).toFixed(2),
         );
       } else {
         this.regularHours = this.productiveHours;

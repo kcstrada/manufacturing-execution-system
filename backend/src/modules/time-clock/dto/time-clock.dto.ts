@@ -14,7 +14,10 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ClockEventType, ClockMethod } from '../../../entities/time-clock.entity';
+import {
+  ClockEventType,
+  ClockMethod,
+} from '../../../entities/time-clock.entity';
 
 export class ClockInDto {
   @ApiPropertyOptional({ description: 'Work center ID' })
@@ -27,7 +30,9 @@ export class ClockInDto {
   @IsUUID()
   shiftAssignmentId?: string;
 
-  @ApiPropertyOptional({ description: 'Task ID if clocking in for specific task' })
+  @ApiPropertyOptional({
+    description: 'Task ID if clocking in for specific task',
+  })
   @IsOptional()
   @IsUUID()
   taskId?: string;
@@ -100,7 +105,10 @@ export class ClockOutDto {
 }
 
 export class BreakDto {
-  @ApiProperty({ description: 'Break type', enum: ['break_start', 'break_end', 'lunch_start', 'lunch_end'] })
+  @ApiProperty({
+    description: 'Break type',
+    enum: ['break_start', 'break_end', 'lunch_start', 'lunch_end'],
+  })
   @IsEnum(['break_start', 'break_end', 'lunch_start', 'lunch_end'])
   breakType!: string;
 
@@ -280,7 +288,10 @@ export class TimeClockRuleDto {
   @Max(30)
   roundingMinutes?: number;
 
-  @ApiPropertyOptional({ description: 'Rounding direction', enum: ['up', 'down', 'nearest'] })
+  @ApiPropertyOptional({
+    description: 'Rounding direction',
+    enum: ['up', 'down', 'nearest'],
+  })
   @IsOptional()
   @IsEnum(['up', 'down', 'nearest'])
   roundingDirection?: string;
@@ -349,7 +360,7 @@ export class WorkerTimeStatusResponseDto {
     overtimeHours: number;
   };
 
-  @ApiProperty({ description: 'Today\'s totals' })
+  @ApiProperty({ description: "Today's totals" })
   todayTotals!: {
     regularHours: number;
     overtimeHours: number;

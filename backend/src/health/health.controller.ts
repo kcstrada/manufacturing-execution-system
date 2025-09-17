@@ -57,9 +57,7 @@ export class HealthController {
   @ApiResponse({ status: 200, description: 'Service is alive' })
   @ApiResponse({ status: 503, description: 'Service is not alive' })
   checkLive() {
-    return this.health.check([
-      () => this.custom.isAlive('service'),
-    ]);
+    return this.health.check([() => this.custom.isAlive('service')]);
   }
 
   /**
@@ -87,9 +85,7 @@ export class HealthController {
   @ApiResponse({ status: 200, description: 'Service has started' })
   @ApiResponse({ status: 503, description: 'Service is still starting' })
   checkStartup() {
-    return this.health.check([
-      () => this.custom.hasStarted('service'),
-    ]);
+    return this.health.check([() => this.custom.hasStarted('service')]);
   }
 
   /**
@@ -105,22 +101,26 @@ export class HealthController {
       // Database checks
       () => this.database.isHealthy('database'),
       () => this.database.checkPerformance('database-performance'),
-      
+
       // Redis checks
       () => this.redis.isHealthy('redis'),
       () => this.redis.checkCache('redis-cache'),
       () => this.redis.checkQueues('redis-queues'),
-      
+
       // System checks
       () => this.memory.checkHeap('memory-heap', 200 * 1024 * 1024), // 200MB
       () => this.memory.checkRSS('memory-rss', 500 * 1024 * 1024), // 500MB
-      () => this.disk.checkStorage('disk-storage', { path: '/', thresholdPercent: 0.9 }),
-      
+      () =>
+        this.disk.checkStorage('disk-storage', {
+          path: '/',
+          thresholdPercent: 0.9,
+        }),
+
       // CPU and system
       () => this.system.checkCPU('cpu'),
       () => this.system.checkUptime('uptime'),
       () => this.system.checkFileDescriptors('file-descriptors'),
-      
+
       // Custom checks
       () => this.custom.isHealthy('application'),
     ]);
@@ -173,20 +173,23 @@ export class HealthController {
 
     // Keycloak check
     if (process.env.KEYCLOAK_URL) {
-      checks.push(() => 
-        this.http.pingCheck('keycloak', `${process.env.KEYCLOAK_URL}/health/ready`)
+      checks.push(() =>
+        this.http.pingCheck(
+          'keycloak',
+          `${process.env.KEYCLOAK_URL}/health/ready`,
+        ),
       );
     }
 
     // OpenFGA check
     if (process.env.FGA_API_URL) {
-      checks.push(() => 
-        this.dependency.checkOpenFGA('openfga')
-      );
+      checks.push(() => this.dependency.checkOpenFGA('openfga'));
     }
 
     // Add other external service checks
-    checks.push(() => this.dependency.checkExternalServices('external-services'));
+    checks.push(() =>
+      this.dependency.checkExternalServices('external-services'),
+    );
 
     return this.health.check(checks);
   }
@@ -203,7 +206,11 @@ export class HealthController {
     return this.health.check([
       () => this.memory.checkHeap('memory-heap', 200 * 1024 * 1024),
       () => this.memory.checkRSS('memory-rss', 500 * 1024 * 1024),
-      () => this.disk.checkStorage('disk-storage', { path: '/', thresholdPercent: 0.9 }),
+      () =>
+        this.disk.checkStorage('disk-storage', {
+          path: '/',
+          thresholdPercent: 0.9,
+        }),
       () => this.system.checkCPU('cpu'),
       () => this.system.checkUptime('uptime'),
       () => this.system.checkFileDescriptors('file-descriptors'),

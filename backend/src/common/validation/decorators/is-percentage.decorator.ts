@@ -11,8 +11,10 @@ import { VALIDATION_CONSTANTS } from '../validation.config';
 export class IsPercentageConstraint implements ValidatorConstraintInterface {
   validate(value: any, _args: ValidationArguments) {
     if (typeof value !== 'number') return false;
-    return value >= VALIDATION_CONSTANTS.MIN_PERCENTAGE && 
-           value <= VALIDATION_CONSTANTS.MAX_PERCENTAGE;
+    return (
+      value >= VALIDATION_CONSTANTS.MIN_PERCENTAGE &&
+      value <= VALIDATION_CONSTANTS.MAX_PERCENTAGE
+    );
   }
 
   defaultMessage(args: ValidationArguments) {
@@ -24,7 +26,7 @@ export class IsPercentageConstraint implements ValidatorConstraintInterface {
  * Validates that a number is a valid percentage (0-100)
  */
 export function IsPercentage(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isPercentage',
       target: object.constructor,

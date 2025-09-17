@@ -3,7 +3,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification } from '../entities/notification.entity';
-import { NotificationResult, NotificationStatus, NotificationChannel } from '../types/notification.types';
+import {
+  NotificationResult,
+  NotificationStatus,
+  NotificationChannel,
+} from '../types/notification.types';
 
 @Injectable()
 export class InAppNotificationService {
@@ -38,7 +42,9 @@ export class InAppNotificationService {
         },
       });
 
-      this.logger.log(`In-app notification delivered to user ${notification.userId}`);
+      this.logger.log(
+        `In-app notification delivered to user ${notification.userId}`,
+      );
 
       return {
         success: true,
@@ -48,7 +54,10 @@ export class InAppNotificationService {
         deliveredAt: new Date(),
       };
     } catch (error) {
-      this.logger.error(`Failed to deliver in-app notification: ${(error as Error).message}`, (error as Error).stack);
+      this.logger.error(
+        `Failed to deliver in-app notification: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
       return {
         success: false,
         notificationId: notification.id,
@@ -70,7 +79,11 @@ export class InAppNotificationService {
     });
   }
 
-  async getUnreadNotifications(userId: string, tenantId: string, limit: number = 20): Promise<Notification[]> {
+  async getUnreadNotifications(
+    userId: string,
+    tenantId: string,
+    limit: number = 20,
+  ): Promise<Notification[]> {
     return await this.notificationRepository.find({
       where: {
         userId,
@@ -110,7 +123,10 @@ export class InAppNotificationService {
     });
   }
 
-  async deleteNotification(notificationId: string, userId: string): Promise<void> {
+  async deleteNotification(
+    notificationId: string,
+    userId: string,
+  ): Promise<void> {
     const notification = await this.notificationRepository.findOne({
       where: {
         id: notificationId,
@@ -121,7 +137,7 @@ export class InAppNotificationService {
 
     if (notification) {
       await this.notificationRepository.remove(notification);
-      
+
       this.eventEmitter.emit('notification.deleted', {
         tenantId: notification.tenantId,
         userId,
@@ -130,7 +146,10 @@ export class InAppNotificationService {
     }
   }
 
-  async clearOldNotifications(tenantId: string, daysToKeep: number = 30): Promise<number> {
+  async clearOldNotifications(
+    tenantId: string,
+    daysToKeep: number = 30,
+  ): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
@@ -140,12 +159,14 @@ export class InAppNotificationService {
       .where('tenantId = :tenantId', { tenantId })
       .andWhere('channel = :channel', { channel: NotificationChannel.IN_APP })
       .andWhere('createdAt < :cutoffDate', { cutoffDate })
-      .andWhere('status IN (:...statuses)', { 
-        statuses: [NotificationStatus.READ, NotificationStatus.ACKNOWLEDGED] 
+      .andWhere('status IN (:...statuses)', {
+        statuses: [NotificationStatus.READ, NotificationStatus.ACKNOWLEDGED],
       })
       .execute();
 
-    this.logger.log(`Cleared ${result.affected} old in-app notifications for tenant ${tenantId}`);
+    this.logger.log(
+      `Cleared ${result.affected} old in-app notifications for tenant ${tenantId}`,
+    );
     return result.affected || 0;
   }
 }

@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationPreference } from '../entities/notification-preference.entity';
-import { NotificationType, NotificationChannel } from '../types/notification.types';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../types/notification.types';
 
 @Injectable()
 export class NotificationPreferenceService {
@@ -53,7 +56,12 @@ export class NotificationPreferenceService {
     enabled: boolean,
     settings?: any,
   ): Promise<NotificationPreference> {
-    let preference = await this.getUserPreference(userId, tenantId, type, channel);
+    let preference = await this.getUserPreference(
+      userId,
+      tenantId,
+      type,
+      channel,
+    );
 
     if (preference) {
       preference.enabled = enabled;
@@ -104,52 +112,185 @@ export class NotificationPreferenceService {
   async setDefaultPreferences(userId: string, tenantId: string): Promise<void> {
     const defaultPreferences = [
       // Order notifications - all channels enabled
-      { type: NotificationType.ORDER_CREATED, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.ORDER_CREATED, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.ORDER_COMPLETED, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.ORDER_COMPLETED, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.ORDER_CANCELLED, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.ORDER_CANCELLED, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.ORDER_DELAYED, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.ORDER_DELAYED, channel: NotificationChannel.IN_APP, enabled: true },
-      
+      {
+        type: NotificationType.ORDER_CREATED,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.ORDER_CREATED,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.ORDER_COMPLETED,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.ORDER_COMPLETED,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.ORDER_CANCELLED,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.ORDER_CANCELLED,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.ORDER_DELAYED,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.ORDER_DELAYED,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+
       // Inventory notifications - critical ones via email
-      { type: NotificationType.INVENTORY_LOW_STOCK, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.INVENTORY_LOW_STOCK, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.INVENTORY_OUT_OF_STOCK, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.INVENTORY_OUT_OF_STOCK, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.INVENTORY_EXPIRED, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.INVENTORY_EXPIRED, channel: NotificationChannel.IN_APP, enabled: true },
-      
+      {
+        type: NotificationType.INVENTORY_LOW_STOCK,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.INVENTORY_LOW_STOCK,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.INVENTORY_OUT_OF_STOCK,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.INVENTORY_OUT_OF_STOCK,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.INVENTORY_EXPIRED,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.INVENTORY_EXPIRED,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+
       // Task notifications
-      { type: NotificationType.TASK_ASSIGNED, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.TASK_ASSIGNED, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.TASK_OVERDUE, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.TASK_OVERDUE, channel: NotificationChannel.IN_APP, enabled: true },
-      
+      {
+        type: NotificationType.TASK_ASSIGNED,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.TASK_ASSIGNED,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.TASK_OVERDUE,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.TASK_OVERDUE,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+
       // Quality notifications - critical
-      { type: NotificationType.QUALITY_ALERT, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.QUALITY_ALERT, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.QUALITY_INSPECTION_FAILED, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.QUALITY_INSPECTION_FAILED, channel: NotificationChannel.IN_APP, enabled: true },
-      
+      {
+        type: NotificationType.QUALITY_ALERT,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.QUALITY_ALERT,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.QUALITY_INSPECTION_FAILED,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.QUALITY_INSPECTION_FAILED,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+
       // Maintenance notifications
-      { type: NotificationType.MAINTENANCE_DUE, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.MAINTENANCE_DUE, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.EQUIPMENT_BREAKDOWN, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.EQUIPMENT_BREAKDOWN, channel: NotificationChannel.IN_APP, enabled: true },
-      
+      {
+        type: NotificationType.MAINTENANCE_DUE,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.MAINTENANCE_DUE,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.EQUIPMENT_BREAKDOWN,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.EQUIPMENT_BREAKDOWN,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+
       // System notifications - in-app only by default
-      { type: NotificationType.SYSTEM_ALERT, channel: NotificationChannel.EMAIL, enabled: false },
-      { type: NotificationType.SYSTEM_ALERT, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.SYSTEM_UPDATE, channel: NotificationChannel.EMAIL, enabled: false },
-      { type: NotificationType.SYSTEM_UPDATE, channel: NotificationChannel.IN_APP, enabled: true },
-      { type: NotificationType.SYSTEM_ERROR, channel: NotificationChannel.EMAIL, enabled: true },
-      { type: NotificationType.SYSTEM_ERROR, channel: NotificationChannel.IN_APP, enabled: true },
+      {
+        type: NotificationType.SYSTEM_ALERT,
+        channel: NotificationChannel.EMAIL,
+        enabled: false,
+      },
+      {
+        type: NotificationType.SYSTEM_ALERT,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.SYSTEM_UPDATE,
+        channel: NotificationChannel.EMAIL,
+        enabled: false,
+      },
+      {
+        type: NotificationType.SYSTEM_UPDATE,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
+      {
+        type: NotificationType.SYSTEM_ERROR,
+        channel: NotificationChannel.EMAIL,
+        enabled: true,
+      },
+      {
+        type: NotificationType.SYSTEM_ERROR,
+        channel: NotificationChannel.IN_APP,
+        enabled: true,
+      },
     ];
 
     for (const pref of defaultPreferences) {
-      const existing = await this.getUserPreference(userId, tenantId, pref.type, pref.channel);
+      const existing = await this.getUserPreference(
+        userId,
+        tenantId,
+        pref.type,
+        pref.channel,
+      );
       if (!existing) {
         await this.createOrUpdatePreference(
           userId,
@@ -164,14 +305,20 @@ export class NotificationPreferenceService {
     this.logger.log(`Set default notification preferences for user ${userId}`);
   }
 
-  async disableAllNotifications(userId: string, tenantId: string): Promise<void> {
+  async disableAllNotifications(
+    userId: string,
+    tenantId: string,
+  ): Promise<void> {
     await this.preferenceRepository.update(
       { userId, tenantId },
       { enabled: false },
     );
   }
 
-  async enableAllNotifications(userId: string, tenantId: string): Promise<void> {
+  async enableAllNotifications(
+    userId: string,
+    tenantId: string,
+  ): Promise<void> {
     await this.preferenceRepository.update(
       { userId, tenantId },
       { enabled: true },
@@ -202,8 +349,10 @@ export class NotificationPreferenceService {
     userId: string,
     channel: 'email' | 'sms',
   ): Promise<string> {
-    const token = Buffer.from(`${userId}:${channel}:${Date.now()}`).toString('base64');
-    
+    const token = Buffer.from(`${userId}:${channel}:${Date.now()}`).toString(
+      'base64',
+    );
+
     // Store token in preferences
     const preferences = await this.preferenceRepository.find({
       where: { userId },
@@ -233,16 +382,22 @@ export class NotificationPreferenceService {
       });
 
       for (const preference of preferences) {
-        if (preference.unsubscribeTokens?.[channel as 'email' | 'sms'] === token) {
+        if (
+          preference.unsubscribeTokens?.[channel as 'email' | 'sms'] === token
+        ) {
           preference.enabled = false;
           await this.preferenceRepository.save(preference);
         }
       }
 
-      this.logger.log(`User ${userId} unsubscribed from ${channel} notifications`);
+      this.logger.log(
+        `User ${userId} unsubscribed from ${channel} notifications`,
+      );
       return true;
     } catch (error) {
-      this.logger.error(`Failed to unsubscribe by token: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to unsubscribe by token: ${(error as Error).message}`,
+      );
       return false;
     }
   }
@@ -268,14 +423,14 @@ export class NotificationPreferenceService {
 
   async isInQuietHours(userId: string, tenantId: string): Promise<boolean> {
     const quietHours = await this.getQuietHoursSettings(userId, tenantId);
-    
+
     if (!quietHours || !quietHours.enabled) {
       return false;
     }
 
     // TODO: Implement timezone-aware quiet hours check
     // This would require a timezone library like moment-timezone
-    
+
     return false;
   }
 }

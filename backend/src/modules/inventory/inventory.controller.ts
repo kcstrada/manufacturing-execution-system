@@ -72,8 +72,14 @@ export class InventoryController {
   @Post()
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Create new inventory item' })
-  @ApiResponse({ status: 201, description: 'Inventory created successfully', type: Inventory })
-  async create(@Body() createInventoryDto: CreateInventoryDto): Promise<Inventory> {
+  @ApiResponse({
+    status: 201,
+    description: 'Inventory created successfully',
+    type: Inventory,
+  })
+  async create(
+    @Body() createInventoryDto: CreateInventoryDto,
+  ): Promise<Inventory> {
     return this.inventoryService.create(createInventoryDto);
   }
 
@@ -81,7 +87,9 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get all inventory items' })
   @ApiResponse({ status: 200, description: 'List of inventory items' })
-  async findAll(@Query() query: InventoryQueryDto): Promise<{ data: Inventory[]; total: number }> {
+  async findAll(
+    @Query() query: InventoryQueryDto,
+  ): Promise<{ data: Inventory[]; total: number }> {
     return this.inventoryService.findAll(query);
   }
 
@@ -89,7 +97,11 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get inventory item by ID' })
   @ApiParam({ name: 'id', description: 'Inventory ID' })
-  @ApiResponse({ status: 200, description: 'Inventory item found', type: Inventory })
+  @ApiResponse({
+    status: 200,
+    description: 'Inventory item found',
+    type: Inventory,
+  })
   async findOne(@Param('id') id: string): Promise<Inventory> {
     return this.inventoryService.findOne(id);
   }
@@ -98,10 +110,14 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Update inventory item' })
   @ApiParam({ name: 'id', description: 'Inventory ID' })
-  @ApiResponse({ status: 200, description: 'Inventory updated successfully', type: Inventory })
+  @ApiResponse({
+    status: 200,
+    description: 'Inventory updated successfully',
+    type: Inventory,
+  })
   async update(
     @Param('id') id: string,
-    @Body() updateInventoryDto: UpdateInventoryDto
+    @Body() updateInventoryDto: UpdateInventoryDto,
   ): Promise<Inventory> {
     return this.inventoryService.update(id, updateInventoryDto);
   }
@@ -122,7 +138,9 @@ export class InventoryController {
   @ApiOperation({ summary: 'Get inventory by product' })
   @ApiParam({ name: 'productId', description: 'Product ID' })
   @ApiResponse({ status: 200, description: 'Inventory items for product' })
-  async findByProduct(@Param('productId') productId: string): Promise<Inventory[]> {
+  async findByProduct(
+    @Param('productId') productId: string,
+  ): Promise<Inventory[]> {
     return this.inventoryService.findByProduct(productId);
   }
 
@@ -131,7 +149,9 @@ export class InventoryController {
   @ApiOperation({ summary: 'Get inventory by warehouse' })
   @ApiParam({ name: 'warehouseCode', description: 'Warehouse code' })
   @ApiResponse({ status: 200, description: 'Inventory items for warehouse' })
-  async findByWarehouse(@Param('warehouseCode') warehouseCode: string): Promise<Inventory[]> {
+  async findByWarehouse(
+    @Param('warehouseCode') warehouseCode: string,
+  ): Promise<Inventory[]> {
     return this.inventoryService.findByWarehouse(warehouseCode);
   }
 
@@ -143,7 +163,7 @@ export class InventoryController {
   @ApiResponse({ status: 200, description: 'Inventory items for location' })
   async findByLocation(
     @Param('warehouseCode') warehouseCode: string,
-    @Param('locationCode') locationCode: string
+    @Param('locationCode') locationCode: string,
   ): Promise<Inventory[]> {
     return this.inventoryService.findByLocation(warehouseCode, locationCode);
   }
@@ -153,13 +173,20 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get available quantity for product' })
   @ApiParam({ name: 'productId', description: 'Product ID' })
-  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code' })
+  @ApiQuery({
+    name: 'warehouseCode',
+    required: false,
+    description: 'Warehouse code',
+  })
   @ApiResponse({ status: 200, description: 'Available quantity' })
   async getAvailableQuantity(
     @Param('productId') productId: string,
-    @Query('warehouseCode') warehouseCode?: string
+    @Query('warehouseCode') warehouseCode?: string,
   ): Promise<{ quantity: number }> {
-    const quantity = await this.inventoryService.getAvailableQuantity(productId, warehouseCode);
+    const quantity = await this.inventoryService.getAvailableQuantity(
+      productId,
+      warehouseCode,
+    );
     return { quantity };
   }
 
@@ -167,13 +194,20 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get total quantity for product' })
   @ApiParam({ name: 'productId', description: 'Product ID' })
-  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code' })
+  @ApiQuery({
+    name: 'warehouseCode',
+    required: false,
+    description: 'Warehouse code',
+  })
   @ApiResponse({ status: 200, description: 'Total quantity' })
   async getTotalQuantity(
     @Param('productId') productId: string,
-    @Query('warehouseCode') warehouseCode?: string
+    @Query('warehouseCode') warehouseCode?: string,
   ): Promise<{ quantity: number }> {
-    const quantity = await this.inventoryService.getTotalQuantity(productId, warehouseCode);
+    const quantity = await this.inventoryService.getTotalQuantity(
+      productId,
+      warehouseCode,
+    );
     return { quantity };
   }
 
@@ -181,10 +215,14 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Update inventory quantities' })
   @ApiParam({ name: 'id', description: 'Inventory ID' })
-  @ApiResponse({ status: 200, description: 'Quantities updated successfully', type: Inventory })
+  @ApiResponse({
+    status: 200,
+    description: 'Quantities updated successfully',
+    type: Inventory,
+  })
   async updateQuantities(
     @Param('id') id: string,
-    @Body() quantities: UpdateInventoryQuantitiesDto
+    @Body() quantities: UpdateInventoryQuantitiesDto,
   ): Promise<Inventory> {
     return this.inventoryService.updateQuantities(id, quantities);
   }
@@ -193,57 +231,90 @@ export class InventoryController {
   @Post('reserve')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Reserve inventory' })
-  @ApiResponse({ status: 200, description: 'Inventory reserved successfully', type: Inventory })
+  @ApiResponse({
+    status: 200,
+    description: 'Inventory reserved successfully',
+    type: Inventory,
+  })
   async reserveInventory(
-    @Body() body: {
+    @Body()
+    body: {
       productId: string;
       warehouseCode: string;
       locationCode: string;
       reserveDto: ReserveInventoryDto;
-    }
+    },
   ): Promise<Inventory> {
     const { productId, warehouseCode, locationCode, reserveDto } = body;
-    return this.inventoryService.reserveInventory(productId, warehouseCode, locationCode, reserveDto);
+    return this.inventoryService.reserveInventory(
+      productId,
+      warehouseCode,
+      locationCode,
+      reserveDto,
+    );
   }
 
   @Post('release')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Release reserved inventory' })
-  @ApiResponse({ status: 200, description: 'Inventory released successfully', type: Inventory })
+  @ApiResponse({
+    status: 200,
+    description: 'Inventory released successfully',
+    type: Inventory,
+  })
   async releaseInventory(
-    @Body() body: {
+    @Body()
+    body: {
       productId: string;
       warehouseCode: string;
       locationCode: string;
       releaseDto: ReleaseInventoryDto;
-    }
+    },
   ): Promise<Inventory> {
     const { productId, warehouseCode, locationCode, releaseDto } = body;
-    return this.inventoryService.releaseInventory(productId, warehouseCode, locationCode, releaseDto);
+    return this.inventoryService.releaseInventory(
+      productId,
+      warehouseCode,
+      locationCode,
+      releaseDto,
+    );
   }
 
   // Stock Adjustments
   @Post('adjust')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Adjust inventory' })
-  @ApiResponse({ status: 200, description: 'Inventory adjusted successfully', type: InventoryTransaction })
+  @ApiResponse({
+    status: 200,
+    description: 'Inventory adjusted successfully',
+    type: InventoryTransaction,
+  })
   async adjustInventory(
-    @Body() body: {
+    @Body()
+    body: {
       productId: string;
       warehouseCode: string;
       locationCode: string;
       adjustDto: AdjustInventoryDto;
-    }
+    },
   ): Promise<InventoryTransaction> {
     const { productId, warehouseCode, locationCode, adjustDto } = body;
-    return this.inventoryService.adjustInventory(productId, warehouseCode, locationCode, adjustDto);
+    return this.inventoryService.adjustInventory(
+      productId,
+      warehouseCode,
+      locationCode,
+      adjustDto,
+    );
   }
 
   // Stock Transfers
   @Post('transfer')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Transfer inventory between locations' })
-  @ApiResponse({ status: 200, description: 'Inventory transferred successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Inventory transferred successfully',
+  })
   async transferInventory(@Body() transferDto: TransferInventoryDto): Promise<{
     sourceTransaction: InventoryTransaction;
     destinationTransaction: InventoryTransaction;
@@ -256,10 +327,14 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Update inventory status' })
   @ApiParam({ name: 'id', description: 'Inventory ID' })
-  @ApiResponse({ status: 200, description: 'Status updated successfully', type: Inventory })
+  @ApiResponse({
+    status: 200,
+    description: 'Status updated successfully',
+    type: Inventory,
+  })
   async updateStatus(
     @Param('id') id: string,
-    @Body() statusDto: UpdateInventoryStatusDto
+    @Body() statusDto: UpdateInventoryStatusDto,
   ): Promise<Inventory> {
     return this.inventoryService.updateStatus(id, statusDto);
   }
@@ -276,9 +351,15 @@ export class InventoryController {
   @Get('expiring/items')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get expiring inventory items' })
-  @ApiQuery({ name: 'daysAhead', required: true, description: 'Days ahead to check' })
+  @ApiQuery({
+    name: 'daysAhead',
+    required: true,
+    description: 'Days ahead to check',
+  })
   @ApiResponse({ status: 200, description: 'List of expiring items' })
-  async findExpiringItems(@Query('daysAhead') daysAhead: number): Promise<Inventory[]> {
+  async findExpiringItems(
+    @Query('daysAhead') daysAhead: number,
+  ): Promise<Inventory[]> {
     return this.inventoryService.findExpiringItems(daysAhead);
   }
 
@@ -286,9 +367,15 @@ export class InventoryController {
   @Get('analysis/low-stock')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get low stock items' })
-  @ApiQuery({ name: 'threshold', required: true, description: 'Stock threshold' })
+  @ApiQuery({
+    name: 'threshold',
+    required: true,
+    description: 'Stock threshold',
+  })
   @ApiResponse({ status: 200, description: 'List of low stock items' })
-  async findLowStockItems(@Query('threshold') threshold: number): Promise<Inventory[]> {
+  async findLowStockItems(
+    @Query('threshold') threshold: number,
+  ): Promise<Inventory[]> {
     return this.inventoryService.findLowStockItems(threshold);
   }
 
@@ -296,13 +383,17 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'Viewer')
   @ApiOperation({ summary: 'Get inventory valuation' })
   @ApiResponse({ status: 200, description: 'Inventory valuation' })
-  async getInventoryValuation(@Query() query: InventoryValuationQueryDto): Promise<{
-    productId?: string;
-    warehouseCode?: string;
-    locationCode?: string;
-    totalValue: number;
-    totalQuantity: number;
-  }[]> {
+  async getInventoryValuation(
+    @Query() query: InventoryValuationQueryDto,
+  ): Promise<
+    {
+      productId?: string;
+      warehouseCode?: string;
+      locationCode?: string;
+      totalValue: number;
+      totalQuantity: number;
+    }[]
+  > {
     return this.inventoryService.getInventoryValuation(query);
   }
 
@@ -310,8 +401,14 @@ export class InventoryController {
   @Post('transactions')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Create inventory transaction' })
-  @ApiResponse({ status: 201, description: 'Transaction created successfully', type: InventoryTransaction })
-  async createTransaction(@Body() transactionDto: CreateInventoryTransactionDto): Promise<InventoryTransaction> {
+  @ApiResponse({
+    status: 201,
+    description: 'Transaction created successfully',
+    type: InventoryTransaction,
+  })
+  async createTransaction(
+    @Body() transactionDto: CreateInventoryTransactionDto,
+  ): Promise<InventoryTransaction> {
     return this.inventoryService.createTransaction(transactionDto);
   }
 
@@ -319,7 +416,9 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get inventory transactions' })
   @ApiResponse({ status: 200, description: 'List of transactions' })
-  async findTransactions(@Query() query: InventoryTransactionQueryDto): Promise<{
+  async findTransactions(
+    @Query() query: InventoryTransactionQueryDto,
+  ): Promise<{
     data: InventoryTransaction[];
     total: number;
   }> {
@@ -330,15 +429,23 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get transaction history for product' })
   @ApiParam({ name: 'productId', description: 'Product ID' })
-  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code' })
+  @ApiQuery({
+    name: 'warehouseCode',
+    required: false,
+    description: 'Warehouse code',
+  })
   @ApiQuery({ name: 'days', required: false, description: 'Number of days' })
   @ApiResponse({ status: 200, description: 'Transaction history' })
   async getTransactionHistory(
     @Param('productId') productId: string,
     @Query('warehouseCode') warehouseCode?: string,
-    @Query('days') days?: number
+    @Query('days') days?: number,
   ): Promise<InventoryTransaction[]> {
-    return this.inventoryService.getTransactionHistory(productId, warehouseCode, days);
+    return this.inventoryService.getTransactionHistory(
+      productId,
+      warehouseCode,
+      days,
+    );
   }
 
   // Cycle Counting
@@ -347,19 +454,27 @@ export class InventoryController {
   @ApiOperation({ summary: 'Perform cycle count' })
   @ApiResponse({ status: 200, description: 'Cycle count completed' })
   async performCycleCount(
-    @Body() body: {
+    @Body()
+    body: {
       productId: string;
       warehouseCode: string;
       locationCode: string;
       actualQuantity: number;
       notes?: string;
-    }
+    },
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
   }> {
-    const { productId, warehouseCode, locationCode, actualQuantity, notes } = body;
-    return this.inventoryService.performCycleCount(productId, warehouseCode, locationCode, actualQuantity, notes);
+    const { productId, warehouseCode, locationCode, actualQuantity, notes } =
+      body;
+    return this.inventoryService.performCycleCount(
+      productId,
+      warehouseCode,
+      locationCode,
+      actualQuantity,
+      notes,
+    );
   }
 
   // Stock Receipt
@@ -368,7 +483,8 @@ export class InventoryController {
   @ApiOperation({ summary: 'Receive stock' })
   @ApiResponse({ status: 200, description: 'Stock received successfully' })
   async receiveStock(
-    @Body() body: {
+    @Body()
+    body: {
       productId: string;
       warehouseCode: string;
       locationCode: string;
@@ -377,12 +493,21 @@ export class InventoryController {
       referenceId?: string;
       lotNumber?: string;
       unitCost?: number;
-    }
+    },
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
   }> {
-    const { productId, warehouseCode, locationCode, quantity, referenceType, referenceId, lotNumber, unitCost } = body;
+    const {
+      productId,
+      warehouseCode,
+      locationCode,
+      quantity,
+      referenceType,
+      referenceId,
+      lotNumber,
+      unitCost,
+    } = body;
     return this.inventoryService.receiveStock(
       productId,
       warehouseCode,
@@ -391,7 +516,7 @@ export class InventoryController {
       referenceType,
       referenceId,
       lotNumber,
-      unitCost
+      unitCost,
     );
   }
 
@@ -401,26 +526,34 @@ export class InventoryController {
   @ApiOperation({ summary: 'Issue stock' })
   @ApiResponse({ status: 200, description: 'Stock issued successfully' })
   async issueStock(
-    @Body() body: {
+    @Body()
+    body: {
       productId: string;
       warehouseCode: string;
       locationCode: string;
       quantity: number;
       referenceType?: string;
       referenceId?: string;
-    }
+    },
   ): Promise<{
     inventory: Inventory;
     transaction: InventoryTransaction;
   }> {
-    const { productId, warehouseCode, locationCode, quantity, referenceType, referenceId } = body;
+    const {
+      productId,
+      warehouseCode,
+      locationCode,
+      quantity,
+      referenceType,
+      referenceId,
+    } = body;
     return this.inventoryService.issueStock(
       productId,
       warehouseCode,
       locationCode,
       quantity,
       referenceType,
-      referenceId
+      referenceId,
     );
   }
 
@@ -430,10 +563,11 @@ export class InventoryController {
   @ApiOperation({ summary: 'Check stock availability' })
   @ApiResponse({ status: 200, description: 'Stock availability' })
   async checkStockAvailability(
-    @Body() body: {
+    @Body()
+    body: {
       items: Array<{ productId: string; quantity: number }>;
       warehouseCode?: string;
-    }
+    },
   ): Promise<{
     available: boolean;
     shortages: Array<{
@@ -443,7 +577,10 @@ export class InventoryController {
       shortage: number;
     }>;
   }> {
-    return this.inventoryService.checkStockAvailability(body.items, body.warehouseCode);
+    return this.inventoryService.checkStockAvailability(
+      body.items,
+      body.warehouseCode,
+    );
   }
 
   // Bulk Operations
@@ -452,12 +589,16 @@ export class InventoryController {
   @ApiOperation({ summary: 'Bulk update inventory status' })
   @ApiResponse({ status: 200, description: 'Status updated successfully' })
   async bulkUpdateStatus(
-    @Body() body: {
+    @Body()
+    body: {
       inventoryIds: string[];
       statusDto: UpdateInventoryStatusDto;
-    }
+    },
   ): Promise<Inventory[]> {
-    return this.inventoryService.bulkUpdateStatus(body.inventoryIds, body.statusDto);
+    return this.inventoryService.bulkUpdateStatus(
+      body.inventoryIds,
+      body.statusDto,
+    );
   }
 
   @Post('bulk/adjust')
@@ -465,12 +606,13 @@ export class InventoryController {
   @ApiOperation({ summary: 'Bulk adjust inventory' })
   @ApiResponse({ status: 200, description: 'Inventory adjusted successfully' })
   async bulkAdjust(
-    @Body() adjustments: Array<{
+    @Body()
+    adjustments: Array<{
       productId: string;
       warehouseCode: string;
       locationCode: string;
       adjustment: AdjustInventoryDto;
-    }>
+    }>,
   ): Promise<InventoryTransaction[]> {
     return this.inventoryService.bulkAdjust(adjustments);
   }
@@ -479,8 +621,14 @@ export class InventoryController {
   @Post('forecast/generate')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Generate inventory forecast based on orders' })
-  @ApiResponse({ status: 200, description: 'Forecast generated successfully', type: ForecastResultDto })
-  async generateForecast(@Body() forecastDto: ForecastDto): Promise<ForecastResultDto> {
+  @ApiResponse({
+    status: 200,
+    description: 'Forecast generated successfully',
+    type: ForecastResultDto,
+  })
+  async generateForecast(
+    @Body() forecastDto: ForecastDto,
+  ): Promise<ForecastResultDto> {
     return this.forecastingService.generateForecast(forecastDto);
   }
 
@@ -488,8 +636,17 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Analyze demand patterns for a product' })
   @ApiParam({ name: 'productId', description: 'Product ID' })
-  @ApiQuery({ name: 'days', required: false, description: 'Number of days to analyze', default: 90 })
-  @ApiResponse({ status: 200, description: 'Demand analysis completed', type: DemandAnalysisDto })
+  @ApiQuery({
+    name: 'days',
+    required: false,
+    description: 'Number of days to analyze',
+    default: 90,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Demand analysis completed',
+    type: DemandAnalysisDto,
+  })
   async analyzeDemandPatterns(
     @Param('productId') productId: string,
     @Query('days') days?: number,
@@ -500,7 +657,11 @@ export class InventoryController {
   @Post('forecast/reorder-points')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Calculate optimal reorder points for products' })
-  @ApiResponse({ status: 200, description: 'Reorder points calculated', type: [ReorderPointDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Reorder points calculated',
+    type: [ReorderPointDto],
+  })
   async calculateReorderPoints(
     @Body() dto: CalculateReorderPointsDto,
   ): Promise<ReorderPointDto[]> {
@@ -514,32 +675,63 @@ export class InventoryController {
   @Post('forecast/stockout-predictions')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Predict potential stockouts' })
-  @ApiResponse({ status: 200, description: 'Stockout predictions generated', type: [StockoutPredictionDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Stockout predictions generated',
+    type: [StockoutPredictionDto],
+  })
   async predictStockouts(
     @Body() dto: PredictStockoutsDto,
   ): Promise<StockoutPredictionDto[]> {
-    return this.forecastingService.predictStockouts(dto.warehouseCode, dto.daysAhead);
+    return this.forecastingService.predictStockouts(
+      dto.warehouseCode,
+      dto.daysAhead,
+    );
   }
 
   @Get('forecast/stockouts')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get current stockout predictions' })
-  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code' })
-  @ApiQuery({ name: 'daysAhead', required: false, description: 'Days ahead to predict', default: 14 })
-  @ApiResponse({ status: 200, description: 'Stockout predictions', type: [StockoutPredictionDto] })
+  @ApiQuery({
+    name: 'warehouseCode',
+    required: false,
+    description: 'Warehouse code',
+  })
+  @ApiQuery({
+    name: 'daysAhead',
+    required: false,
+    description: 'Days ahead to predict',
+    default: 14,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Stockout predictions',
+    type: [StockoutPredictionDto],
+  })
   async getStockoutPredictions(
     @Query('warehouseCode') warehouseCode?: string,
     @Query('daysAhead') daysAhead?: number,
   ): Promise<StockoutPredictionDto[]> {
-    return this.forecastingService.predictStockouts(warehouseCode, daysAhead || 14);
+    return this.forecastingService.predictStockouts(
+      warehouseCode,
+      daysAhead || 14,
+    );
   }
 
   // Stock Alert Endpoints
   @Get('alerts')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk', 'Viewer')
   @ApiOperation({ summary: 'Get active stock alerts' })
-  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Filter by warehouse code' })
-  @ApiResponse({ status: 200, description: 'Active stock alerts', type: [StockAlert] })
+  @ApiQuery({
+    name: 'warehouseCode',
+    required: false,
+    description: 'Filter by warehouse code',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Active stock alerts',
+    type: [StockAlert],
+  })
   async getActiveAlerts(
     @Query('warehouseCode') warehouseCode?: string,
   ): Promise<StockAlert[]> {
@@ -549,12 +741,17 @@ export class InventoryController {
   @Post('alerts/check')
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Manually check stock levels and generate alerts' })
-  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code to check' })
+  @ApiQuery({
+    name: 'warehouseCode',
+    required: false,
+    description: 'Warehouse code to check',
+  })
   @ApiResponse({ status: 200, description: 'Stock check completed' })
   async manualStockCheck(
     @Query('warehouseCode') warehouseCode?: string,
   ): Promise<{ message: string; alertsGenerated: number }> {
-    const alerts = await this.stockAlertService.performStockCheck(warehouseCode);
+    const alerts =
+      await this.stockAlertService.performStockCheck(warehouseCode);
     return {
       message: 'Stock check completed',
       alertsGenerated: alerts.length,
@@ -565,13 +762,20 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Check stock level for specific product' })
   @ApiParam({ name: 'productId', description: 'Product ID' })
-  @ApiQuery({ name: 'warehouseCode', required: false, description: 'Warehouse code' })
+  @ApiQuery({
+    name: 'warehouseCode',
+    required: false,
+    description: 'Warehouse code',
+  })
   @ApiResponse({ status: 200, description: 'Product stock check result' })
   async checkProductStock(
     @Param('productId') productId: string,
     @Query('warehouseCode') warehouseCode?: string,
   ): Promise<{ alert: any | null; message: string }> {
-    const alert = await this.stockAlertService.checkProductStock(productId, warehouseCode);
+    const alert = await this.stockAlertService.checkProductStock(
+      productId,
+      warehouseCode,
+    );
     return {
       alert,
       message: alert ? 'Stock alert generated' : 'Stock level is acceptable',
@@ -582,7 +786,11 @@ export class InventoryController {
   @RequireRoles('Admin', 'Manager', 'InventoryClerk')
   @ApiOperation({ summary: 'Acknowledge a stock alert' })
   @ApiParam({ name: 'id', description: 'Alert ID' })
-  @ApiResponse({ status: 200, description: 'Alert acknowledged', type: StockAlert })
+  @ApiResponse({
+    status: 200,
+    description: 'Alert acknowledged',
+    type: StockAlert,
+  })
   async acknowledgeAlert(
     @Param('id') alertId: string,
     @Body() body: { acknowledgedBy: string; notes?: string },

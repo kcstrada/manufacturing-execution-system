@@ -102,7 +102,9 @@ export class CacheService {
       // Implementation depends on the cache store being used
       this.logger.debug(`Invalidating cache pattern: ${pattern}`);
       // For now, we'll log a warning that pattern invalidation needs Redis client access
-      this.logger.warn('Pattern invalidation requires direct Redis client access');
+      this.logger.warn(
+        'Pattern invalidation requires direct Redis client access',
+      );
     } catch (error) {
       this.logger.error(`Error invalidating pattern ${pattern}:`, error);
     }
@@ -163,7 +165,7 @@ export class CacheService {
    */
   async mget<T>(keys: string[]): Promise<(T | undefined)[]> {
     try {
-      const promises = keys.map(key => this.get<T>(key));
+      const promises = keys.map((key) => this.get<T>(key));
       return Promise.all(promises);
     } catch (error) {
       this.logger.error('Error in batch get:', error);
@@ -174,10 +176,12 @@ export class CacheService {
   /**
    * Batch set multiple key-value pairs
    */
-  async mset<T>(items: Array<{ key: string; value: T; ttl?: number }>): Promise<void> {
+  async mset<T>(
+    items: Array<{ key: string; value: T; ttl?: number }>,
+  ): Promise<void> {
     try {
-      const promises = items.map(item => 
-        this.set(item.key, item.value, item.ttl)
+      const promises = items.map((item) =>
+        this.set(item.key, item.value, item.ttl),
       );
       await Promise.all(promises);
     } catch (error) {

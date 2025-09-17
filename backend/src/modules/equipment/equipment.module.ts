@@ -13,7 +13,11 @@ import {
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Equipment, MaintenanceSchedule, MaintenanceRecord]),
+    TypeOrmModule.forFeature([
+      Equipment,
+      MaintenanceSchedule,
+      MaintenanceRecord,
+    ]),
     EventEmitterModule,
     ClsModule,
     AuthModule,

@@ -109,7 +109,9 @@ export class EquipmentService {
     if (createDto.maintenanceIntervalHours) {
       equipment.maintenanceIntervalHours = createDto.maintenanceIntervalHours;
       const nextDate = new Date();
-      nextDate.setHours(nextDate.getHours() + createDto.maintenanceIntervalHours);
+      nextDate.setHours(
+        nextDate.getHours() + createDto.maintenanceIntervalHours,
+      );
       equipment.nextMaintenanceDate = nextDate;
     }
 
@@ -140,7 +142,8 @@ export class EquipmentService {
     if (filters?.type) where.type = filters.type;
     if (filters?.workCenterId) where.workCenterId = filters.workCenterId;
     if (filters?.departmentId) where.departmentId = filters.departmentId;
-    if (filters?.isCritical !== undefined) where.isCritical = filters.isCritical;
+    if (filters?.isCritical !== undefined)
+      where.isCritical = filters.isCritical;
     if (filters?.requiresCalibration !== undefined) {
       where.requiresCalibration = filters.requiresCalibration;
     }
@@ -170,7 +173,10 @@ export class EquipmentService {
     const equipment = await this.findOne(id);
 
     // Check for duplicate equipment code if changing
-    if (updateDto.equipmentCode && updateDto.equipmentCode !== equipment.equipmentCode) {
+    if (
+      updateDto.equipmentCode &&
+      updateDto.equipmentCode !== equipment.equipmentCode
+    ) {
       const existing = await this.equipmentRepository.findOne({
         where: {
           tenantId: equipment.tenantId,
@@ -208,14 +214,22 @@ export class EquipmentService {
     equipment.status = status;
 
     // Update availability metric
-    if (status === EquipmentStatus.OPERATIONAL || status === EquipmentStatus.IDLE) {
+    if (
+      status === EquipmentStatus.OPERATIONAL ||
+      status === EquipmentStatus.IDLE
+    ) {
       equipment.availability = 100;
-    } else if (status === EquipmentStatus.MAINTENANCE || status === EquipmentStatus.REPAIR) {
+    } else if (
+      status === EquipmentStatus.MAINTENANCE ||
+      status === EquipmentStatus.REPAIR
+    ) {
       equipment.availability = 0;
     }
 
     // Recalculate OEE
-    equipment.oee = (equipment.availability * equipment.performance * equipment.quality) / 10000;
+    equipment.oee =
+      (equipment.availability * equipment.performance * equipment.quality) /
+      10000;
 
     const saved = await this.equipmentRepository.save(equipment);
 
@@ -226,7 +240,9 @@ export class EquipmentService {
       newStatus: status,
     });
 
-    this.logger.log(`Equipment ${saved.equipmentCode} status changed to ${status}`);
+    this.logger.log(
+      `Equipment ${saved.equipmentCode} status changed to ${status}`,
+    );
     return saved;
   }
 
@@ -237,7 +253,10 @@ export class EquipmentService {
     const activeSchedules = await this.scheduleRepository.count({
       where: {
         equipmentId: id,
-        status: In([MaintenanceStatus.SCHEDULED, MaintenanceStatus.IN_PROGRESS]),
+        status: In([
+          MaintenanceStatus.SCHEDULED,
+          MaintenanceStatus.IN_PROGRESS,
+        ]),
       },
     });
 
@@ -296,15 +315,20 @@ export class EquipmentService {
     const saved = await this.scheduleRepository.save(schedule);
 
     // Update equipment next maintenance date
-    if (!equipment.nextMaintenanceDate || 
-        new Date(createDto.scheduledDate) < equipment.nextMaintenanceDate) {
+    if (
+      !equipment.nextMaintenanceDate ||
+      new Date(createDto.scheduledDate) < equipment.nextMaintenanceDate
+    ) {
       equipment.nextMaintenanceDate = new Date(createDto.scheduledDate);
       await this.equipmentRepository.save(equipment);
     }
 
     // Create recurring schedules if specified
     if (createDto.isRecurring && createDto.recurringIntervalDays) {
-      await this.createRecurringSchedules(saved, createDto.recurringIntervalDays);
+      await this.createRecurringSchedules(
+        saved,
+        createDto.recurringIntervalDays,
+      );
     }
 
     this.eventEmitter.emit('maintenance.scheduled', {
@@ -314,7 +338,9 @@ export class EquipmentService {
       type: saved.type,
     });
 
-    this.logger.log(`Maintenance scheduled for equipment ${equipment.equipmentCode}`);
+    this.logger.log(
+      `Maintenance scheduled for equipment ${equipment.equipmentCode}`,
+    );
     return saved;
   }
 
@@ -328,7 +354,7 @@ export class EquipmentService {
 
     for (let i = 1; i <= count; i++) {
       currentDate = addDays(currentDate, intervalDays);
-      
+
       const recurringSchedule = this.scheduleRepository.create({
         ...originalSchedule,
         id: undefined,
@@ -343,7 +369,9 @@ export class EquipmentService {
     await this.scheduleRepository.save(schedules);
   }
 
-  async getUpcomingMaintenance(days: number = 7): Promise<MaintenanceSchedule[]> {
+  async getUpcomingMaintenance(
+    days: number = 7,
+  ): Promise<MaintenanceSchedule[]> {
     const tenantId = this.getTenantId();
     const endDate = addDays(new Date(), days);
 
@@ -391,7 +419,9 @@ export class EquipmentService {
     });
 
     if (!schedule) {
-      throw new NotFoundException(`Maintenance schedule with ID ${id} not found`);
+      throw new NotFoundException(
+        `Maintenance schedule with ID ${id} not found`,
+      );
     }
 
     Object.assign(schedule, updateDto);
@@ -411,12 +441,18 @@ export class EquipmentService {
     });
 
     if (!schedule) {
-      throw new NotFoundException(`Maintenance schedule with ID ${scheduleId} not found`);
+      throw new NotFoundException(
+        `Maintenance schedule with ID ${scheduleId} not found`,
+      );
     }
 
-    if (schedule.status !== MaintenanceStatus.SCHEDULED &&
-        schedule.status !== MaintenanceStatus.OVERDUE) {
-      throw new BadRequestException('Maintenance has already been started or completed');
+    if (
+      schedule.status !== MaintenanceStatus.SCHEDULED &&
+      schedule.status !== MaintenanceStatus.OVERDUE
+    ) {
+      throw new BadRequestException(
+        'Maintenance has already been started or completed',
+      );
     }
 
     schedule.status = MaintenanceStatus.IN_PROGRESS;
@@ -444,7 +480,9 @@ export class EquipmentService {
     });
 
     if (!schedule) {
-      throw new NotFoundException(`Maintenance schedule with ID ${scheduleId} not found`);
+      throw new NotFoundException(
+        `Maintenance schedule with ID ${scheduleId} not found`,
+      );
     }
 
     if (schedule.status !== MaintenanceStatus.IN_PROGRESS) {
@@ -471,7 +509,9 @@ export class EquipmentService {
     // Calculate next maintenance date
     if (equipment.maintenanceIntervalHours > 0) {
       const nextDate = new Date();
-      nextDate.setHours(nextDate.getHours() + equipment.maintenanceIntervalHours);
+      nextDate.setHours(
+        nextDate.getHours() + equipment.maintenanceIntervalHours,
+      );
       equipment.nextMaintenanceDate = nextDate;
     }
 
@@ -487,7 +527,9 @@ export class EquipmentService {
   }
 
   // Maintenance Records
-  async recordMaintenance(recordDto: RecordMaintenanceDto): Promise<MaintenanceRecord> {
+  async recordMaintenance(
+    recordDto: RecordMaintenanceDto,
+  ): Promise<MaintenanceRecord> {
     const tenantId = this.getTenantId();
     const equipment = await this.findOne(recordDto.equipmentId);
 
@@ -533,7 +575,7 @@ export class EquipmentService {
     limit: number = 50,
   ): Promise<MaintenanceRecord[]> {
     const tenantId = this.getTenantId();
-    
+
     return this.recordRepository.find({
       where: { equipmentId, tenantId },
       order: { startDate: 'DESC' },
@@ -544,7 +586,9 @@ export class EquipmentService {
   // Metrics and Analytics
   async getEquipmentMetrics(): Promise<EquipmentMetrics> {
     const tenantId = this.getTenantId();
-    const equipment = await this.equipmentRepository.find({ where: { tenantId } });
+    const equipment = await this.equipmentRepository.find({
+      where: { tenantId },
+    });
 
     const metrics: EquipmentMetrics = {
       totalEquipment: equipment.length,
@@ -594,7 +638,9 @@ export class EquipmentService {
   ): Promise<MaintenanceMetrics> {
     const tenantId = this.getTenantId();
     const dateRange = {
-      startDate: startDate || startOfDay(new Date(new Date().setMonth(new Date().getMonth() - 1))),
+      startDate:
+        startDate ||
+        startOfDay(new Date(new Date().setMonth(new Date().getMonth() - 1))),
       endDate: endDate || endOfDay(new Date()),
     };
 
@@ -614,9 +660,14 @@ export class EquipmentService {
 
     const metrics: MaintenanceMetrics = {
       totalScheduled: schedules.length,
-      completed: schedules.filter(s => s.status === MaintenanceStatus.COMPLETED).length,
-      overdue: schedules.filter(s => s.status === MaintenanceStatus.OVERDUE).length,
-      inProgress: schedules.filter(s => s.status === MaintenanceStatus.IN_PROGRESS).length,
+      completed: schedules.filter(
+        (s) => s.status === MaintenanceStatus.COMPLETED,
+      ).length,
+      overdue: schedules.filter((s) => s.status === MaintenanceStatus.OVERDUE)
+        .length,
+      inProgress: schedules.filter(
+        (s) => s.status === MaintenanceStatus.IN_PROGRESS,
+      ).length,
       mtbf: 0,
       mttr: 0,
       totalCost: 0,
@@ -647,7 +698,9 @@ export class EquipmentService {
 
     // Calculate MTBF (would need operating hours data for accurate calculation)
     // This is a simplified calculation
-    const equipment = await this.equipmentRepository.find({ where: { tenantId } });
+    const equipment = await this.equipmentRepository.find({
+      where: { tenantId },
+    });
     let totalOperatingHours = 0;
     let totalBreakdowns = 0;
 
@@ -663,13 +716,18 @@ export class EquipmentService {
     return metrics;
   }
 
-  async calculateOEE(equipmentId: string, _period?: { start: Date; end: Date }): Promise<number> {
+  async calculateOEE(
+    equipmentId: string,
+    _period?: { start: Date; end: Date },
+  ): Promise<number> {
     const equipment = await this.findOne(equipmentId);
 
     // This is a simplified OEE calculation
     // In a real system, you would track actual production data
-    const oee = (equipment.availability * equipment.performance * equipment.quality) / 10000;
-    
+    const oee =
+      (equipment.availability * equipment.performance * equipment.quality) /
+      10000;
+
     equipment.oee = oee;
     await this.equipmentRepository.save(equipment);
 

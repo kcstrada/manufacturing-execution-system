@@ -12,14 +12,14 @@ describe('Health and Metrics Endpoints (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     app.setGlobalPrefix('api');
     app.enableVersioning({
       type: VersioningType.URI,
       defaultVersion: '1',
       prefix: 'v',
     });
-    
+
     await app.init();
   });
 
@@ -48,13 +48,13 @@ describe('Health and Metrics Endpoints (e2e)', () => {
       });
 
       it('should handle concurrent health checks', async () => {
-        const requests = Array(5).fill(null).map(() =>
-          request(app.getHttpServer()).get('/api/v1/health')
-        );
+        const requests = Array(5)
+          .fill(null)
+          .map(() => request(app.getHttpServer()).get('/api/v1/health'));
 
         const responses = await Promise.all(requests);
-        
-        responses.forEach(response => {
+
+        responses.forEach((response) => {
           expect(response.status).toBe(HttpStatus.OK);
           expect(response.body.status).toBe('ok');
         });
@@ -66,7 +66,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
         const response = await request(app.getHttpServer())
           .get('/api/v1/health/database')
           .expect((res) => {
-            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(res.status);
+            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(
+              res.status,
+            );
           });
 
         expect(response.body).toHaveProperty('status');
@@ -74,8 +76,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
       });
 
       it('should return database health details', async () => {
-        const response = await request(app.getHttpServer())
-          .get('/api/v1/health/database');
+        const response = await request(app.getHttpServer()).get(
+          '/api/v1/health/database',
+        );
 
         expect(response.body).toHaveProperty('status');
         if (response.body.details) {
@@ -89,7 +92,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
         const response = await request(app.getHttpServer())
           .get('/api/v1/health/redis')
           .expect((res) => {
-            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(res.status);
+            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(
+              res.status,
+            );
           });
 
         expect(response.body).toHaveProperty('status');
@@ -97,8 +102,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
       });
 
       it('should include redis health details', async () => {
-        const response = await request(app.getHttpServer())
-          .get('/api/v1/health/redis');
+        const response = await request(app.getHttpServer()).get(
+          '/api/v1/health/redis',
+        );
 
         expect(response.body).toHaveProperty('status');
         if (response.body.details) {
@@ -112,7 +118,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
         const response = await request(app.getHttpServer())
           .get('/api/v1/health/full')
           .expect((res) => {
-            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(res.status);
+            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(
+              res.status,
+            );
           });
 
         expect(response.body).toHaveProperty('status');
@@ -120,8 +128,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
       });
 
       it('should include health check details', async () => {
-        const response = await request(app.getHttpServer())
-          .get('/api/v1/health/full');
+        const response = await request(app.getHttpServer()).get(
+          '/api/v1/health/full',
+        );
 
         expect(response.body).toHaveProperty('status');
         if (response.body.details) {
@@ -135,12 +144,13 @@ describe('Health and Metrics Endpoints (e2e)', () => {
         const response = await request(app.getHttpServer())
           .get('/api/v1/health/startup')
           .expect((res) => {
-            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(res.status);
+            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(
+              res.status,
+            );
           });
 
         expect(response.body).toHaveProperty('status');
       });
-
     });
 
     describe('GET /api/v1/health/ready', () => {
@@ -148,7 +158,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
         const response = await request(app.getHttpServer())
           .get('/api/v1/health/ready')
           .expect((res) => {
-            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(res.status);
+            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(
+              res.status,
+            );
           });
 
         expect(response.body).toHaveProperty('status');
@@ -156,8 +168,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
       });
 
       it('should include individual service readiness', async () => {
-        const response = await request(app.getHttpServer())
-          .get('/api/v1/health/ready');
+        const response = await request(app.getHttpServer()).get(
+          '/api/v1/health/ready',
+        );
 
         expect(response.body).toHaveProperty('status');
         if (response.body.details) {
@@ -171,7 +184,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
         const response = await request(app.getHttpServer())
           .get('/api/v1/health/live')
           .expect((res) => {
-            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(res.status);
+            expect([HttpStatus.OK, HttpStatus.SERVICE_UNAVAILABLE]).toContain(
+              res.status,
+            );
           });
 
         expect(response.body).toHaveProperty('status');
@@ -184,7 +199,7 @@ describe('Health and Metrics Endpoints (e2e)', () => {
           .get('/api/v1/health/live')
           .expect(HttpStatus.OK);
         const duration = Date.now() - start;
-        
+
         expect(duration).toBeLessThan(100); // Should respond in less than 100ms
       });
     });
@@ -280,7 +295,9 @@ describe('Health and Metrics Endpoints (e2e)', () => {
         await request(app.getHttpServer())
           .get('/api/v1/metrics/custom?metric=invalid_metric_name')
           .expect((res) => {
-            expect([HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND]).toContain(res.status);
+            expect([HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND]).toContain(
+              res.status,
+            );
           });
       });
     });

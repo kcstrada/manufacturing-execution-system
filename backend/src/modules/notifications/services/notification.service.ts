@@ -40,8 +40,8 @@ export class NotificationService {
       const channels = Array.isArray(payload.channel)
         ? payload.channel
         : payload.channel
-        ? [payload.channel]
-        : [NotificationChannel.IN_APP];
+          ? [payload.channel]
+          : [NotificationChannel.IN_APP];
 
       const recipients = await this.resolveRecipients(payload);
       const results: NotificationResult[] = [];
@@ -80,8 +80,8 @@ export class NotificationService {
         }
       }
 
-      const successCount = results.filter(r => r.success).length;
-      const failureCount = results.filter(r => !r.success).length;
+      const successCount = results.filter((r) => r.success).length;
+      const failureCount = results.filter((r) => !r.success).length;
 
       return {
         totalCount: results.length,
@@ -90,12 +90,17 @@ export class NotificationService {
         results,
       };
     } catch (error) {
-      this.logger.error(`Failed to send notification: ${(error as Error).message}`, (error as Error).stack);
+      this.logger.error(
+        `Failed to send notification: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
       throw error;
     }
   }
 
-  private async resolveRecipients(payload: NotificationPayload): Promise<string[]> {
+  private async resolveRecipients(
+    payload: NotificationPayload,
+  ): Promise<string[]> {
     const recipients = new Set<string>();
 
     if (payload.userId) {
@@ -103,7 +108,7 @@ export class NotificationService {
     }
 
     if (payload.userIds) {
-      payload.userIds.forEach(id => recipients.add(id));
+      payload.userIds.forEach((id) => recipients.add(id));
     }
 
     if (payload.roles && payload.roles.length > 0) {
@@ -115,14 +120,24 @@ export class NotificationService {
     return Array.from(recipients);
   }
 
-  private async createNotification(payload: NotificationPayload & { userId: string; channel: NotificationChannel }): Promise<Notification> {
+  private async createNotification(
+    payload: NotificationPayload & {
+      userId: string;
+      channel: NotificationChannel;
+    },
+  ): Promise<Notification> {
     let title = payload.title;
     let message = payload.message;
 
     if (payload.templateId) {
-      const template = await this.templateService.getTemplate(payload.templateId);
+      const template = await this.templateService.getTemplate(
+        payload.templateId,
+      );
       if (template) {
-        const rendered = await this.templateService.renderTemplate(template, payload.templateData || {});
+        const rendered = await this.templateService.renderTemplate(
+          template,
+          payload.templateData || {},
+        );
         title = rendered.subject;
         message = rendered.body;
       }
@@ -150,7 +165,10 @@ export class NotificationService {
     return await this.notificationRepository.save(notification);
   }
 
-  private async sendByChannel(notification: Notification, channel: NotificationChannel): Promise<NotificationResult> {
+  private async sendByChannel(
+    notification: Notification,
+    channel: NotificationChannel,
+  ): Promise<NotificationResult> {
     try {
       switch (channel) {
         case NotificationChannel.EMAIL:
@@ -224,24 +242,35 @@ export class NotificationService {
     this.eventEmitter.emit('notification.read', { notificationId, userId });
   }
 
-  async markAsAcknowledged(notificationId: string, userId: string): Promise<void> {
+  async markAsAcknowledged(
+    notificationId: string,
+    userId: string,
+  ): Promise<void> {
     await this.notificationRepository.update(
       { id: notificationId, userId },
       { status: NotificationStatus.ACKNOWLEDGED, acknowledgedAt: new Date() },
     );
 
-    this.eventEmitter.emit('notification.acknowledged', { notificationId, userId });
+    this.eventEmitter.emit('notification.acknowledged', {
+      notificationId,
+      userId,
+    });
   }
 
   async getNotifications(filter: NotificationFilter): Promise<Notification[]> {
-    const query = this.notificationRepository.createQueryBuilder('notification');
+    const query =
+      this.notificationRepository.createQueryBuilder('notification');
 
     if (filter.tenantId) {
-      query.andWhere('notification.tenantId = :tenantId', { tenantId: filter.tenantId });
+      query.andWhere('notification.tenantId = :tenantId', {
+        tenantId: filter.tenantId,
+      });
     }
 
     if (filter.userId) {
-      query.andWhere('notification.userId = :userId', { userId: filter.userId });
+      query.andWhere('notification.userId = :userId', {
+        userId: filter.userId,
+      });
     }
 
     if (filter.type) {
@@ -250,18 +279,26 @@ export class NotificationService {
     }
 
     if (filter.channel) {
-      const channels = Array.isArray(filter.channel) ? filter.channel : [filter.channel];
+      const channels = Array.isArray(filter.channel)
+        ? filter.channel
+        : [filter.channel];
       query.andWhere('notification.channel IN (:...channels)', { channels });
     }
 
     if (filter.status) {
-      const statuses = Array.isArray(filter.status) ? filter.status : [filter.status];
+      const statuses = Array.isArray(filter.status)
+        ? filter.status
+        : [filter.status];
       query.andWhere('notification.status IN (:...statuses)', { statuses });
     }
 
     if (filter.priority) {
-      const priorities = Array.isArray(filter.priority) ? filter.priority : [filter.priority];
-      query.andWhere('notification.priority IN (:...priorities)', { priorities });
+      const priorities = Array.isArray(filter.priority)
+        ? filter.priority
+        : [filter.priority];
+      query.andWhere('notification.priority IN (:...priorities)', {
+        priorities,
+      });
     }
 
     if (filter.read !== undefined) {
@@ -281,15 +318,21 @@ export class NotificationService {
     }
 
     if (filter.startDate) {
-      query.andWhere('notification.createdAt >= :startDate', { startDate: filter.startDate });
+      query.andWhere('notification.createdAt >= :startDate', {
+        startDate: filter.startDate,
+      });
     }
 
     if (filter.endDate) {
-      query.andWhere('notification.createdAt <= :endDate', { endDate: filter.endDate });
+      query.andWhere('notification.createdAt <= :endDate', {
+        endDate: filter.endDate,
+      });
     }
 
     if (filter.groupId) {
-      query.andWhere('notification.groupId = :groupId', { groupId: filter.groupId });
+      query.andWhere('notification.groupId = :groupId', {
+        groupId: filter.groupId,
+      });
     }
 
     if (filter.search) {
@@ -304,8 +347,12 @@ export class NotificationService {
     return await query.getMany();
   }
 
-  async getStats(tenantId: string, userId?: string): Promise<NotificationStats> {
-    const query = this.notificationRepository.createQueryBuilder('notification')
+  async getStats(
+    tenantId: string,
+    userId?: string,
+  ): Promise<NotificationStats> {
+    const query = this.notificationRepository
+      .createQueryBuilder('notification')
       .where('notification.tenantId = :tenantId', { tenantId });
 
     if (userId) {
@@ -350,13 +397,16 @@ export class NotificationService {
       }
 
       // Type counts
-      stats.byType[notification.type] = (stats.byType[notification.type] || 0) + 1;
+      stats.byType[notification.type] =
+        (stats.byType[notification.type] || 0) + 1;
 
       // Channel counts
-      stats.byChannel[notification.channel] = (stats.byChannel[notification.channel] || 0) + 1;
+      stats.byChannel[notification.channel] =
+        (stats.byChannel[notification.channel] || 0) + 1;
 
       // Priority counts
-      stats.byPriority[notification.priority] = (stats.byPriority[notification.priority] || 0) + 1;
+      stats.byPriority[notification.priority] =
+        (stats.byPriority[notification.priority] || 0) + 1;
     }
 
     return stats;
@@ -376,8 +426,11 @@ export class NotificationService {
       notification.status = NotificationStatus.PENDING;
       await this.notificationRepository.save(notification);
 
-      const result = await this.sendByChannel(notification, notification.channel);
-      
+      const result = await this.sendByChannel(
+        notification,
+        notification.channel,
+      );
+
       if (result.success) {
         notification.status = NotificationStatus.SENT;
         notification.sentAt = new Date();

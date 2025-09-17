@@ -9,7 +9,7 @@ export class AuthService {
 
   async validateUser(payload: any): Promise<any> {
     this.logger.debug(`Validating user: ${payload.preferred_username}`);
-    
+
     return {
       userId: payload.sub,
       username: payload.preferred_username,
@@ -25,8 +25,10 @@ export class AuthService {
 
   extractRoles(payload: any): string[] {
     const realmRoles = payload.realm_access?.roles || [];
-    const resourceRoles = payload.resource_access?.[this.configService.get('KEYCLOAK_CLIENT_ID')]?.roles || [];
-    
+    const resourceRoles =
+      payload.resource_access?.[this.configService.get('KEYCLOAK_CLIENT_ID')]
+        ?.roles || [];
+
     return [...new Set([...realmRoles, ...resourceRoles])];
   }
 
@@ -37,6 +39,6 @@ export class AuthService {
 
   hasAnyRole(payload: any, roles: string[]): boolean {
     const userRoles = this.extractRoles(payload);
-    return roles.some(role => userRoles.includes(role));
+    return roles.some((role) => userRoles.includes(role));
   }
 }

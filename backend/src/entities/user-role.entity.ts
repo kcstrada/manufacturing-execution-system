@@ -1,11 +1,4 @@
-import {
-  Entity,
-  Column,
-  Index,
-  ManyToOne,
-  JoinColumn,
-  Unique,
-} from 'typeorm';
+import { Entity, Column, Index, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { TenantBaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { Role } from './role.entity';
@@ -29,7 +22,10 @@ export class UserRole extends TenantBaseEntity {
   @Column({ type: 'uuid' })
   roleId!: string;
 
-  @Column({ type: 'timestamp with time zone', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    type: 'timestamp with time zone',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   assignedAt!: Date;
 
   @ManyToOne(() => User, { nullable: true })

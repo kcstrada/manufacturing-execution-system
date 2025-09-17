@@ -28,11 +28,11 @@ export class MetricsService {
     this.counters.set('database_queries_total', 0);
     this.counters.set('cache_hits', 0);
     this.counters.set('cache_misses', 0);
-    
+
     // Initialize gauges
     this.gauges.set('active_connections', 0);
     this.gauges.set('queue_size', 0);
-    
+
     // Initialize histograms
     this.histograms.set('http_request_duration', []);
     this.histograms.set('database_query_duration', []);
@@ -59,12 +59,12 @@ export class MetricsService {
   recordHistogram(name: string, value: number): void {
     const histogram = this.histograms.get(name) || [];
     histogram.push(value);
-    
+
     // Keep only last 1000 values to prevent memory issues
     if (histogram.length > 1000) {
       histogram.shift();
     }
-    
+
     this.histograms.set(name, histogram);
   }
 
@@ -89,16 +89,16 @@ export class MetricsService {
    */
   private getHistogramStats() {
     const stats: Record<string, any> = {};
-    
+
     for (const [name, values] of this.histograms) {
       if (values.length === 0) {
         stats[name] = { count: 0 };
         continue;
       }
-      
+
       const sorted = [...values].sort((a, b) => a - b);
       const sum = values.reduce((a, b) => a + b, 0);
-      
+
       stats[name] = {
         count: values.length,
         min: sorted[0],
@@ -109,7 +109,7 @@ export class MetricsService {
         p99: sorted[Math.floor(sorted.length * 0.99)],
       };
     }
-    
+
     return stats;
   }
 
@@ -119,7 +119,7 @@ export class MetricsService {
   private getSystemMetrics() {
     const cpus = os.cpus();
     const loadAvg = os.loadavg();
-    
+
     return {
       cpu: {
         count: cpus.length,
@@ -134,7 +134,10 @@ export class MetricsService {
         total: os.totalmem(),
         free: os.freemem(),
         used: os.totalmem() - os.freemem(),
-        usagePercent: ((os.totalmem() - os.freemem()) / os.totalmem() * 100).toFixed(2),
+        usagePercent: (
+          ((os.totalmem() - os.freemem()) / os.totalmem()) *
+          100
+        ).toFixed(2),
       },
       uptime: os.uptime(),
       platform: os.platform(),
@@ -148,7 +151,7 @@ export class MetricsService {
   private getProcessMetrics() {
     const memUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
-    
+
     return {
       pid: process.pid,
       ppid: process.ppid,
@@ -200,7 +203,7 @@ export class MetricsService {
   private calculateErrorRate(): string {
     const total = this.counters.get('http_requests_total') || 0;
     const errors = this.counters.get('http_requests_error') || 0;
-    
+
     if (total === 0) return '0.00%';
     return ((errors / total) * 100).toFixed(2) + '%';
   }
@@ -212,7 +215,7 @@ export class MetricsService {
     const hits = this.counters.get('cache_hits') || 0;
     const misses = this.counters.get('cache_misses') || 0;
     const total = hits + misses;
-    
+
     if (total === 0) return '0.00%';
     return ((hits / total) * 100).toFixed(2) + '%';
   }
@@ -222,33 +225,35 @@ export class MetricsService {
    */
   getPrometheusMetrics(): string {
     const lines: string[] = [];
-    
+
     // Add counters
     for (const [name, value] of this.counters) {
       lines.push(`# TYPE ${name} counter`);
       lines.push(`${name} ${value}`);
     }
-    
+
     // Add gauges
     for (const [name, value] of this.gauges) {
       lines.push(`# TYPE ${name} gauge`);
       lines.push(`${name} ${value}`);
     }
-    
+
     // Add system metrics
     const systemMetrics = this.getSystemMetrics();
     lines.push('# TYPE system_memory_usage_bytes gauge');
     lines.push(`system_memory_usage_bytes ${systemMetrics.memory.used}`);
     lines.push('# TYPE system_cpu_load_average gauge');
-    lines.push(`system_cpu_load_average{period="1m"} ${systemMetrics.cpu.loadAverage['1m']}`);
-    
+    lines.push(
+      `system_cpu_load_average{period="1m"} ${systemMetrics.cpu.loadAverage['1m']}`,
+    );
+
     // Add process metrics
     const processMetrics = this.getProcessMetrics();
     lines.push('# TYPE process_memory_rss_bytes gauge');
     lines.push(`process_memory_rss_bytes ${processMetrics.memory.rss}`);
     lines.push('# TYPE process_memory_heap_bytes gauge');
     lines.push(`process_memory_heap_bytes ${processMetrics.memory.heapUsed}`);
-    
+
     return lines.join('\n');
   }
 

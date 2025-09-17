@@ -15,7 +15,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET', 'jwt_secret_key'),
-      issuer: configService.get<string>('KEYCLOAK_URL') + '/realms/' + configService.get<string>('KEYCLOAK_REALM'),
+      issuer:
+        configService.get<string>('KEYCLOAK_URL') +
+        '/realms/' +
+        configService.get<string>('KEYCLOAK_REALM'),
       algorithms: ['RS256', 'HS256'],
     });
   }
@@ -27,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     // Validate and enrich user data
     const user = await this.authService.validateUser(payload);
-    
+
     if (!user) {
       throw new UnauthorizedException('User validation failed');
     }

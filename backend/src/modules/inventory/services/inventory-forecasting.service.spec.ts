@@ -4,9 +4,15 @@ import { Repository } from 'typeorm';
 import { ClsService } from 'nestjs-cls';
 import { InventoryForecastingService } from './inventory-forecasting.service';
 import { Inventory, InventoryStatus } from '../../../entities/inventory.entity';
-import { CustomerOrder, CustomerOrderStatus } from '../../../entities/customer-order.entity';
+import {
+  CustomerOrder,
+  CustomerOrderStatus,
+} from '../../../entities/customer-order.entity';
 import { Product } from '../../../entities/product.entity';
-import { InventoryTransaction, InventoryTransactionType } from '../../../entities/inventory-transaction.entity';
+import {
+  InventoryTransaction,
+  InventoryTransactionType,
+} from '../../../entities/inventory-transaction.entity';
 import { ForecastDto, ForecastMethod } from '../dto/forecast.dto';
 
 describe('InventoryForecastingService', () => {
@@ -48,11 +54,21 @@ describe('InventoryForecastingService', () => {
       ],
     }).compile();
 
-    service = module.get<InventoryForecastingService>(InventoryForecastingService);
-    inventoryRepository = module.get<Repository<Inventory>>(getRepositoryToken(Inventory));
-    orderRepository = module.get<Repository<CustomerOrder>>(getRepositoryToken(CustomerOrder));
-    transactionRepository = module.get<Repository<InventoryTransaction>>(getRepositoryToken(InventoryTransaction));
-    productRepository = module.get<Repository<Product>>(getRepositoryToken(Product));
+    service = module.get<InventoryForecastingService>(
+      InventoryForecastingService,
+    );
+    inventoryRepository = module.get<Repository<Inventory>>(
+      getRepositoryToken(Inventory),
+    );
+    orderRepository = module.get<Repository<CustomerOrder>>(
+      getRepositoryToken(CustomerOrder),
+    );
+    transactionRepository = module.get<Repository<InventoryTransaction>>(
+      getRepositoryToken(InventoryTransaction),
+    );
+    productRepository = module.get<Repository<Product>>(
+      getRepositoryToken(Product),
+    );
   });
 
   afterEach(() => {
@@ -107,7 +123,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue(mockOrders),
       };
 
-      jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
+      jest
+        .spyOn(orderRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const inventoryQueryBuilder = {
         where: jest.fn().mockReturnThis(),
@@ -115,7 +133,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue([mockInventory]),
       };
 
-      jest.spyOn(inventoryRepository, 'createQueryBuilder').mockReturnValue(inventoryQueryBuilder as any);
+      jest
+        .spyOn(inventoryRepository, 'createQueryBuilder')
+        .mockReturnValue(inventoryQueryBuilder as any);
 
       jest.spyOn(transactionRepository, 'find').mockResolvedValue([]);
 
@@ -139,7 +159,7 @@ describe('InventoryForecastingService', () => {
       };
 
       const mockOrders = generateMockOrdersWithSeasonality();
-      
+
       const queryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
@@ -147,7 +167,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue(mockOrders),
       };
 
-      jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
+      jest
+        .spyOn(orderRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const inventoryQueryBuilder = {
         where: jest.fn().mockReturnThis(),
@@ -162,7 +184,9 @@ describe('InventoryForecastingService', () => {
         ]),
       };
 
-      jest.spyOn(inventoryRepository, 'createQueryBuilder').mockReturnValue(inventoryQueryBuilder as any);
+      jest
+        .spyOn(inventoryRepository, 'createQueryBuilder')
+        .mockReturnValue(inventoryQueryBuilder as any);
       jest.spyOn(transactionRepository, 'find').mockResolvedValue([]);
 
       const result = await service.generateForecast(forecastDto);
@@ -185,8 +209,12 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue([]),
       };
 
-      jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
-      jest.spyOn(inventoryRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
+      jest
+        .spyOn(orderRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
+      jest
+        .spyOn(inventoryRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
       jest.spyOn(transactionRepository, 'find').mockResolvedValue([]);
 
       const result = await service.generateForecast(forecastDto);
@@ -223,7 +251,9 @@ describe('InventoryForecastingService', () => {
         },
       ];
 
-      jest.spyOn(transactionRepository, 'find').mockResolvedValue(mockTransactions as any);
+      jest
+        .spyOn(transactionRepository, 'find')
+        .mockResolvedValue(mockTransactions as any);
 
       const result = await service.analyzeDemandPatterns(mockProductId, 90);
 
@@ -238,8 +268,10 @@ describe('InventoryForecastingService', () => {
 
     it('should detect stable demand pattern', async () => {
       const mockTransactions = generateStableDemandTransactions();
-      
-      jest.spyOn(transactionRepository, 'find').mockResolvedValue(mockTransactions as any);
+
+      jest
+        .spyOn(transactionRepository, 'find')
+        .mockResolvedValue(mockTransactions as any);
 
       const result = await service.analyzeDemandPatterns(mockProductId, 30);
 
@@ -250,9 +282,9 @@ describe('InventoryForecastingService', () => {
     it('should throw NotFoundException when no demand history exists', async () => {
       jest.spyOn(transactionRepository, 'find').mockResolvedValue([]);
 
-      await expect(service.analyzeDemandPatterns(mockProductId, 90))
-        .rejects
-        .toThrow('No demand history found');
+      await expect(
+        service.analyzeDemandPatterns(mockProductId, 90),
+      ).rejects.toThrow('No demand history found');
     });
   });
 
@@ -269,7 +301,9 @@ describe('InventoryForecastingService', () => {
         tenantId: mockTenantId,
       };
 
-      jest.spyOn(productRepository, 'findOne').mockResolvedValue(mockProduct as any);
+      jest
+        .spyOn(productRepository, 'findOne')
+        .mockResolvedValue(mockProduct as any);
 
       const mockOrders = generateMockOrders(30);
       const queryBuilder = {
@@ -279,13 +313,15 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue(mockOrders),
       };
 
-      jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
+      jest
+        .spyOn(orderRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
       jest.spyOn(transactionRepository, 'find').mockResolvedValue([]);
 
       const result = await service.calculateOptimalReorderPoints(
         productIds,
         leadTimeDays,
-        serviceLevel
+        serviceLevel,
       );
 
       expect(result).toBeDefined();
@@ -299,7 +335,7 @@ describe('InventoryForecastingService', () => {
 
     it('should handle missing products gracefully', async () => {
       const productIds = ['non-existent-product'];
-      
+
       jest.spyOn(productRepository, 'findOne').mockResolvedValue(null);
 
       const result = await service.calculateOptimalReorderPoints(productIds);
@@ -335,7 +371,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue(mockInventoryItems),
       };
 
-      jest.spyOn(inventoryRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
+      jest
+        .spyOn(inventoryRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const mockOrders = generateMockOrders(30);
       const orderQueryBuilder = {
@@ -345,7 +383,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue(mockOrders),
       };
 
-      jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValue(orderQueryBuilder as any);
+      jest
+        .spyOn(orderRepository, 'createQueryBuilder')
+        .mockReturnValue(orderQueryBuilder as any);
       jest.spyOn(transactionRepository, 'find').mockResolvedValue([]);
 
       const result = await service.predictStockouts(warehouseCode, daysAhead);
@@ -356,7 +396,9 @@ describe('InventoryForecastingService', () => {
         expect(result[0]?.productId).toBeDefined();
         expect(result[0]?.currentStock).toBeDefined();
         expect(result[0]?.risk).toBeDefined();
-        expect(['low', 'medium', 'high', 'critical']).toContain(result[0]?.risk);
+        expect(['low', 'medium', 'high', 'critical']).toContain(
+          result[0]?.risk,
+        );
         expect(result[0]?.recommendedAction).toBeDefined();
       }
     });
@@ -383,7 +425,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue(mockInventoryItems),
       };
 
-      jest.spyOn(inventoryRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
+      jest
+        .spyOn(inventoryRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       // High demand orders
       const mockOrders = generateHighDemandOrders();
@@ -394,7 +438,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue(mockOrders),
       };
 
-      jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValue(orderQueryBuilder as any);
+      jest
+        .spyOn(orderRepository, 'createQueryBuilder')
+        .mockReturnValue(orderQueryBuilder as any);
       jest.spyOn(transactionRepository, 'find').mockResolvedValue([]);
 
       const result = await service.predictStockouts('WH001', 14);
@@ -439,7 +485,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue(mockInventoryItems),
       };
 
-      jest.spyOn(inventoryRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
+      jest
+        .spyOn(inventoryRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilder as any);
 
       const orderQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -448,7 +496,9 @@ describe('InventoryForecastingService', () => {
         getMany: jest.fn().mockResolvedValue([]),
       };
 
-      jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValue(orderQueryBuilder as any);
+      jest
+        .spyOn(orderRepository, 'createQueryBuilder')
+        .mockReturnValue(orderQueryBuilder as any);
       jest.spyOn(transactionRepository, 'find').mockResolvedValue([]);
 
       const result = await service.predictStockouts('WH001', 14);
@@ -493,10 +543,10 @@ describe('InventoryForecastingService', () => {
         const date = new Date();
         date.setMonth(date.getMonth() - (6 - month));
         date.setDate(day + 1);
-        
+
         // Higher demand in certain months (seasonality)
         const seasonalFactor = month === 0 || month === 5 ? 1.5 : 1.0;
-        
+
         orders.push({
           id: `order-${month}-${day}`,
           orderDate: date,

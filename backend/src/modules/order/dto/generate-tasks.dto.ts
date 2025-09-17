@@ -64,7 +64,10 @@ export class TaskGenerationResultDto {
   @ApiProperty({ description: 'Task IDs', type: [String] })
   taskIds!: string[];
 
-  @ApiProperty({ description: 'Warnings encountered during generation', type: [String] })
+  @ApiProperty({
+    description: 'Warnings encountered during generation',
+    type: [String],
+  })
   warnings!: string[];
 }
 

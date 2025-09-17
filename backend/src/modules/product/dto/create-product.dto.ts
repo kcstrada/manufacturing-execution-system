@@ -161,4 +161,24 @@ export class CreateProductDto {
   @ApiPropertyOptional({ description: 'Image URLs', type: [String] })
   @IsOptional()
   imageUrls?: string[];
+
+  @ApiPropertyOptional({ description: 'Is product manufacturable' })
+  @IsBoolean()
+  @IsOptional()
+  isManufacturable?: boolean = false;
+
+  @ApiPropertyOptional({ description: 'Is product purchasable' })
+  @IsBoolean()
+  @IsOptional()
+  isPurchasable?: boolean = true;
+
+  @ApiPropertyOptional({ description: 'Default BOM ID', format: 'uuid' })
+  @IsUUID()
+  @IsOptional()
+  defaultBomId?: string;
+
+  @ApiPropertyOptional({ description: 'Default Routing ID', format: 'uuid' })
+  @IsUUID()
+  @IsOptional()
+  defaultRoutingId?: string;
 }

@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
+import {
+  HealthIndicator,
+  HealthIndicatorResult,
+  HealthCheckError,
+} from '@nestjs/terminus';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -98,12 +102,14 @@ export class DatabaseHealthIndicator extends HealthIndicator {
         AND n_live_tup > 1000
       `);
 
-      const cacheHitRatio = parseFloat(cacheStats[0]?.cache_hit_ratio || 0) * 100;
+      const cacheHitRatio =
+        parseFloat(cacheStats[0]?.cache_hit_ratio || 0) * 100;
       const slowQueryCount = parseInt(slowQueries[0]?.count || 0);
       const bloatedTables = parseInt(bloatInfo[0]?.tables_with_bloat || 0);
 
       // Determine health based on metrics
-      const isHealthy = cacheHitRatio > 90 && slowQueryCount < 5 && bloatedTables < 3;
+      const isHealthy =
+        cacheHitRatio > 90 && slowQueryCount < 5 && bloatedTables < 3;
 
       return this.getStatus(key, isHealthy, {
         status: isHealthy ? 'healthy' : 'degraded',
@@ -112,7 +118,11 @@ export class DatabaseHealthIndicator extends HealthIndicator {
           slowQueries: slowQueryCount,
           bloatedTables: bloatedTables,
         },
-        recommendations: this.getRecommendations(cacheHitRatio, slowQueryCount, bloatedTables),
+        recommendations: this.getRecommendations(
+          cacheHitRatio,
+          slowQueryCount,
+          bloatedTables,
+        ),
       });
     } catch (error) {
       throw new HealthCheckError(
@@ -147,7 +157,8 @@ export class DatabaseHealthIndicator extends HealthIndicator {
       }
 
       const hasIssues = replicationInfo.some(
-        (replica: any) => replica.state !== 'streaming' || replica.replay_lag > 1000,
+        (replica: any) =>
+          replica.state !== 'streaming' || replica.replay_lag > 1000,
       );
 
       return this.getStatus(key, !hasIssues, {
@@ -197,7 +208,9 @@ export class DatabaseHealthIndicator extends HealthIndicator {
     const recommendations: string[] = [];
 
     if (cacheHitRatio < 90) {
-      recommendations.push('Consider increasing shared_buffers or adding more RAM');
+      recommendations.push(
+        'Consider increasing shared_buffers or adding more RAM',
+      );
     }
     if (slowQueries > 5) {
       recommendations.push('Review and optimize slow queries');

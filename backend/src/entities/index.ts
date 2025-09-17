@@ -9,6 +9,7 @@ export * from './department.entity';
 
 // Product management
 export * from './product.entity';
+export * from './product-variant.entity';
 export * from './product-category.entity';
 export * from './product-template.entity';
 export * from './product-revision.entity';
@@ -17,6 +18,7 @@ export * from './unit-of-measure.entity';
 
 // Production planning
 export * from './production-order.entity';
+export * from './production-step.entity';
 export * from './work-order.entity';
 export * from './work-center.entity';
 export * from './routing.entity';

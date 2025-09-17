@@ -1,7 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { OrderWorkflowListener, OrderStateChangedEvent } from './order-workflow.listener';
-import { CustomerOrder, CustomerOrderStatus } from '../../../entities/customer-order.entity';
+import {
+  OrderWorkflowListener,
+  OrderStateChangedEvent,
+} from './order-workflow.listener';
+import {
+  CustomerOrder,
+  CustomerOrderStatus,
+} from '../../../entities/customer-order.entity';
 import { OrderToTaskConverterService } from '../services/order-to-task-converter.service';
 import { TaskPriority } from '../../../entities/task.entity';
 
@@ -36,7 +42,7 @@ describe('OrderWorkflowListener', () => {
     }).compile();
 
     listener = module.get<OrderWorkflowListener>(OrderWorkflowListener);
-    orderToTaskConverter = module.get(OrderToTaskConverterService) as jest.Mocked<OrderToTaskConverterService>;
+    orderToTaskConverter = module.get(OrderToTaskConverterService);
   });
 
   afterEach(() => {
@@ -61,10 +67,15 @@ describe('OrderWorkflowListener', () => {
         warnings: [],
       };
 
-      orderToTaskConverter.convertOrderToTasks.mockResolvedValue(mockConversionResult);
+      orderToTaskConverter.convertOrderToTasks.mockResolvedValue(
+        mockConversionResult,
+      );
 
-      const handleOrderConfirmedSpy = jest.spyOn(listener as any, 'handleOrderConfirmed');
-      
+      const handleOrderConfirmedSpy = jest.spyOn(
+        listener as any,
+        'handleOrderConfirmed',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleOrderConfirmedSpy).toHaveBeenCalledWith(event);
@@ -76,7 +87,7 @@ describe('OrderWorkflowListener', () => {
           autoSchedule: true,
           includeQualityChecks: true,
           includeSetupTasks: true,
-        }
+        },
       );
     });
 
@@ -91,16 +102,16 @@ describe('OrderWorkflowListener', () => {
       };
 
       orderToTaskConverter.convertOrderToTasks.mockRejectedValue(
-        new Error('Task generation failed')
+        new Error('Task generation failed'),
       );
 
       const loggerErrorSpy = jest.spyOn((listener as any).logger, 'error');
-      
+
       await listener.handleOrderStateChanged(event);
 
       expect(orderToTaskConverter.convertOrderToTasks).toHaveBeenCalled();
       expect(loggerErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to generate tasks for order ORD-001')
+        expect.stringContaining('Failed to generate tasks for order ORD-001'),
       );
     });
 
@@ -121,14 +132,16 @@ describe('OrderWorkflowListener', () => {
         warnings: ['No routing found', 'Missing BOM'],
       };
 
-      orderToTaskConverter.convertOrderToTasks.mockResolvedValue(mockConversionResult);
+      orderToTaskConverter.convertOrderToTasks.mockResolvedValue(
+        mockConversionResult,
+      );
 
       const loggerWarnSpy = jest.spyOn((listener as any).logger, 'warn');
-      
+
       await listener.handleOrderStateChanged(event);
 
       expect(loggerWarnSpy).toHaveBeenCalledWith(
-        'Warnings during task generation: No routing found, Missing BOM'
+        'Warnings during task generation: No routing found, Missing BOM',
       );
     });
 
@@ -142,8 +155,11 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
-      const handleProductionStartedSpy = jest.spyOn(listener as any, 'handleProductionStarted');
-      
+      const handleProductionStartedSpy = jest.spyOn(
+        listener as any,
+        'handleProductionStarted',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleProductionStartedSpy).toHaveBeenCalledWith(event);
@@ -159,8 +175,11 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
-      const handleQualityControlStartedSpy = jest.spyOn(listener as any, 'handleQualityControlStarted');
-      
+      const handleQualityControlStartedSpy = jest.spyOn(
+        listener as any,
+        'handleQualityControlStarted',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleQualityControlStartedSpy).toHaveBeenCalledWith(event);
@@ -176,8 +195,11 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
-      const handleQualityControlPassedSpy = jest.spyOn(listener as any, 'handleQualityControlPassed');
-      
+      const handleQualityControlPassedSpy = jest.spyOn(
+        listener as any,
+        'handleQualityControlPassed',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleQualityControlPassedSpy).toHaveBeenCalledWith(event);
@@ -193,8 +215,11 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
-      const handleQualityControlFailedSpy = jest.spyOn(listener as any, 'handleQualityControlFailed');
-      
+      const handleQualityControlFailedSpy = jest.spyOn(
+        listener as any,
+        'handleQualityControlFailed',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleQualityControlFailedSpy).toHaveBeenCalledWith(event);
@@ -210,8 +235,11 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
-      const handleOrderShippedSpy = jest.spyOn(listener as any, 'handleOrderShipped');
-      
+      const handleOrderShippedSpy = jest.spyOn(
+        listener as any,
+        'handleOrderShipped',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleOrderShippedSpy).toHaveBeenCalledWith(event);
@@ -227,8 +255,11 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
-      const handleOrderDeliveredSpy = jest.spyOn(listener as any, 'handleOrderDelivered');
-      
+      const handleOrderDeliveredSpy = jest.spyOn(
+        listener as any,
+        'handleOrderDelivered',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleOrderDeliveredSpy).toHaveBeenCalledWith(event);
@@ -244,8 +275,11 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
-      const handleOrderCancelledSpy = jest.spyOn(listener as any, 'handleOrderCancelled');
-      
+      const handleOrderCancelledSpy = jest.spyOn(
+        listener as any,
+        'handleOrderCancelled',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleOrderCancelledSpy).toHaveBeenCalledWith(event);
@@ -261,8 +295,11 @@ describe('OrderWorkflowListener', () => {
         timestamp: new Date(),
       };
 
-      const handleOrderOnHoldSpy = jest.spyOn(listener as any, 'handleOrderOnHold');
-      
+      const handleOrderOnHoldSpy = jest.spyOn(
+        listener as any,
+        'handleOrderOnHold',
+      );
+
       await listener.handleOrderStateChanged(event);
 
       expect(handleOrderOnHoldSpy).toHaveBeenCalledWith(event);
@@ -277,10 +314,12 @@ describe('OrderWorkflowListener', () => {
       };
 
       const logSpy = jest.spyOn((listener as any).logger, 'log');
-      
+
       await listener.handleProductionComplete(payload);
 
-      expect(logSpy).toHaveBeenCalledWith(`Production complete for order ${mockOrderNumber}`);
+      expect(logSpy).toHaveBeenCalledWith(
+        `Production complete for order ${mockOrderNumber}`,
+      );
     });
   });
 
@@ -293,10 +332,12 @@ describe('OrderWorkflowListener', () => {
       };
 
       const logSpy = jest.spyOn((listener as any).logger, 'log');
-      
+
       await listener.handleQCComplete(payload);
 
-      expect(logSpy).toHaveBeenCalledWith(`QC passed for order ${mockOrderNumber}`);
+      expect(logSpy).toHaveBeenCalledWith(
+        `QC passed for order ${mockOrderNumber}`,
+      );
     });
 
     it('should handle QC failed event with issues', async () => {
@@ -308,10 +349,12 @@ describe('OrderWorkflowListener', () => {
       };
 
       const warnSpy = jest.spyOn((listener as any).logger, 'warn');
-      
+
       await listener.handleQCComplete(payload);
 
-      expect(warnSpy).toHaveBeenCalledWith(`QC failed for order ${mockOrderNumber}: Issue 1, Issue 2`);
+      expect(warnSpy).toHaveBeenCalledWith(
+        `QC failed for order ${mockOrderNumber}: Issue 1, Issue 2`,
+      );
     });
   });
 
@@ -323,10 +366,12 @@ describe('OrderWorkflowListener', () => {
       };
 
       const logSpy = jest.spyOn((listener as any).logger, 'log');
-      
+
       await listener.handlePaymentReceived(payload);
 
-      expect(logSpy).toHaveBeenCalledWith(`Payment received for order ${mockOrderId}: $1000`);
+      expect(logSpy).toHaveBeenCalledWith(
+        `Payment received for order ${mockOrderId}: $1000`,
+      );
     });
   });
 
@@ -338,10 +383,12 @@ describe('OrderWorkflowListener', () => {
       };
 
       const logSpy = jest.spyOn((listener as any).logger, 'log');
-      
+
       await listener.handleInventoryAllocated(payload);
 
-      expect(logSpy).toHaveBeenCalledWith(`Inventory allocated for order ${mockOrderId}`);
+      expect(logSpy).toHaveBeenCalledWith(
+        `Inventory allocated for order ${mockOrderId}`,
+      );
     });
 
     it('should handle failed inventory allocation', async () => {
@@ -351,10 +398,12 @@ describe('OrderWorkflowListener', () => {
       };
 
       const warnSpy = jest.spyOn((listener as any).logger, 'warn');
-      
+
       await listener.handleInventoryAllocated(payload);
 
-      expect(warnSpy).toHaveBeenCalledWith(`Failed to allocate inventory for order ${mockOrderId}`);
+      expect(warnSpy).toHaveBeenCalledWith(
+        `Failed to allocate inventory for order ${mockOrderId}`,
+      );
     });
   });
 });

@@ -131,24 +131,26 @@ describe('Product Entity', () => {
       },
     ];
 
-    testCases.forEach(({ type, isManufacturable, isPurchasable, description }) => {
-      it(`should handle ${type}: ${description}`, () => {
-        const productRepository = dataSource.getRepository(Product);
+    testCases.forEach(
+      ({ type, isManufacturable, isPurchasable, description }) => {
+        it(`should handle ${type}: ${description}`, () => {
+          const productRepository = dataSource.getRepository(Product);
 
-        const product = productRepository.create({
-          tenantId: 'test-tenant',
-          sku: `TEST-${type}`,
-          name: `Test ${type}`,
-          type,
-          isManufacturable,
-          isPurchasable,
-          unitOfMeasureId: '00000000-0000-0000-0000-000000000001',
+          const product = productRepository.create({
+            tenantId: 'test-tenant',
+            sku: `TEST-${type}`,
+            name: `Test ${type}`,
+            type,
+            isManufacturable,
+            isPurchasable,
+            unitOfMeasureId: '00000000-0000-0000-0000-000000000001',
+          });
+
+          expect(product.type).toBe(type);
+          expect(product.isManufacturable).toBe(isManufacturable);
+          expect(product.isPurchasable).toBe(isPurchasable);
         });
-
-        expect(product.type).toBe(type);
-        expect(product.isManufacturable).toBe(isManufacturable);
-        expect(product.isPurchasable).toBe(isPurchasable);
-      });
-    });
+      },
+    );
   });
 });

@@ -15,7 +15,10 @@ export class CreateTenantDto {
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Whether tenant is active', default: true })
+  @ApiPropertyOptional({
+    description: 'Whether tenant is active',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;

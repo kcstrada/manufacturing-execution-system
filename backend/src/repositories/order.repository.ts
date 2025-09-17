@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { CustomerOrder, CustomerOrderLine } from '../entities/customer-order.entity';
+import {
+  CustomerOrder,
+  CustomerOrderLine,
+} from '../entities/customer-order.entity';
 import { TenantAwareRepository } from '../common/repositories/tenant-aware.repository';
 import { ClsService } from 'nestjs-cls';
 import { OrderQueryDto } from '../modules/order/dto/order-query.dto';
@@ -79,28 +82,30 @@ export class OrderRepository extends TenantAwareRepository<CustomerOrder> {
     total: number;
   }> {
     const qb = this.createQueryBuilderWithFilters(query);
-    
+
     // Apply pagination
     const page = query.page || 1;
     const limit = query.limit || 20;
     const offset = (page - 1) * limit;
-    
+
     qb.skip(offset).take(limit);
-    
+
     // Apply sorting
     const sortBy = query.sortBy || 'orderDate';
     const sortOrder = query.sortOrder || 'DESC';
     qb.orderBy(`order.${sortBy}`, sortOrder);
-    
+
     const [data, total] = await qb.getManyAndCount();
-    
+
     return { data, total };
   }
 
   /**
    * Create query builder with filters
    */
-  private createQueryBuilderWithFilters(query: OrderQueryDto): SelectQueryBuilder<CustomerOrder> {
+  private createQueryBuilderWithFilters(
+    query: OrderQueryDto,
+  ): SelectQueryBuilder<CustomerOrder> {
     const tenantId = this.getTenantId();
     const qb = this.repository
       .createQueryBuilder('order')
@@ -109,57 +114,65 @@ export class OrderRepository extends TenantAwareRepository<CustomerOrder> {
       .leftJoinAndSelect('orderLines.product', 'product')
       .where('order.tenantId = :tenantId', { tenantId })
       .andWhere('order.isActive = :isActive', { isActive: true });
-    
+
     // Apply filters
     if (query.customerId) {
-      qb.andWhere('order.customerId = :customerId', { customerId: query.customerId });
+      qb.andWhere('order.customerId = :customerId', {
+        customerId: query.customerId,
+      });
     }
-    
+
     if (query.status) {
       qb.andWhere('order.status = :status', { status: query.status });
     }
-    
+
     if (query.priority) {
       qb.andWhere('order.priority = :priority', { priority: query.priority });
     }
-    
+
     if (query.salesRepId) {
-      qb.andWhere('order.salesRepId = :salesRepId', { salesRepId: query.salesRepId });
+      qb.andWhere('order.salesRepId = :salesRepId', {
+        salesRepId: query.salesRepId,
+      });
     }
-    
+
     if (query.orderNumber) {
-      qb.andWhere('order.orderNumber ILIKE :orderNumber', { 
-        orderNumber: `%${query.orderNumber}%` 
+      qb.andWhere('order.orderNumber ILIKE :orderNumber', {
+        orderNumber: `%${query.orderNumber}%`,
       });
     }
-    
+
     if (query.customerPONumber) {
-      qb.andWhere('order.customerPONumber ILIKE :customerPONumber', { 
-        customerPONumber: `%${query.customerPONumber}%` 
+      qb.andWhere('order.customerPONumber ILIKE :customerPONumber', {
+        customerPONumber: `%${query.customerPONumber}%`,
       });
     }
-    
+
     // Date range filters
     if (query.orderDateFrom) {
-      qb.andWhere('order.orderDate >= :orderDateFrom', { orderDateFrom: query.orderDateFrom });
+      qb.andWhere('order.orderDate >= :orderDateFrom', {
+        orderDateFrom: query.orderDateFrom,
+      });
     }
-    
+
     if (query.orderDateTo) {
-      qb.andWhere('order.orderDate <= :orderDateTo', { orderDateTo: query.orderDateTo });
+      qb.andWhere('order.orderDate <= :orderDateTo', {
+        orderDateTo: query.orderDateTo,
+      });
     }
-    
+
     if (query.requiredDateFrom) {
-      qb.andWhere('order.requiredDate >= :requiredDateFrom', { 
-        requiredDateFrom: query.requiredDateFrom 
+      qb.andWhere('order.requiredDate >= :requiredDateFrom', {
+        requiredDateFrom: query.requiredDateFrom,
       });
     }
-    
+
     if (query.requiredDateTo) {
-      qb.andWhere('order.requiredDate <= :requiredDateTo', { 
-        requiredDateTo: query.requiredDateTo 
+      qb.andWhere('order.requiredDate <= :requiredDateTo', {
+        requiredDateTo: query.requiredDateTo,
       });
     }
-    
+
     return qb;
   }
 
@@ -178,25 +191,25 @@ export class OrderRepository extends TenantAwareRepository<CustomerOrder> {
       .createQueryBuilder('order')
       .where('order.tenantId = :tenantId', { tenantId })
       .andWhere('order.isActive = :isActive', { isActive: true });
-    
+
     if (customerId) {
       qb = qb.andWhere('order.customerId = :customerId', { customerId });
     }
-    
+
     const stats = await qb
       .select('COUNT(*)', 'totalOrders')
       .addSelect(
         "COUNT(CASE WHEN order.status IN ('draft', 'confirmed', 'in_production') THEN 1 END)",
-        'pendingOrders'
+        'pendingOrders',
       )
       .addSelect(
         "COUNT(CASE WHEN order.status IN ('shipped', 'delivered') THEN 1 END)",
-        'completedOrders'
+        'completedOrders',
       )
       .addSelect('COALESCE(SUM(order.totalAmount), 0)', 'totalRevenue')
       .addSelect('COALESCE(AVG(order.totalAmount), 0)', 'averageOrderValue')
       .getRawOne();
-    
+
     return {
       totalOrders: parseInt(stats.totalOrders) || 0,
       pendingOrders: parseInt(stats.pendingOrders) || 0,
@@ -212,18 +225,18 @@ export class OrderRepository extends TenantAwareRepository<CustomerOrder> {
   async getOrdersRequiringAttention(): Promise<CustomerOrder[]> {
     const tenantId = this.getTenantId();
     const today = new Date();
-    
+
     return this.repository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.customer', 'customer')
       .leftJoinAndSelect('order.orderLines', 'orderLines')
       .where('order.tenantId = :tenantId', { tenantId })
       .andWhere('order.isActive = :isActive', { isActive: true })
-      .andWhere('order.status IN (:...statuses)', { 
-        statuses: ['confirmed', 'in_production'] 
+      .andWhere('order.status IN (:...statuses)', {
+        statuses: ['confirmed', 'in_production'],
       })
-      .andWhere('order.requiredDate <= :date', { 
-        date: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+      .andWhere('order.requiredDate <= :date', {
+        date: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
       })
       .orderBy('order.requiredDate', 'ASC')
       .addOrderBy('order.priority', 'DESC')

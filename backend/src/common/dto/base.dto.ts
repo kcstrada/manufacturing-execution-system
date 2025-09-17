@@ -46,12 +46,18 @@ export class SoftDeletableResponseDto extends BaseResponseDto {
  * Auditable response DTO with user tracking
  */
 export class AuditableResponseDto extends TenantAwareResponseDto {
-  @ApiPropertyOptional({ description: 'User who created the record', format: 'uuid' })
+  @ApiPropertyOptional({
+    description: 'User who created the record',
+    format: 'uuid',
+  })
   @IsUUID()
   @IsOptional()
   createdBy?: string;
 
-  @ApiPropertyOptional({ description: 'User who last updated the record', format: 'uuid' })
+  @ApiPropertyOptional({
+    description: 'User who last updated the record',
+    format: 'uuid',
+  })
   @IsUUID()
   @IsOptional()
   updatedBy?: string;

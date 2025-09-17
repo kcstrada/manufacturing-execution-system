@@ -33,7 +33,6 @@ export class Department extends TenantBaseEntity {
   @Column({ type: 'varchar', length: 100, nullable: true })
   costCenter?: string;
 
-
   // Relations
   @ManyToOne(() => Department, { nullable: true })
   @JoinColumn({ name: 'parent_department_id' })

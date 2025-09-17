@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Notification } from '../entities/notification.entity';
-import { NotificationResult, NotificationStatus, NotificationChannel } from '../types/notification.types';
+import {
+  NotificationResult,
+  NotificationStatus,
+  NotificationChannel,
+} from '../types/notification.types';
 
 @Injectable()
 export class EmailService {
@@ -25,7 +29,9 @@ export class EmailService {
     };
 
     if (!emailConfig.auth.user || !emailConfig.auth.pass) {
-      this.logger.warn('SMTP credentials not configured, email service will be disabled');
+      this.logger.warn(
+        'SMTP credentials not configured, email service will be disabled',
+      );
       return;
     }
 
@@ -33,7 +39,9 @@ export class EmailService {
 
     this.transporter.verify((error) => {
       if (error) {
-        this.logger.error(`Email transporter verification failed: ${error.message}`);
+        this.logger.error(
+          `Email transporter verification failed: ${error.message}`,
+        );
       } else {
         this.logger.log('Email transporter is ready');
       }
@@ -62,7 +70,9 @@ export class EmailService {
 
       const info = await this.transporter.sendMail(mailOptions);
 
-      this.logger.log(`Email sent successfully to ${recipientEmail}: ${info.messageId}`);
+      this.logger.log(
+        `Email sent successfully to ${recipientEmail}: ${info.messageId}`,
+      );
 
       return {
         success: true,
@@ -72,7 +82,10 @@ export class EmailService {
         deliveredAt: new Date(),
       };
     } catch (error) {
-      this.logger.error(`Failed to send email: ${(error as Error).message}`, (error as Error).stack);
+      this.logger.error(
+        `Failed to send email: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
       return {
         success: false,
         notificationId: notification.id,
@@ -83,7 +96,9 @@ export class EmailService {
     }
   }
 
-  private async getRecipientEmail(notification: Notification): Promise<string | null> {
+  private async getRecipientEmail(
+    notification: Notification,
+  ): Promise<string | null> {
     // First check if email is in notification data
     if (notification.data?.email) {
       return notification.data.email;
@@ -97,7 +112,10 @@ export class EmailService {
   }
 
   private formatHtmlEmail(notification: Notification): string {
-    const baseUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    const baseUrl = this.configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:3000',
+    );
     const logoUrl = notification.metadata?.iconUrl || `${baseUrl}/logo.png`;
     const actionUrl = notification.metadata?.actionUrl;
 
@@ -105,14 +123,18 @@ export class EmailService {
     if (notification.actions && notification.actions.length > 0) {
       actionsHtml = `
         <div style="margin-top: 30px;">
-          ${notification.actions.map(action => `
+          ${notification.actions
+            .map(
+              (action) => `
             <a href="${baseUrl}/notifications/${notification.id}/action/${action.action}" 
                style="display: inline-block; padding: 10px 20px; margin: 5px; 
                       background-color: ${this.getActionColor(action.style)}; 
                       color: white; text-decoration: none; border-radius: 5px;">
               ${action.label}
             </a>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       `;
     } else if (actionUrl) {
@@ -165,13 +187,21 @@ export class EmailService {
   }
 
   private formatTextEmail(notification: Notification): string {
-    const baseUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    const baseUrl = this.configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:3000',
+    );
     let actionsText = '';
 
     if (notification.actions && notification.actions.length > 0) {
-      actionsText = '\n\nActions:\n' + notification.actions.map(action => 
-        `- ${action.label}: ${baseUrl}/notifications/${notification.id}/action/${action.action}`
-      ).join('\n');
+      actionsText =
+        '\n\nActions:\n' +
+        notification.actions
+          .map(
+            (action) =>
+              `- ${action.label}: ${baseUrl}/notifications/${notification.id}/action/${action.action}`,
+          )
+          .join('\n');
     } else if (notification.metadata?.actionUrl) {
       actionsText = `\n\nView Details: ${notification.metadata.actionUrl}`;
     }
@@ -202,9 +232,11 @@ Manage notification preferences: ${baseUrl}/notifications/preferences
     }
   }
 
-  async sendBatch(notifications: Notification[]): Promise<NotificationResult[]> {
+  async sendBatch(
+    notifications: Notification[],
+  ): Promise<NotificationResult[]> {
     const results: NotificationResult[] = [];
-    
+
     for (const notification of notifications) {
       const result = await this.send(notification);
       results.push(result);

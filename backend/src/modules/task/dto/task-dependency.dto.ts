@@ -1,4 +1,13 @@
-import { IsUUID, IsBoolean, IsArray, IsNumber, IsString, IsOptional, ValidateNested, Min } from 'class-validator';
+import {
+  IsUUID,
+  IsBoolean,
+  IsArray,
+  IsNumber,
+  IsString,
+  IsOptional,
+  ValidateNested,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -43,7 +52,7 @@ export class SubtaskDto {
 }
 
 export class SplitTaskDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Subtasks to create',
     type: [SubtaskDto],
   })
@@ -52,7 +61,7 @@ export class SplitTaskDto {
   @Type(() => SubtaskDto)
   subtasks!: SubtaskDto[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Whether to preserve original task dependencies',
     default: true,
   })
@@ -65,13 +74,13 @@ export class DependencyValidationResultDto {
   @ApiProperty({ description: 'Whether the dependencies are valid' })
   isValid!: boolean;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'List of validation issues',
     type: [String],
   })
   issues!: string[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Circular dependency chains found',
     type: 'array',
     items: {
@@ -81,19 +90,19 @@ export class DependencyValidationResultDto {
   })
   circularDependencies?: string[][];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Tasks with incomplete dependencies',
     type: [Object],
   })
   incompleteDependencies?: any[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Tasks that are ready to start',
     type: [Object],
   })
   readyTasks?: any[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Tasks that are blocked by dependencies',
     type: [Object],
   })
@@ -116,13 +125,13 @@ export class TaskGraphNodeDto {
   @ApiProperty({ description: 'Estimated hours' })
   estimatedHours!: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'IDs of tasks this task depends on',
     type: [String],
   })
   dependencies!: string[];
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'IDs of tasks that depend on this task',
     type: [String],
   })
@@ -130,13 +139,13 @@ export class TaskGraphNodeDto {
 }
 
 export class DependencyGraphDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Nodes in the dependency graph',
     type: [TaskGraphNodeDto],
   })
   nodes!: TaskGraphNodeDto[];
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Critical path through the tasks',
     type: [String],
   })

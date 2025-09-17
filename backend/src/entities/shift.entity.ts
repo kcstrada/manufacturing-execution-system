@@ -166,7 +166,7 @@ export class Shift extends TenantBaseEntity {
   }
 
   getNetWorkingHours(): number {
-    return this.duration - (this.totalBreakTime / 60);
+    return this.duration - this.totalBreakTime / 60;
   }
 }
 
