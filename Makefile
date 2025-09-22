@@ -63,6 +63,12 @@ down: ## Stop all services
 	@$(DOCKER_COMPOSE) --profile app --profile dev --profile nginx down
 	@echo "$(GREEN)✅ All services stopped$(NC)"
 
+.PHONY: down-clean
+down-clean: ## Stop all services and remove containers/volumes
+	@echo "$(RED)🧹 Stopping and cleaning all services...$(NC)"
+	@$(DOCKER_COMPOSE) --profile app --profile dev --profile nginx down -v --remove-orphans
+	@echo "$(GREEN)✅ All services stopped and cleaned$(NC)"
+
 .PHONY: restart
 restart: down up ## Restart all services
 	@echo "$(GREEN)✅ Services restarted$(NC)"

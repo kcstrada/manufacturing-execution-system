@@ -49,7 +49,7 @@ export class BOMQueryDto {
   @IsNumber()
   @Min(1)
   @IsOptional()
-  limit?: number = 10;
+  pageSize?: number = 20;
 
   @ApiPropertyOptional({ description: 'Sort field' })
   @IsString()
@@ -60,4 +60,9 @@ export class BOMQueryDto {
   @IsString()
   @IsOptional()
   sortOrder?: 'ASC' | 'DESC' = 'DESC';
+
+  @ApiPropertyOptional({ description: 'Effective date filter' })
+  @IsString()
+  @IsOptional()
+  effectiveDate?: string;
 }
