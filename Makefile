@@ -282,20 +282,21 @@ ui-build: ## Build UI package
 # ===============================
 
 .PHONY: keycloak-setup
-keycloak-setup: ## Configure Keycloak realm, clients, and roles
+keycloak-setup: ## Configure Keycloak realm, clients, roles, and theme
 	@echo "$(BLUE)🔐 Setting up Keycloak...$(NC)"
 	@./scripts/keycloak-setup.sh
 	@echo "$(YELLOW)Access Keycloak Admin at: http://localhost:8080$(NC)"
 	@echo "$(YELLOW)Realm: mes$(NC)"
+	@echo "$(GREEN)✅ Keycloak setup complete with MES theme and role mappings$(NC)"
 
 .PHONY: keycloak-init
-keycloak-init: keycloak-setup ## Alias for keycloak-setup
+keycloak-init: ## Initialize Keycloak from container (runs init-keycloak.sh)
+	@echo "$(BLUE)🔐 Initializing Keycloak from container...$(NC)"
+	@docker exec mes-keycloak /opt/keycloak/scripts/init-keycloak.sh || echo "$(YELLOW)⚠️  Make sure Keycloak container is running$(NC)"
+	@echo "$(GREEN)✅ Keycloak initialized with theme and role mappings$(NC)"
 
 .PHONY: keycloak-create-realm
-keycloak-create-realm: ## Create MES realm in Keycloak
-	@echo "$(BLUE)🏰 Creating MES realm...$(NC)"
-	@cd scripts && ./keycloak-setup.sh
-	@echo "$(GREEN)✅ MES realm created$(NC)"
+keycloak-create-realm: keycloak-setup ## Alias for keycloak-setup
 
 .PHONY: openfga-setup
 openfga-setup: ## Setup OpenFGA store and authorization model
